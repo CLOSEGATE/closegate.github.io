@@ -1,5 +1,16 @@
 # 클로즈 게이트 — GitHub Pages + Firebase 배포 안내
 
+## 새 버전 올리기 (Cloud Shell, 가장 쉬운 방법)
+
+1. <https://console.cloud.google.com> 에서 프로젝트 **CLOSE-GATE-KR**을 고르고 오른쪽 위 **`>_`**(Cloud Shell)을 연다.
+2. Cloud Shell 창 오른쪽 위 **⋮ → 업로드**로 `closegate-v15.zip`을 올린다.
+3. 아래 한 줄을 붙여 넣고 Enter.
+   ```
+   unzip -o closegate-v15.zip && bash closegate-firebase/deploy.sh
+   ```
+4. 마지막에 GitHub 토큰을 붙여 넣으면 끝난다. 보안 규칙(장터 · 가이딩 요청 포함)도 함께 게시된다.
+5. 1~2분 뒤 사이트를 새로고침한다(Ctrl+Shift+R).
+
 > 가장 빠른 방법: 파일을 GitHub에 올린 뒤 Google Cloud Shell에서 `setup-cloudshell.sh`를 실행하면 2·3·5단계와 설정값 입력이 한 번에 끝난다. (아래 "Cloud Shell로 한 번에" 참고)
 
 게임 화면은 **GitHub Pages**에 올리고, 함께 닫는 게이트·레이드·접속 요원·계정 기록은 **Firebase**에 저장한다.
@@ -72,3 +83,13 @@ Firebase 콘솔 **Authentication → 설정 → 승인된 도메인 → 도메�
    ```
 4. 마지막에 GitHub 토큰을 물으면 붙여 넣는다. 그러면 `firebase-config.js`가 자동으로 채워져 저장소에 올라간다.
    토큰 만들기: GitHub → 오른쪽 위 프로필 → Settings → Developer settings → Personal access tokens → **Tokens (classic)** → Generate new token → `repo` 체크 → 만료 7일 → 생성된 `ghp_...` 값을 복사.
+
+## GM 계정과 우편 배포
+1. GM으로 쓸 계정으로 게임에 한 번 로그인합니다.
+2. Firebase 콘솔 → Authentication에서 그 계정의 UID를 복사합니다.
+3. Firestore → `gms` 컬렉션에 문서 ID를 그 UID로 하는 빈 문서를 만듭니다. 이제 그 계정이 GM입니다.
+4. 우편은 `mail` 컬렉션에 문서를 만들어 보냅니다.
+   - `to`: 받는 사람 UID, 전체 배포는 `all`
+   - `from`: 보내는 이름(예: `GM`), `title`, `body`, `t`(보낸 시각 숫자)
+   - `items`: 아이템 목록. 물약은 `{kind:'potion', p:'hp1'|'hp2'|'hp3'|'df1'|'df2'|'at1'|'at2'}`, 각성석은 `{attr: 0~11}`(무작위는 `-1`), 장비는 `{kind:'gear', slot:'weapon'|'armor'|'acc', tier:0~3, lv:1~100}`
+   - `cr`: 크레딧, `ap`: 각성 포인트 (선택)

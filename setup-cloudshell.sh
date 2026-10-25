@@ -105,11 +105,11 @@ cat firebase-config.js
 say "GitHub 저장소에 올리기"
 git config user.name  >/dev/null 2>&1 || git config user.name  "closegate-setup"
 git config user.email >/dev/null 2>&1 || git config user.email "setup@closegate.game"
-git add firebase-config.js
+git add -A
 if git diff --cached --quiet; then
-  ok "저장소에 이미 같은 설정이 있다"
+  ok "올릴 변경 사항이 없다"
 else
-  git commit -qm "Firebase 설정값 자동 입력" && ok "커밋 완료"
+  git commit -qm "클로즈 게이트 업데이트 $(date +%Y-%m-%d)" && ok "커밋 완료"
   echo "  GitHub 토큰을 붙여 넣는다 (입력 내용은 화면에 보이지 않는다). 그냥 Enter를 누르면 건너뛴다."
   read -rsp "  GitHub 토큰: " GT; echo
   if [ -n "$GT" ]; then

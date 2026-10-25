@@ -5,6 +5,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
+    function isGM() { return signedIn() && exists(/databases/$(database)/documents/gms/$(request.auth.uid)); }
 
     // 함께 닫는 게이트
     match /gates/{gateId} {
@@ -19,6 +20,87 @@ service cloud.firestore {
     // 동시에 봉인할 때 한 사람만 처리하도록 거는 짧은 잠금
     match /locks/{lockId} {
       allow read, write: if signedIn();
+    }
+    // 가이딩 요청 (센티넬이 올리고, 가이드가 맡는다)
+    match /guidereq/{sid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.auth.uid == sid;
+      allow update: if signedIn();
+      allow delete: if signedIn() && request.auth.uid == sid;
+    }
+    // 채팅 (센터 · 파티)
+    match /chat/{mid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && request.resource.data.text.size() <= 120;
+    }
+    // 파티
+    match /parties/{code} {
+      allow read, write: if signedIn();
+    }
+    // 장터 게시판
+    match /market/{lid} {
+      allow read: if signedIn();
+      // 올리기: 본인 이름으로만, 가격은 10~99999 정수, 물건 형식 확인
+      allow create: if signedIn()
+        && request.resource.data.seller == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.price is int
+        && request.resource.data.price >= 10 && request.resource.data.price <= 99999
+        && request.resource.data.item is map
+        && (!('tier' in request.resource.data.item) || (request.resource.data.item.tier is int && request.resource.data.item.tier >= 0 && request.resource.data.item.tier <= 3))
+        && (!('lv' in request.resource.data.item) || (request.resource.data.item.lv is int && request.resource.data.item.lv >= 1 && request.resource.data.item.lv <= 100))
+        && (!('sub' in request.resource.data.item) || request.resource.data.item.sub.size() <= 3);
+      // 수정: 가격과 물건은 못 바꾼다. 다른 사람은 '판매됨'으로만, 판매자는 '내림' · '대금 수령'으로만 바꿀 수 있다
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','buyer','bnick','soldAt'])
+        && (
+          (resource.data.status == 'open' && request.resource.data.status == 'sold'
+            && request.resource.data.buyer == request.auth.uid && resource.data.seller != request.auth.uid)
+          || (resource.data.seller == request.auth.uid
+            && ((resource.data.status == 'open' && request.resource.data.status == 'cancel')
+              || (resource.data.status == 'sold' && request.resource.data.status == 'claimed')))
+        );
+      // 삭제: 올린 사람만
+      allow delete: if signedIn() && resource.data.seller == request.auth.uid;
+    }
+    // 운영자(GM): gms/{uid} 문서가 있는 계정만 GM입니다. 콘솔에서 직접 추가합니다.
+    match /gms/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+    // 우편: GM만 보낼 수 있고, 받는 사람(또는 전체 'all')만 읽습니다. 받는 사람은 '받음' 표시만 바꿀 수 있습니다.
+    match /mail/{mid} {
+      allow read: if signedIn() && (resource.data.to == request.auth.uid || resource.data.to == 'all');
+      allow create, delete: if isGM();
+      allow update: if isGM() || (signedIn() && resource.data.to == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed']));
+    }
+    // 친구: 두 사람만 읽고 고칠 수 있습니다. 신청은 본인 이름으로만 보냅니다.
+    match /friends/{fid} {
+      allow read: if signedIn() && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.from == request.auth.uid
+        && (request.resource.data.a == request.auth.uid || request.resource.data.b == request.auth.uid)
+        && request.resource.data.status == 'pending';
+      allow update: if signedIn() && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid)
+        && request.resource.data.a == resource.data.a && request.resource.data.b == resource.data.b;
+    }
+    // 페어: 센티넬(s)과 가이드(g) 두 사람만 다룹니다. 서약 수락과 해제 동의는 신청하지 않은 쪽만 할 수 있습니다.
+    match /pairs/{pid} {
+      allow read: if signedIn() && (resource.data.s == request.auth.uid || resource.data.g == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.from == request.auth.uid
+        && (request.resource.data.s == request.auth.uid || request.resource.data.g == request.auth.uid)
+        && request.resource.data.s != request.resource.data.g
+        && request.resource.data.status == 'pending';
+      allow update: if signedIn() && (resource.data.s == request.auth.uid || resource.data.g == request.auth.uid)
+        && request.resource.data.s == resource.data.s && request.resource.data.g == resource.data.g
+        && (
+          (resource.data.status == 'pending' && request.resource.data.status == 'ok' && resource.data.from != request.auth.uid)
+          || (resource.data.status == 'pending' && request.resource.data.status == 'ended')
+          || (resource.data.status == 'ended' && request.resource.data.status == 'pending' && request.resource.data.from == request.auth.uid)
+          || (resource.data.status == 'ok' && request.resource.data.status == 'breaking' && request.resource.data.by == request.auth.uid)
+          || (resource.data.status == 'breaking' && request.resource.data.status == 'ok')
+          || (resource.data.status == 'breaking' && request.resource.data.status == 'ended' && resource.data.by != request.auth.uid)
+        );
     }
     // 지금 접속한 요원 (본인 문서만 쓸 수 있다)
     match /presence/{uid} {
