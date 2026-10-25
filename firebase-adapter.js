@@ -2,10 +2,10 @@
    게임 코드는 claude.ai의 window.claude.use('db' | 'user' | 'room')를 부르도록 만들어져 있다.
    이 파일은 같은 모양의 함수를 Firebase(Authentication + Firestore)로 만들어 넘겨준다.
    - db   : Firestore 문서 읽기·쓰기·실시간 구독, 짧은 잠금(acquire)
-   - user : 로그인한 사람의 uid
+   - user : 로그인한 사람의 uid (로그인 전에는 null)
    - room : 지금 접속한 요원 목록(presence 컬렉션에 40초마다 신호를 남긴다) */
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import {getAuth,onAuthStateChanged,signInAnonymously,EmailAuthProvider,linkWithCredential,signInWithEmailAndPassword,signOut}
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut}
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {getFirestore,doc,getDoc,setDoc,deleteDoc,onSnapshot,collection,query,where,runTransaction}
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -67,16 +67,12 @@ function boot(){
   window.closeGateAuth={
     isMember:()=>!!(auth.currentUser&&auth.currentUser.providerData.some(p=>p.providerId==='password')),
     name:()=>{const e=auth.currentUser&&auth.currentUser.email||'';return e.endsWith(MAIL)?e.slice(0,-MAIL.length):e},
-    /* 지금 쓰던 익명 계정에 아이디를 붙인다: uid가 그대로라 게이트 기여도 이어진다 */
-    createAccount:async(id,pw)=>{const cred=EmailAuthProvider.credential(toMail(id),pw);const r=await linkWithCredential(auth.currentUser,cred);return r.user.uid},
+    createAccount:async(id,pw)=>(await createUserWithEmailAndPassword(auth,toMail(id),pw)).user.uid,
     signIn:async(id,pw)=>(await signInWithEmailAndPassword(auth,toMail(id),pw)).user.uid,
     signOut:async()=>{const me=uid();if(me)await deleteDoc(doc(fs,'presence',me)).catch(()=>{});await signOut(auth)}
   };
 
-  /* 로그인 상태가 정해지면 게임에 넘긴다. 로그인 기록이 없으면 익명으로 들어간다. */
+  /* 로그인 상태가 정해지면 게임에 넘긴다. 로그인하지 않은 사람은 게임이 계정 화면에서 멈춰 둔다. */
   let first=true;
-  onAuthStateChanged(auth,u=>{
-    if(!u){signInAnonymously(auth).catch(e=>{console.error('[클로즈 게이트] 익명 로그인 실패',e);done(null)});return}
-    if(first){first=false;done({db,user,room})}
-  });
+  onAuthStateChanged(auth,()=>{if(first){first=false;done({db,user,room})}});
 }

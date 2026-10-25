@@ -2352,14 +2352,14 @@ function useItem(id,slot){
   S.items=S.items.filter(x=>x.id!==id);checkAch();beep(988,.08);beep(1318,.12,'square',.04,.08);save();pushPresence();updateUI(true);
 }
 /* ═════════ 계정 · 클라우드 저장 (Firebase 판) ═════════
-   처음에는 익명 로그인으로 게이트·레이드에 참여하고, '계정 만들기'에서 아이디와 비밀번호를 정하면 계정으로 바뀐다.
+   계정으로 로그인해야만 게임을 할 수 있다. 아이디와 비밀번호로 계정을 만든다.
    (Firebase에는 아이디@closegate.game 형태의 가짜 이메일로 저장한다. 메일은 보내지 않는다.)
    기록은 본인만 읽고 쓸 수 있는 data/users/<uid>/save 문서에 둔다. */
 const BOOT_SAVED_AT=S.savedAt||0;
 const ACC={busy:false,dirty:false,lastPush:0,pushing:false,netDone:false};
 const AUTH=()=>window.closeGateAuth||null;
 const authReady=()=>!!(NET.db&&AUTH());
-const cloudOK=()=>!!(authReady()&&NET.uid&&AUTH().isMember());
+const cloudOK=()=>!!(authReady()&&NET.authed&&NET.uid&&AUTH().isMember());
 const cloudRef=()=>NET.db.doc('data/users/'+NET.uid+'/save');
 async function cloudGet(){const s=await cloudRef().get();return s.exists?s.data():null}
 async function cloudPut(){
@@ -2377,14 +2377,16 @@ function syncAccScreen(){
   $('accNewT').textContent=has?'이 기록으로 계정 만들기':'계정 만들기';
   $('accNewD').textContent=has?'아이디와 비밀번호를 정하고, 지금 이 기기의 요원 기록을 클라우드에 올린다.':'아이디와 비밀번호로 새 요원을 등록하고 기록을 클라우드에 저장한다.';
   $('accLoginD').textContent=has?'아이디와 비밀번호로 저장된 요원 기록을 불러온다. 이 기기의 기록은 계정 기록으로 바뀐다.':'아이디와 비밀번호로 저장된 요원 기록을 불러온다.';
-  $('accGuestT').textContent=has?'게스트로 계속하기':'게스트로 시작';
+
   $('accNew').disabled=$('accLogin').disabled=!ok||ACC.busy;
   if(!ACC.netDone)accMsg('센터 서버에 연결하는 중이다.');
-  else if(!ok)accMsg('센터 서버에 연결하지 못했다. firebase-config.js 설정을 확인해야 한다. 게스트로는 혼자 플레이할 수 있다.',true);
-  else if(!ACC.busy)accMsg('계정은 아이디와 비밀번호로 만든다. 이메일은 필요하지 않다. 게스트도 게이트와 레이드에 함께 참여할 수 있지만, 기록은 이 기기에만 남는다.');
+  else if(!ok)accMsg('센터 서버에 연결하지 못했다. firebase-config.js 설정을 확인해야 한다.',true);
+  else if(!ACC.busy&&$('accForm').hidden)accMsg('클로즈 게이트는 계정으로 로그인해야 플레이할 수 있다. 계정은 아이디와 비밀번호만으로 만들고, 이메일은 필요하지 않다.');
 }
-function showAccount(){showScreen('account');syncAccScreen()}
-function afterAccount(){
+function showAccount(){showScreen('account');$('accGuest').hidden=true;syncAccScreen()}
+/* 로그인한 계정이 확인되기 전에는 게임 화면으로 넘어가지 않는다 */
+function afterAccount(){if(!cloudOK()){showAccount();return}enterGame()}
+function enterGame(){
   if(!S.role)showOnboard();
   else if(S.grade==null||!(S.attrs&&S.attrs.length)){S.grade=null;picked=S.role;showGacha('existing')}
   else showGame();
@@ -2411,7 +2413,7 @@ function showForm(mode){
   setTimeout(()=>$('accId').focus(),30);
 }
 const idOK=v=>/^[a-z0-9_]{4,16}$/.test(v);
-function accCreate(){if(!authReady()||ACC.busy)return;if(AUTH().isMember()){accMsg(`이미 ${AUTH().name()} 계정으로 로그인되어 있다.`,true);return}showForm('create')}
+function accCreate(){if(!authReady()||ACC.busy)return;showForm('create')}
 function accLogin(){if(!authReady()||ACC.busy)return;showForm('login')}
 $('accCancel').addEventListener('click',()=>{$('accForm').hidden=true;syncAccScreen()});
 $('accForm').addEventListener('submit',async e=>{
@@ -2424,26 +2426,25 @@ $('accForm').addEventListener('submit',async e=>{
   try{
     if(formMode==='create'){
       accMsg('계정을 만드는 중이다.');
-      NET.uid=await AUTH().createAccount(id,pw);
-      S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut();pushPresence();
-      ACC.busy=false;$('accSubmit').disabled=false;$('accForm').hidden=true;toast(`계정 ${id}를 만들었다. 이제 기록이 클라우드에 저장된다.`);afterAccount();
+      NET.uid=await AUTH().createAccount(id,pw);NET.authed=true;
+      S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut();
     }else{
       accMsg('로그인하는 중이다.');
-      NET.uid=await AUTH().signIn(id,pw);
+      NET.uid=await AUTH().signIn(id,pw);NET.authed=true;
       const ex=await cloudGet();
-      if(!ex||typeof ex.json!=='string'){
-        S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut();
-        ACC.busy=false;$('accSubmit').disabled=false;$('accForm').hidden=true;toast('저장된 기록이 없어 지금 기록을 계정에 올렸다.');afterAccount();return}
-      const data=JSON.parse(ex.json);data.acct={mode:'cloud',since:(data.acct&&data.acct.since)||Date.now(),id};data.savedAt=+ex.at||Date.now();
-      try{localStorage.setItem(KEY,JSON.stringify(data))}catch(err){}
-      location.reload();
+      if(ex&&typeof ex.json==='string'){
+        const data=JSON.parse(ex.json);data.acct={mode:'cloud',since:(data.acct&&data.acct.since)||Date.now(),id};data.savedAt=+ex.at||Date.now();
+        try{localStorage.setItem(KEY,JSON.stringify(data))}catch(err){}
+      }else{S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut()}
     }
+    accMsg('접속 정보를 불러오는 중이다.');
+    location.reload(); /* 로그인한 상태로 서버 연결을 새로 연다 */
   }catch(err){ACC.busy=false;$('accSubmit').disabled=false;accMsg(authErr(err),true)}
 });
-function accGuest(){S.acct={mode:'guest',since:Date.now()};save();afterAccount()}
+function accGuest(){}
 $('accNew').addEventListener('click',accCreate);
 $('accLogin').addEventListener('click',accLogin);
-$('accGuest').addEventListener('click',accGuest);
+
 
 /* 설정의 계정 칸 */
 function renderAcc(){
@@ -2470,22 +2471,23 @@ $('accOut').addEventListener('click',async()=>{
 /* 서버 연결이 끝나면: 계정 화면을 갱신하고, 다른 기기에서 더 최근에 저장한 기록이 있으면 불러온다 */
 async function accOnNet(){
   ACC.netDone=true;
-  if(!$('account').hidden)syncAccScreen();
   renderAcc();
-  if(S.acct&&S.acct.mode==='cloud'&&cloudOK()){
-    try{
-      const ex=await cloudGet();
-      if(ex&&typeof ex.json==='string'&&(+ex.at||0)>BOOT_SAVED_AT+3000&&S.phase==='idle'){
-        const data=JSON.parse(ex.json);data.acct=S.acct;data.savedAt=+ex.at;
-        try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
-        location.reload();return;
-      }
-      if(!ex)cloudPut();
-    }catch(e){}
-  }else if(S.acct&&S.acct.mode==='cloud'&&authReady()&&!AUTH().isMember()){
-    /* 로그인 정보가 사라진 경우: 기록은 이 기기에 남기고 게스트로 바꾼다 */
-    S.acct={mode:'guest',since:Date.now()};save();renderAcc();toast('로그인이 풀려 게스트로 전환했다. 설정에서 다시 로그인할 수 있다.');
+  if(!cloudOK()){
+    /* 로그인하지 않았거나 로그인이 풀린 상태: 계정 화면에서 기다린다 */
+    if(S.acct&&S.acct.mode==='cloud'&&authReady())toastLater('로그인이 풀렸다. 다시 로그인해야 한다.');
+    showAccount();return;
   }
+  try{
+    const ex=await cloudGet();
+    if(ex&&typeof ex.json==='string'&&(+ex.at||0)>BOOT_SAVED_AT+3000&&S.phase==='idle'){
+      const data=JSON.parse(ex.json);data.acct=S.acct||{mode:'cloud',since:Date.now(),id:AUTH().name()};data.savedAt=+ex.at;
+      try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
+      location.reload();return;
+    }
+    if(!S.acct||S.acct.mode!=='cloud'){S.acct={mode:'cloud',since:Date.now(),id:AUTH().name()};save()}
+    if(!ex)cloudPut();
+  }catch(e){}
+  if(!$('account').hidden)enterGame();
 }
 /* ═════════ UI ═════════ */
 let toastTimer=0;
