@@ -3,10 +3,10 @@
 ## 새 버전 올리기 (Cloud Shell, 가장 쉬운 방법)
 
 1. <https://console.cloud.google.com> 에서 프로젝트 **CLOSE-GATE-KR**을 고르고 오른쪽 위 **`>_`**(Cloud Shell)을 연다.
-2. Cloud Shell 창 오른쪽 위 **⋮ → 업로드**로 `closegate-v26.zip`을 올린다.
+2. Cloud Shell 창 오른쪽 위 **⋮ → 업로드**로 `closegate-v27.zip`을 올린다.
 3. 아래 한 줄을 붙여 넣고 Enter.
    ```
-   unzip -o closegate-v26.zip && bash closegate-firebase/deploy.sh
+   unzip -o closegate-v27.zip && bash closegate-firebase/deploy.sh
    ```
 4. 마지막에 GitHub 토큰을 붙여 넣으면 끝난다. 보안 규칙(장터 · 가이딩 요청 포함)도 함께 게시된다.
 5. 1~2분 뒤 사이트를 새로고침한다(Ctrl+Shift+R).
@@ -97,6 +97,7 @@ GM 관리 화면에서 할 수 있는 일
 - 유저: 닉네임 · 아이디 · UID 검색, 저장 기록 보기, 크레딧 · 각성 포인트 · 경험치 조정, 등급 설정, 치료 해제, 폭주 0, 이용 정지 · 해제, 채팅 금지 · 해제
 - 게이트 · 레이드: 봉인 진행 조정, 강제로 닫기(새 게이트 자동 생성), 레이드 강제 열기 · 닫기 · 기본 일정
 - 채팅 · 장터: 채팅 지우기, 장터 판매글 내리기
+- 가입 코드: CG-XXXX-XXXX 코드 만들기(개수 · 사용 횟수 · 기간 · 메모), 복사, 중지, '가입 코드 필수' 켜기 · 끄기
 - 기록: 모든 GM 행동이 `gmlog`에 남습니다
 
 권한은 Firestore 보안 규칙이 지키므로, GM이 아닌 계정은 화면을 띄워도 저장할 수 없습니다.

@@ -106,6 +106,9 @@ service cloud.firestore {
           || (resource.data.status == 'ok' && request.resource.data.status == 'breaking' && request.resource.data.by == request.auth.uid)
           || (resource.data.status == 'breaking' && request.resource.data.status == 'ok')
           || (resource.data.status == 'breaking' && request.resource.data.status == 'ended' && resource.data.by != request.auth.uid)
+          // 페어 중 외형 공유와 무드 제안 · 동의 (상태는 그대로)
+          || (request.resource.data.status == resource.data.status && (resource.data.status == 'ok' || resource.data.status == 'breaking')
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['slook','glook','mood','moodReq']))
         );
     }
     // 지금 접속한 요원 (본인 문서만 쓸 수 있다)
@@ -144,6 +147,21 @@ service cloud.firestore {
       allow create: if isGM();
       allow update: if isGM() || signedIn() && resource.data.to == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applied','appliedAt']);
+    }
+    // 가입 코드: 코드를 아는 사람만 하나씩 확인할 수 있고(목록은 GM만), 가입할 때 사용 횟수를 1 올립니다
+    match /invites/{code} {
+      allow get: if true;
+      allow list, create, delete: if isGM();
+      allow update: if isGM() || (signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used','usedBy'])
+        && request.resource.data.used == resource.data.used + 1
+        && request.resource.data.used <= resource.data.max
+        && resource.data.off != true);
+    }
+    // 가입 설정(가입 코드 필수 여부): 모두 읽고, GM만 씁니다
+    match /config/{id} {
+      allow read: if true;
+      allow write: if isGM();
     }
     // GM 행동 기록: GM만 남기고 읽습니다
     match /gmlog/{lid} {

@@ -840,6 +840,8 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
 .gmuser{display:grid;gap:8px;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:12px;padding:10px 12px}
 @media (max-width:560px){.gmgrid{grid-template-columns:1fr}}
 body.hasNotice{padding-top:calc(14px + 36px)!important}
+.pmood{display:grid;gap:6px;border:1px dashed color-mix(in srgb,var(--pink) 60%,transparent);border-radius:12px;padding:10px 12px}
+.gmlist b.code{font-family:var(--f-pixel,monospace);letter-spacing:.06em}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -873,6 +875,7 @@ body.hasNotice{padding-top:calc(14px + 36px)!important}
       <h3 id="accFormT">계정 만들기</h3>
       <label class="field"><span class="flab">아이디</span><input id="accId" name="username" autocomplete="username" maxlength="16" placeholder="영문 소문자 · 숫자 · _ 4~16자" autocapitalize="none" spellcheck="false"></label>
       <label class="field"><span class="flab">비밀번호</span><input id="accPw" name="password" type="password" autocomplete="current-password" placeholder="6자 이상"></label>
+      <label class="field" id="accCodeRow"><span class="flab" id="accCodeL">가입 코드 (선택)</span><input id="accCode" maxlength="14" placeholder="예: CG-ABCD-1234" autocapitalize="characters" autocomplete="off"></label>
       <label class="field" id="accPw2Row"><span class="flab">비밀번호 확인</span><input id="accPw2" type="password" autocomplete="new-password" placeholder="한 번 더 입력"></label>
       <p class="muted" id="accFormHint">비밀번호는 찾을 수 없으니 잊지 않도록 따로 적어 둡니다.</p>
       <div class="row"><button type="button" class="btn ghost" id="accCancel">취소</button><button type="submit" class="btn" id="accSubmit">계정 만들기</button></div>
@@ -1159,7 +1162,7 @@ body.hasNotice{padding-top:calc(14px + 36px)!important}
       <p><b>친구</b>: 요원 탭에서 접속 중인 요원에게 바로 신청하거나, 친구 코드를 붙여 넣어 신청합니다. 상대가 수락하면 친구가 됩니다.</p>
       <p><b>파티</b>: 최대 4명이 한 게이트로 함께 출동합니다. 파티 출동은 경험치가 1.1배입니다. 파티 채팅도 따로 있습니다.</p>
       <p><b>페어</b>: 센티넬과 가이드 플레이어가 <b>서로 서약해야</b> 맺어지는 특별한 관계입니다. 친구 중에서 신청할 수 있고, 한 사람은 한 번에 하나의 페어만 가질 수 있습니다.</p>
-      <ul><li>페어 가이드에게 받는 가이딩 효율이 2배가 됩니다.</li><li>같은 게이트를 함께 공략하면 경험치 · 각성 포인트 · 크레딧이 2배, 봉인 기여가 1.5배가 됩니다.</li><li>페어가 있어도 다른 가이드에게 가이딩을 받을 수 있습니다.</li><li>해제할 때도 두 사람이 모두 동의해야 합니다.</li></ul></details>
+      <ul><li>페어 가이드에게 받는 가이딩 효율이 2배가 됩니다.</li><li>같은 게이트를 함께 공략하면 경험치 · 각성 포인트 · 크레딧이 2배, 봉인 기여가 1.5배가 됩니다.</li><li>페어가 있어도 다른 가이드에게 가이딩을 받을 수 있습니다.</li><li>해제할 때도 두 사람이 모두 동의해야 합니다.</li><li>페어가 되면 두 캐릭터가 한 방에서 함께 지냅니다.</li><li>페어 무드는 사이 좋은 친구 · 사귀는 사이 · 투닥거리는 사이 중에서 두 사람이 합의해 정하며, 방의 분위기가 바뀝니다.</li></ul></details>
     <details><summary>10장 · 훈련 · 레벨 · 승급</summary>
       <p>훈련장에서는 기초 체력 · 능력 제어 · 각성 집중 · 종합 훈련으로 각성 포인트를 모읍니다. 각성 포인트로 각성석을 교환하거나 승급 시험을 봅니다. 레벨은 100까지 오르고, 일정 레벨이 되면 승급 시험으로 등급을 올릴 수 있습니다. 출동하면서 훈련도 하는 <b>병행 훈련</b>도 있습니다.</p></details>
     <details><summary>11장 · 화면과 계정</summary>
@@ -1217,8 +1220,6 @@ body.hasNotice{padding-top:calc(14px + 36px)!important}
     </section>
     <section class="sgroup danger">
       <h3>데이터</h3>
-      <div class="srow col"><div class="sl"><b>캐릭터 삭제</b><span>지금 캐릭터를 완전히 지우고 역할 선택부터 새로 만듭니다. 레벨 · 장비 · 아이템 · 크레딧이 모두 사라지고 되돌릴 수 없습니다. 계정과 친구 목록은 남습니다.</span></div>
-        <div class="delrow"><input id="delInput" placeholder="삭제라고 입력합니다" autocomplete="off" aria-label="확인 입력"><button class="sbtn big del" type="button" id="delBtn" disabled>캐릭터 삭제</button></div></div>
       <div class="srow"><div class="sl"><b>내 기록 초기화</b><span>레벨, 경험치, 각성 포인트, 기록을 지웁니다. 역할과 능력, 등급, 함께 닫는 게이트는 그대로입니다.</span></div><button class="sbtn big" type="button" id="resetBtn">초기화</button></div>
     </section>
   </div>
@@ -2156,7 +2157,7 @@ function drawRoom(dt){
   G.drawImage(roomBg(S.role||'sentinel'),0,0);drawRugOverride();drawDecor();drawDecor2();
   if(Math.floor(T*1.5)%4===0){G.globalAlpha=.25;disc(121,53,7,'#FFF3B8');G.globalAlpha=1}
   if(!isNight())[[148,20],[170,24]].forEach(([cx,cy],i)=>{const x=cx+((T*2+i*13)%18)-9;px(x,cy,6,2,'#FFFFFF')});else if(Math.floor(T*1.3)%3===0)px(150+Math.floor(T)%30,18,1,1,'#FFFFFF');
-  drawHero(S.role||'sentinel',S.look,82,98,{tier:visTier(),attrs:S.attrs||[],dx:0,wp:myWeapon()});
+  if(!(typeof drawPairRoom==='function'&&S.pairUid&&drawPairRoom()))drawHero(S.role||'sentinel',S.look,82,98,{tier:visTier(),attrs:S.attrs||[],dx:0,wp:myWeapon()});
 }
 const lobbyDraw=N=>{
   px(0,0,W,H,'#F3F6FF');px(0,0,W,6,'#E3EAFB');
@@ -3379,7 +3380,7 @@ const pairsAll=()=>Object.values(SOC.pr);
 const pairActive=()=>pairsAll().find(p=>p.status==='ok'||p.status==='breaking')||null;
 const pairOther=()=>{const p=pairActive();return p?(p.s===NET.uid?p.g:p.s):null};
 const pairOtherNick=()=>{const p=pairActive();return p?(p.s===NET.uid?p.gnick:p.snick):''};
-function pairChanged(){const p=pairActive();S.pairUid=p?pairOther():null;S.pairNick=p?pairOtherNick():'';save()}
+function pairChanged(){const p=pairActive();S.pairUid=p?pairOther():null;S.pairNick=p?pairOtherNick():'';save();if(p)syncPairLook()}
 async function proposePair(uid,nick){
   if(pairActive()){toast('이미 페어가 있습니다.');return}
   const f=friendsAll().find(x=>x.status==='ok'&&otherOf(x).uid===uid);if(!f){toast('친구에게만 페어를 신청할 수 있습니다.');return}
@@ -3398,9 +3399,9 @@ function renderPair(){
   let h='<span class="eyebrow">Pair</span>';
   if(p){const here=onlineUids().includes(pairOther());
     h+=`<div class="pairc"><b>${esc(pairOtherNick())}</b><span class="muted">${S.role==='sentinel'?'나의 페어 가이드':'나의 페어 센티넬'} · ${here?'접속 중':'접속하지 않음'}</span>
-      <ul class="pbuf"><li>페어 가이드에게 받는 가이딩 효율 2배</li><li>같은 게이트를 함께 공략하면 경험치 · 각성 포인트 · 크레딧 2배, 봉인 기여 1.5배</li><li>다른 가이드에게도 그대로 가이딩을 받을 수 있습니다</li></ul>
+      <ul class="pbuf"><li>내 방에 페어 캐릭터가 함께 지냅니다</li><li>페어 가이드에게 받는 가이딩 효율 2배</li><li>같은 게이트를 함께 공략하면 경험치 · 각성 포인트 · 크레딧 2배, 봉인 기여 1.5배</li><li>다른 가이드에게도 그대로 가이딩을 받을 수 있습니다</li></ul>
       ${p.status==='breaking'?(p.by===NET.uid?`<p class="muted">해제를 요청했습니다. 상대가 동의하면 페어가 풀립니다.</p><button type="button" class="sbtn" data-pact="keep">해제 요청 취소</button>`:`<p class="warnline">${esc(pairOtherNick())} 요원이 페어 해제를 요청했습니다.</p><button type="button" class="sbtn" data-pact="agree">해제에 동의</button><button type="button" class="sbtn buy" data-pact="keep">페어 유지</button>`)
-      :`<button type="button" class="sbtn" data-pact="break">페어 해제 요청</button>`}</div>`}
+      :`<button type="button" class="sbtn" data-pact="break">페어 해제 요청</button>`}</div>${pairMoodHtml()}`}
   else{
     const cand=friendsAll().filter(f=>f.status==='ok').map(otherOf).filter(o=>o.role&&o.role!==S.role);
     h+=`<p class="muted">페어는 센티넬과 가이드 플레이어가 서로 서약해야 맺어집니다. 친구 중에서 ${S.role==='sentinel'?'가이드':'센티넬'}에게 신청할 수 있습니다.</p>`;
@@ -3441,6 +3442,46 @@ setInterval(()=>{if(online()&&NET.uid)watchSocial();mailBadge()},4000);
 function openGuideBook(){$('settings').hidden=true;$('guideBook').hidden=false;setTimeout(()=>$('gbClose').focus(),30)}
 $('gbClose').addEventListener('click',()=>{$('guideBook').hidden=true});
 $('guideBook').addEventListener('click',e=>{if(e.target.id==='guideBook')$('guideBook').hidden=true});
+
+/* ═════════ 페어: 한 방 쓰기 · 페어 무드 ═════════ */
+const PAIR_MOOD={friend:{n:'사이 좋은 친구',d:'서로 든든한 단짝입니다. 방에 음표와 반짝임이 떠다닙니다.'},love:{n:'사귀는 사이',d:'서로 아끼는 연인입니다. 방에 하트가 피어오릅니다.'},bicker:{n:'투닥거리는 사이',d:'티격태격하지만 결국 함께하는 사이입니다. 방에 가끔 불꽃이 튑니다.'}};
+const pairMood=()=>{const p=pairActive();return p&&PAIR_MOOD[p.mood]?p.mood:'friend'};
+const myLookCard=()=>({look:S.look,gr:myGrade(),attrs:(S.attrs||[]).slice(0,3),nick:(S.name||'요원').slice(0,10)});
+const pairOtherCard=()=>{const p=pairActive();if(!p)return null;const c=p.s===NET.uid?p.glook:p.slook;return c&&typeof c==='object'?c:null};
+let lastLookJson='';
+function syncPairLook(){const p=pairActive();if(!p||!online())return;const k=p.s===NET.uid?'slook':'glook',c=myLookCard(),j=JSON.stringify(c);
+  if(j===lastLookJson&&p[k])return;lastLookJson=j;NET.db.doc('pairs/'+p.id).update({[k]:c}).then(()=>{p[k]=c}).catch(()=>{lastLookJson=''})}
+setInterval(syncPairLook,20000);
+async function proposeMood(m){const p=pairActive();if(!p||!PAIR_MOOD[m])return;
+  if(p.mood===m){toast('이미 그 무드입니다.');return}
+  await setPair(p.id,{moodReq:{mood:m,by:NET.uid}},`${PAIR_MOOD[m].n}(으)로 바꾸자고 제안했습니다. 상대가 동의하면 바뀝니다.`.replace('(으)로',roJosa(PAIR_MOOD[m].n)))}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.pmood)proposeMood(b.dataset.pmood);
+  else if(b.dataset.pmacc){const p=pairActive();if(!p||!p.moodReq)return;const m=p.moodReq.mood;setPair(p.id,{mood:m,moodReq:null},`페어 무드가 ${PAIR_MOOD[m].n}${roJosa(PAIR_MOOD[m].n)} 바뀌었습니다.`)}
+  else if(b.dataset.pmdec){const p=pairActive();if(!p)return;setPair(p.id,{moodReq:null},'무드 제안을 정리했습니다.')}
+});
+function pairMoodHtml(){const p=pairActive();if(!p)return '';const cur=pairMood(),req=p.moodReq&&PAIR_MOOD[p.moodReq.mood]?p.moodReq:null;
+  return `<div class="pmood"><span class="flab">페어 무드 · 지금 <b>${PAIR_MOOD[cur].n}</b></span><span class="muted">${PAIR_MOOD[cur].d}</span>
+    ${req?(req.by===NET.uid?`<span class="muted">${PAIR_MOOD[req.mood].n}${roJosa(PAIR_MOOD[req.mood].n)} 바꾸자고 제안했습니다. 상대의 동의를 기다립니다.</span><button type="button" class="sbtn" data-pmdec="1">제안 취소</button>`
+      :`<span class="warnline">${esc(pairOtherNick())} 요원이 무드를 ${PAIR_MOOD[req.mood].n}${roJosa(PAIR_MOOD[req.mood].n)} 바꾸자고 합니다.</span><div class="gmrow"><button type="button" class="sbtn buy" data-pmacc="1">동의</button><button type="button" class="sbtn" data-pmdec="1">거절</button></div>`)
+      :`<div class="pchips three">${Object.entries(PAIR_MOOD).map(([k,v])=>`<button type="button" data-pmood="${k}" aria-pressed="${k===cur}">${v.n}</button>`).join('')}</div><span class="muted">무드를 바꾸려면 상대도 동의해야 합니다.</span>`}</div>`}
+/* 방에 페어 캐릭터 함께 그리기 */
+function heartPx(x,y,c){px(x,y,1,1,c);px(x+2,y,1,1,c);px(x-1,y+1,5,1,c);px(x,y+2,3,1,c);px(x+1,y+3,1,1,c)}
+function drawPairRoom(){
+  const c=pairOtherCard();if(!c)return false;
+  const mood=pairMood(),other=S.role==='guide'?'sentinel':'guide',t=T;
+  const turn=mood==='bicker'&&Math.floor(t/3)%3===1;
+  drawHero(S.role||'sentinel',S.look,68,98,{tier:visTier(),attrs:S.attrs||[],dx:turn?-1:1,wp:myWeapon()});
+  drawHero(other,normLook(c.look,other),102,98,{tier:VTIER[clampI(c.gr,7)],attrs:Array.isArray(c.attrs)?c.attrs:[],dx:turn?1:-1,ph:.6});
+  G.save();G.font='600 4px "IBM Plex Sans KR",sans-serif';G.textAlign='center';const nm=String(c.nick||S.pairNick||'페어').slice(0,10),w=G.measureText(nm).width+6;
+  G.fillStyle='rgba(28,36,64,.65)';G.fillRect(102-w/2,58,w,6);G.fillStyle='#FFFFFF';G.fillText(nm,102,62.5);G.restore();
+  if(mood==='love'){for(let i=0;i<3;i++){const ph=(t*.5+i/3)%1;G.globalAlpha=1-ph;heartPx(84+Math.sin(t*2+i*2)*3,72-ph*22,i%2?'#FF8FA3':'#F0544F')}G.globalAlpha=1}
+  else if(mood==='friend'){for(let i=0;i<2;i++){const ph=(t*.4+i/2)%1;G.globalAlpha=1-ph;const x=80+i*10+Math.sin(t*2+i)*2,y=70-ph*18;px(x,y,1,4,'#2F5BEA');px(x+1,y,2,1,'#2F5BEA');px(x-2,y+3,2,2,'#2F5BEA')}
+    if(Math.floor(t*3)%4===0){px(85,64,1,3,'#FFE27A');px(84,65,3,1,'#FFE27A')}G.globalAlpha=1}
+  else{const on=Math.floor(t*4)%6<2;if(on){[[76,70],[90,70]].forEach(([x,y],i)=>{px(x+i,y,1,1,'#FFE27A');px(x+1+i,y+1,1,1,'#FFE27A');px(x+i,y+2,1,1,'#FFE27A');px(x+1+i,y+3,1,1,'#FFE27A')})}
+    const vx=(Math.floor(t/1.5)%2?62:96);px(vx,64,1,1,'#F0544F');px(vx+2,64,1,1,'#F0544F');px(vx+1,65,1,1,'#F0544F');px(vx,66,1,1,'#F0544F');px(vx+2,66,1,1,'#F0544F')}
+  return true;
+}
 /* ═════════ 물약 ═════════
    회복약 3종 · 방어 물약 2종 · 공격 물약 2종입니다.
    회복량은 최대 HP에 비례하므로 레벨이 오를수록 커지고, 등급이 높을수록 조금 더 잘 듣습니다. */
@@ -3609,9 +3650,11 @@ function gmSubs(){
   col('chat').where('ch','==','center').onSnapshot(s=>{GMX.chat=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,40);gmRender(true)},()=>{});
   col('market').where('status','==','open').onSnapshot(s=>{GMX.market=s.docs.map(d=>({id:d.id,...d.data()}));gmRender(true)},()=>{});
   col('mail').onSnapshot(s=>{GMX.mails=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,30);gmRender(true)},()=>{});
+  col('invites').onSnapshot(s=>{GMX.codes=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0));gmRender(true)},()=>{});
+  NET.db.doc('config/signup').onSnapshot(s=>{GMX.cfg=s.exists?s.data():{};gmRender(true)},()=>{});
   col('gmlog').onSnapshot(s=>{GMX.logs=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,60);gmRender(true)},()=>{});
 }
-const GM_TABS=[['stats','통계'],['notice','공지'],['mail','우편'],['users','유저'],['gates','게이트 · 레이드'],['mod','채팅 · 장터'],['log','기록']];
+const GM_TABS=[['stats','통계'],['notice','공지'],['mail','우편'],['codes','가입 코드'],['users','유저'],['gates','게이트 · 레이드'],['mod','채팅 · 장터'],['log','기록']];
 const fmtT=t=>new Date(+t||0).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
 function gmItemLabel(it){return it.kind==='potion'?POTS[it.p].n:it.kind==='gear'?`${GEAR_T[it.tier]} ${SLOT_N[it.slot]} Lv.${it.lv}`:it.attr<0?'무작위 각성석':ATTRS[it.attr].n+' 각성석'}
 function gmKeepMail(){if(!$('gmMtitle'))return;GMX.mf={to:val('gmMto'),from:val('gmMfrom'),title:val('gmMtitle'),body:val('gmMbody'),cr:val('gmMcr'),ap:val('gmMap')}}
@@ -3666,6 +3709,12 @@ function gmRender(soft){
   else if(t==='mod'){
     h=`<span class="eyebrow">센터 채팅 (최근)</span><ul class="gmlist">${GMX.chat.map(m=>`<li class="${m.hidden?'off':''}"><b>${esc(String(m.nick||''))}</b><span>${esc(String(m.text||''))}</span><span class="muted">${fmtT(m.t)}</span>${m.hidden?'<span class="muted">숨김</span>':`<button type="button" class="sbtn" data-gmhide="${esc(m.id)}">지우기</button>`}<button type="button" class="sbtn" data-gmsel="${esc(m.uid)}" data-gogo="users">요원 보기</button></li>`).join('')||'<li class="muted">메시지가 없습니다.</li>'}</ul>
       <span class="eyebrow">장터 판매 중</span><ul class="gmlist">${GMX.market.map(L=>`<li><b>${esc(itemName(cleanItem(L.item)||{attr:0}))}</b><span class="muted">${esc(String(L.snick||''))} · ${+L.price} C · ${fmtT(L.t)}</span><button type="button" class="sbtn del" data-gmmk="${esc(L.id)}">내리기</button></li>`).join('')||'<li class="muted">판매 중인 물건이 없습니다.</li>'}</ul>`}
+  else if(t==='codes'){const C=GMX.codes||[],req=!!(GMX.cfg&&GMX.cfg.codeRequired);
+    h=`<div class="gmrow"><b>가입 코드 필수</b><span class="muted">${req?'켜짐 · 코드가 있어야 계정을 만들 수 있습니다':'꺼짐 · 누구나 계정을 만들 수 있습니다'}</span><button type="button" class="sbtn ${req?'':'buy'}" data-gma="codeReq">${req?'끄기':'켜기'}</button></div>
+      <div class="gmgrid"><label>만들 개수<input id="gmCn" type="number" min="1" max="50" value="1"></label><label>코드 하나당 사용 횟수<input id="gmCm" type="number" min="1" max="1000" value="1"></label>
+      <label>유효 기간<select id="gmCe"><option value="0">무기한</option><option value="1">1일</option><option value="7">7일</option><option value="30">30일</option></select></label><label>메모<input id="gmCnote" maxlength="30" placeholder="예: 1차 테스터"></label></div>
+      <button type="button" class="btn" data-gma="makeCodes">가입 코드 만들기</button>
+      <ul class="gmlist">${C.map(c=>{const exp=+c.exp&&+c.exp<gmT(),full=(+c.used||0)>=(+c.max||1);return `<li class="${c.off||exp||full?'off':''}"><b class="code">CG-${esc(c.id.slice(0,4))}-${esc(c.id.slice(4,8))}</b><span class="muted">${+c.used||0} / ${+c.max||1}회 사용${c.note?' · '+esc(c.note):''}${+c.exp?' · '+fmtT(c.exp)+'까지':''}${c.off?' · 중지됨':exp?' · 기간 지남':full?' · 다 씀':''}</span><button type="button" class="sbtn" data-gmcopy="CG-${esc(c.id.slice(0,4))}-${esc(c.id.slice(4,8))}">복사</button>${c.off?'':`<button type="button" class="sbtn del" data-gmcodeoff="${esc(c.id)}">중지</button>`}</li>`}).join('')||'<li class="muted">만든 가입 코드가 없습니다.</li>'}</ul>`}
   else if(t==='log'){h=`<ul class="gmlist">${GMX.logs.map(l=>`<li><b>${esc(String(l.act))}</b><span>${esc(String(l.detail||''))}</span><span class="muted">${esc(String(l.byNick||''))} · ${fmtT(l.t)}</span></li>`).join('')||'<li class="muted">기록이 없습니다.</li>'}</ul>`}
   b.innerHTML=h;
 }
@@ -3683,6 +3732,11 @@ async function gmAct(a){
   else if(a==='sendMail'){const to=val('gmMto'),title=val('gmMtitle').trim();if(!title){toast('제목을 입력해 주세요.');return}
     const d={to,from:val('gmMfrom').trim()||'센터 운영팀',title,body:val('gmMbody').trim(),items:GMX.draft.map(x=>({...x})),cr:Math.max(0,+val('gmMcr')||0),ap:Math.max(0,+val('gmMap')||0),t:gmT()};
     await db.doc('mail/'+gmId('m')).set(d);gmLog('우편 보내기',to,`${title} · 아이템 ${d.items.length}개 · ${d.cr} C · ${d.ap} AP`);GMX.draft=[];GMX.mf=null;toast(to==='all'?'전체 우편을 보냈습니다.':'우편을 보냈습니다.');gmRender()}
+  else if(a==='codeReq'){const on=!(GMX.cfg&&GMX.cfg.codeRequired);await db.doc('config/signup').set({codeRequired:on,t:gmT(),by:NET.uid});gmLog(on?'가입 코드 필수 켜기':'가입 코드 필수 끄기','','');toast(on?'이제 가입 코드가 있어야 계정을 만들 수 있습니다.':'가입 코드 없이도 계정을 만들 수 있습니다.')}
+  else if(a==='makeCodes'){const n=Math.max(1,Math.min(50,+val('gmCn')||1)),max=Math.max(1,Math.min(1000,+val('gmCm')||1)),ed=+val('gmCe'),note=val('gmCnote').trim(),AL='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',made=[];
+    for(let i=0;i<n;i++){let c='';const r=crypto.getRandomValues(new Uint32Array(8));for(let k=0;k<8;k++)c+=AL[r[k]%AL.length];
+      await db.doc('invites/'+c).set({max,used:0,usedBy:{},note,exp:ed?gmT()+ed*864e5:0,off:false,by:NET.uid,t:gmT()});made.push('CG-'+c.slice(0,4)+'-'+c.slice(4))}
+    gmLog('가입 코드 만들기','',`${n}개 · ${max}회씩${note?' · '+note:''}`);try{await navigator.clipboard.writeText(made.join('\n'))}catch(e){}toast(`가입 코드 ${n}개를 만들었습니다.${n?' 클립보드에 복사했습니다.':''}`)}
   else if(a==='mailTo'){GMX.tab='mail';gmRender()}
   else if(!u&&['patch','ban','unban','mute','unmute'].includes(a)){toast('먼저 유저 탭에서 요원을 선택해 주세요.')}
   else if(a==='patch'){const ops={cr:+val('gmPcr')||0,ap:+val('gmPap')||0,xp:+val('gmPxp')||0,heal:$('gmPheal').checked,runaway:$('gmPrw').checked};const g=val('gmPgr');if(g!=='')ops.grade=+g;
@@ -3713,6 +3767,8 @@ document.addEventListener('click',e=>{
   if(t.dataset.gmdel!=null){gmKeepMail();GMX.draft.splice(+t.dataset.gmdel,1);gmRender();return}
   if(t.dataset.gmsel){if(t.dataset.gogo)GMX.tab='users';gmSelUser(t.dataset.gmsel);return}
   if(t.dataset.gmrecall){NET.db.doc('mail/'+t.dataset.gmrecall).update({exp:gmT()-1}).then(()=>{gmLog('우편 회수',t.dataset.gmrecall,'');toast('우편을 회수했습니다. 아직 받지 않은 사람에게서 사라집니다.')}).catch(()=>toast('회수하지 못했습니다.'));return}
+  if(t.dataset.gmcopy){try{navigator.clipboard.writeText(t.dataset.gmcopy);toast('코드를 복사했습니다.')}catch(_){}return}
+  if(t.dataset.gmcodeoff){NET.db.doc('invites/'+t.dataset.gmcodeoff).update({off:true}).then(()=>{gmLog('가입 코드 중지',t.dataset.gmcodeoff,'');toast('가입 코드를 중지했습니다.')}).catch(()=>toast('중지하지 못했습니다.'));return}
   if(t.dataset.gmhide){NET.db.doc('chat/'+t.dataset.gmhide).update({hidden:true}).then(()=>gmLog('채팅 지우기',t.dataset.gmhide,'')).catch(()=>toast('지우지 못했습니다.'));return}
   if(t.dataset.gmmk){NET.db.doc('market/'+t.dataset.gmmk).update({status:'removed'}).then(()=>{gmLog('장터 판매글 내리기',t.dataset.gmmk,'');toast('판매글을 내렸습니다.')}).catch(()=>toast('내리지 못했습니다.'));return}
   if(t.dataset.gmsetsum)return gmSetSum(t.dataset.gmsetsum,false);
@@ -4221,13 +4277,28 @@ function showForm(mode){
   formMode=mode;const f=$('accForm');f.hidden=false;
   $('accFormT').textContent=mode==='create'?'계정 만들기':'로그인';
   $('accSubmit').textContent=mode==='create'?'계정 만들기':'로그인';
-  $('accPw2Row').hidden=mode!=='create';$('accFormHint').hidden=mode!=='create';
+  $('accPw2Row').hidden=mode!=='create';$('accCodeRow').hidden=mode!=='create';$('accCode').value='';if(mode==='create')loadSignupCfg();$('accFormHint').hidden=mode!=='create';
   $('accPw').setAttribute('autocomplete',mode==='create'?'new-password':'current-password');
   $('accPw').value='';$('accPw2').value='';
   accMsg(mode==='create'?'아이디는 영문 소문자, 숫자, 밑줄(_)로 4~16자를 쓸 수 있습니다.':'만들 때 정한 아이디와 비밀번호를 입력합니다.');
   setTimeout(()=>$('accId').focus(),30);
 }
 const idOK=v=>/^[a-z0-9_]{4,16}$/.test(v);
+/* 가입 코드: GM이 '가입 코드 필수'를 켜면 코드 없이는 계정을 만들 수 없습니다 */
+let codeRequired=false;
+async function loadSignupCfg(){try{const s=await NET.db.doc('config/signup').get();codeRequired=!!(s.exists&&s.data().codeRequired)}catch(e){codeRequired=false}
+  $('accCodeL').textContent=codeRequired?'가입 코드 (필수)':'가입 코드 (선택)'}
+const normCode=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^CG/,'').slice(0,8);
+const fmtCode=c=>'CG-'+c.slice(0,4)+'-'+c.slice(4,8);
+async function checkCode(raw){
+  const c=normCode(raw);if(!c){if(codeRequired)throw {msg:'가입 코드를 입력해 주세요. 운영팀에게 받은 코드가 필요합니다.'};return null}
+  if(c.length!==8)throw {msg:'가입 코드 형식이 맞지 않습니다. CG-XXXX-XXXX 형식입니다.'};
+  let s;try{s=await NET.db.doc('invites/'+c).get()}catch(e){throw {msg:'가입 코드를 확인하지 못했습니다. 잠시 뒤에 다시 시도해 주세요.'}}
+  const d=s.exists?s.data():null;
+  if(!d)throw {msg:'없는 가입 코드입니다.'};if(d.off)throw {msg:'사용이 중지된 가입 코드입니다.'};
+  if(+d.exp&&+d.exp<Date.now())throw {msg:'기간이 지난 가입 코드입니다.'};if((+d.used||0)>=(+d.max||1))throw {msg:'이미 모두 사용된 가입 코드입니다.'};
+  return {c,d};
+}
 function accCreate(){if(!authReady()||ACC.busy)return;showForm('create')}
 function accLogin(){if(!authReady()||ACC.busy)return;showForm('login')}
 $('accCancel').addEventListener('click',()=>{$('accForm').hidden=true;syncAccScreen()});
@@ -4240,8 +4311,11 @@ $('accForm').addEventListener('submit',async e=>{
   ACC.busy=true;$('accSubmit').disabled=true;
   try{
     if(formMode==='create'){
+      accMsg('가입 코드를 확인하는 중입니다.');
+      let inv=null;try{inv=await checkCode($('accCode').value)}catch(er){ACC.busy=false;$('accSubmit').disabled=false;accMsg(er.msg||'가입 코드를 확인하지 못했습니다.',true);return}
       accMsg('계정을 만드는 중입니다.');
       NET.uid=await AUTH().createAccount(id,pw);NET.authed=true;
+      if(inv){try{await NET.db.doc('invites/'+inv.c).update({used:(+inv.d.used||0)+1,usedBy:{[NET.uid]:Date.now()}});S.inviteCode=fmtCode(inv.c)}catch(e){}}
       S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut();
     }else{
       accMsg('로그인하는 중입니다.');
@@ -4849,21 +4923,7 @@ $('accSwitch').addEventListener('click',()=>$('accOut').click());
 $('accCont').addEventListener('click',()=>{if(S.acct&&S.acct.mode==='cloud'&&!cloudOK()){toast('계정 확인이 끝난 뒤에 이어서 할 수 있습니다.');return}if(!S.role){showOnboard();return}showGame()});
 setInterval(()=>{if(!$('account').hidden)syncCont()},1500);
 
-/* 캐릭터 삭제: '삭제'를 입력해야 버튼이 켜집니다. 계정 · 화면 설정 · 친구는 남깁니다. */
-$('delInput').addEventListener('input',()=>{$('delBtn').disabled=$('delInput').value.trim()!=='삭제'||S.phase!=='idle'});
-$('delBtn').addEventListener('click',async()=>{
-  if($('delInput').value.trim()!=='삭제')return;
-  if(S.phase!=='idle'){toast('출동이나 가이딩 중에는 캐릭터를 삭제할 수 없습니다.');return}
-  if(typeof pairActive==='function'&&pairActive()){toast('페어가 있으면 삭제할 수 없습니다. 먼저 두 사람의 동의로 페어를 해제해 주세요.');return}
-  try{if(S.party&&typeof leaveParty==='function')await leaveParty()}catch(e){}
-  const keep={acct:S.acct,theme:S.theme,dayMode:S.dayMode,sound:S.sound,netId:S.netId,mailGot:S.mailGot,welcomeMail:S.welcomeMail,localMail:S.localMail};
-  relWake();S=Object.assign({},JSON.parse(JSON.stringify(DEF)),keep,{items:[],role:null,grade:null,attrs:[],look:null,lookSet:false,name:'',partner:null});
-  previewGrade=null;resetBattle();cine=null;save();
-  if(typeof cloudPut==='function'&&S.acct&&S.acct.mode==='cloud'){try{await cloudPut()}catch(e){}}
-  try{pushPresence()}catch(e){}
-  $('delInput').value='';$('delBtn').disabled=true;$('settings').hidden=true;
-  toast('캐릭터를 삭제했습니다. 새 캐릭터를 만들어 주세요.');showOnboard();
-});
+
 
 /* 등록 화면(역할 · 측정 · 외형) 왼쪽 위 로고를 누르면 타이틀로 돌아갑니다. 측정 결과는 남습니다 */
 document.querySelector('#hdr .brand').addEventListener('click',()=>{if($('game').hidden===false||!$('account').hidden)return;
