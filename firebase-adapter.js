@@ -35,6 +35,8 @@ function boot(){
     })}catch(e){return {acquired:false}}
   }
   const db={
+    /* 트랜잭션: 읽기를 먼저 모두 한 뒤 쓰기. 다른 곳에서 그 사이에 바꾸면 Firestore가 자동으로 다시 시도한다 */
+    tx:fn=>runTransaction(fs,async t=>fn({get:async p=>wrap(await t.get(ref(p))),set:(p,v)=>{t.set(ref(p),v)}})),
     doc:p=>{const r=ref(p);return {
       get:async()=>wrap(await getDoc(r)),
       set:v=>setDoc(r,v),

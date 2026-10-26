@@ -22,6 +22,11 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','settledBy','settledAt','settledMins'])
             && request.resource.data.endAt < request.time.toMillis()));
     }
+    // 게이트 안 가이딩: 가이드가 같은 게이트 센티넬에게 준 가이딩 합계(센티넬 uid 문서)
+    match /gguide/{uid} {
+      allow read: if signedIn();
+      allow write: if signedIn() && notBanned() && request.resource.data.size() < 6;
+    }
     // 함께 닫는 게이트
     match /gates/{gateId} {
       allow read: if signedIn();

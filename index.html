@@ -1312,7 +1312,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
       <p>센티넬은 출동할수록 <b>폭주 게이지</b>가 찹니다. 출동이 끝나면 가이드와 함께 가이딩을 받아 게이지를 낮춥니다.</p>
       <ul><li><b>직접 가이딩</b>: 고리가 가운데 원에 겹칠 때 눌러 호흡을 맞춥니다. 정확할수록 많이 내려갑니다.</li>
       <li><b>자동 가이딩</b>: 화면을 보지 않아도 시간이 지나면 내려갑니다. 게이지가 80 이상이면 자동 가이딩만 쓸 수 있습니다.</li>
-      <li><b>게이트 안 가이딩</b>: 가이드는 게이트 공략 중에 가이딩을 할 수 있습니다. 화면이나 가이딩 단추를 한 번 누르면 그 게이트가 끝날 때까지 5초마다 자동으로 가이딩하며, 함께 싸우는 센티넬의 폭주 게이지가 내려가고 HP가 조금 회복됩니다. 센티넬은 앞에서 싸우고 가이드는 뒤에서 돕습니다.</li>
+      <li><b>게이트 안 가이딩</b>: 가이드는 게이트 공략 중에 가이딩을 할 수 있습니다. 화면이나 가이딩 단추를 한 번 누르면 그 게이트가 끝날 때까지 5초마다 자동으로 가이딩하며, 함께 싸우는 센티넬의 폭주 게이지가 내려가고 HP가 조금 회복됩니다. 센티넬은 앞에서 싸우고 가이드는 뒤에서 돕습니다. 같은 게이트에 플레이어 센티넬이 있으면 NPC 파트너보다 그 플레이어에게 먼저 가이딩합니다.</li>
       <li><b>가이딩 숙련</b>: 휴식 때 호흡 맞추기와 게이트 안 가이딩을 할수록 오릅니다. 단계마다 가이딩 효과가 5%씩(최대 50%) 커집니다.</li>
       <li><b>긴 가이딩</b>: 3분이 넘는 가이딩은 50번 맞추면 남은 시간 동안 자동으로 호흡을 맞춥니다.</li>
       <li><b>함께하는 가이딩</b>: 가이드 플레이어가 가이딩실에서 요청을 받아 도와줄 수 있습니다. 페어가 아닌 가이드에게도 언제든 받을 수 있습니다.</li></ul>
@@ -1568,7 +1568,19 @@ const DEF={v:4,role:null,cr:0,equip:{},dualTrain:false,assist:null,realGuide:nul
   kills:0,midSaid:false,hotSaid:false,bossSaid:false,ringStart:0,lastCycle:-1,stableSaid:false,
   partner:null,selGate:null,curGate:null,localGates:[],items:[],netId:'',log:[]};
 function load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return null}}
-function save(){if(window.__cgKicked)return;S.savedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}try{cloudDirty()}catch(e){}}
+/* 저장은 바로 하지 않고 '저장할 것이 있음'만 표시한 뒤, 브라우저가 한가할 때(최대 1.5초 안) 한 번에 씁니다.
+   내용이 그대로면 기기에도 클라우드에도 쓰지 않습니다. 탭을 닫거나 숨길 때는 즉시 씁니다. */
+let saveDirty=false,saveSched=false,lastLocal='';
+function flushSave(){
+  saveSched=false;if(window.__cgKicked||!saveDirty)return;saveDirty=false;
+  const js=JSON.stringify({...S,savedAt:0});if(js===lastLocal)return;lastLocal=js;
+  S.savedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}try{cloudDirty()}catch(e){}
+}
+function save(){
+  if(window.__cgKicked)return;saveDirty=true;if(saveSched)return;saveSched=true;
+  if(typeof requestIdleCallback==='function')requestIdleCallback(flushSave,{timeout:1500});else setTimeout(flushSave,300);
+}
+addEventListener('pagehide',flushSave);document.addEventListener('visibilitychange',()=>{if(document.hidden)flushSave()});
 let S=Object.assign({},DEF,load()||{});
 if(!S.attrV2){/* 속성 체계 개편 이전 기록을 옮긴다 */
   const mv=a=>Number.isInteger(a)&&a>=0&&a<6?OLD_ATTR[a]:a;
@@ -1821,7 +1833,7 @@ function placeBubble(){
   // 말풍선이 무대 밖으로 나가거나 가장자리에서 좁게 접히지 않도록 위치를 무대 안으로 맞춘다
   const st=el.parentElement,sw=st?st.clientWidth:0,bw=el.offsetWidth,half=bw/2+6;
   let x=mePos.x/W*sw;if(sw)x=Math.max(half,Math.min(sw-half,x));
-  el.style.left=sw?x+'px':(mePos.x/W*100)+'%';el.style.top=((mePos.y-40)/H*100)+'%';
+  el.style.left=sw?x+'px':(mePos.x/W*100)+'%';el.style.top=((mePos.y-(S.phase==='focus'?50:38))/H*100)+'%';
   const ax=sw?(mePos.x/W*sw-x):0;el.style.setProperty('--ax',Math.max(-bw/2+12,Math.min(bw/2-12,ax))+'px');
 }
 /* 전투 중 혼잣말 · 함께 공략할 때 · 가이딩 중 수다 */
@@ -2001,6 +2013,8 @@ playful:{
 };
 for(const p in TALK3)for(const k in TALK3[p]){const cur=TALK[p][k];TALK[p][k]=Array.isArray(cur)?[...cur,...TALK3[p][k]]:cur&&typeof cur==='object'?{g:[...cur.g,...TALK3[p][k]],s:[...cur.s,...TALK3[p][k]]}:[...TALK3[p][k]]}
 /* ═════════ 캐릭터: 작은 도트 (12×16 지도 → 외곽선 → 2배 = 28×36) ═════════ */
+/* 모든 장면에서 캐릭터를 같은 크기로 그립니다(방 · 센터 · 게이트 · 가이딩실 · 훈련장 공통) */
+const CHAR_S=.75;
 const DW=32,DH=36,dollCache=new Map();
 const clampI=(v,n)=>Number.isInteger(v)&&v>=0&&v<n?v:0;
 /* 지도는 14칸 폭입니다. 12칸으로 쓴 줄은 가운데(1칸 들여)에 놓이고, 14칸으로 쓴 줄은 양옆 끝까지 씁니다(트윈테일 · 번 · 땋은 머리용) */
@@ -2549,7 +2563,7 @@ function drawRoom(dt){
   G.drawImage(roomBg(S.role||'sentinel'),0,0);drawRugOverride();drawDecor();drawDecor2();
   if(Math.floor(T*1.5)%4===0){G.globalAlpha=.25;disc(121,53,7,'#FFF3B8');G.globalAlpha=1}
   if(!isNight())[[148,20],[170,24]].forEach(([cx,cy],i)=>{const x=cx+((T*2+i*13)%18)-9;px(x,cy,6,2,'#FFFFFF')});else if(Math.floor(T*1.3)%3===0)px(150+Math.floor(T)%30,18,1,1,'#FFFFFF');
-  if(!(typeof drawPairRoom==='function'&&S.pairUid&&drawPairRoom()))drawHero(S.role||'sentinel',S.look,82,98,{tier:visTier(),attrs:S.attrs||[],dx:0,wp:myWeapon()});
+  if(!(typeof drawPairRoom==='function'&&S.pairUid&&drawPairRoom()))drawHero(S.role||'sentinel',S.look,82,98,{s:CHAR_S,tier:visTier(),attrs:S.attrs||[],dx:0,wp:myWeapon()});
 }
 const lobbyDraw=N=>{
   px(0,0,W,H,'#F3F6FF');px(0,0,W,6,'#E3EAFB');
@@ -3619,11 +3633,11 @@ function drawCenter(dt){
   const ps=NET.peers.map(peerInfo).filter(p=>p.phase!=='focus').slice(0,8);
   ps.forEach((p,i)=>{
     const base=20+((i*41)%150),x=base+Math.sin(T*.4+i*1.7)*12,y=88+(i%3)*6;
-    drawHero(p.role,p.look,x,y,{s:.5,tier:VTIER[p.gr],attrs:p.attrs,dx:Math.cos(T*.4+i*1.7)>0?1:-1,ph:i*.7});
-    G.save();G.font='3.4px sans-serif';G.textAlign='center';G.fillStyle=isGMuid(p.uid)?'rgba(200,140,0,.9)':'rgba(28,36,64,.75)';const nm=(isGMuid(p.uid)?'GM ':'')+(p.nick||'요원');const w=G.measureText(nm).width+3;G.fillRect(x-w/2,y-23,w,5);G.fillStyle='#FFFFFF';G.fillText(nm,x,y-19.6);G.restore();
-    if(p.phase==='break'||p.phase==='auto'){G.globalAlpha=.6+.4*Math.sin(T*4+i);px(x-1,y-30,3,3,'#FF8FA3');G.globalAlpha=1}
+    drawHero(p.role,p.look,x,y,{s:CHAR_S,tier:VTIER[p.gr],attrs:p.attrs,dx:Math.cos(T*.4+i*1.7)>0?1:-1,ph:i*.7});
+    G.save();G.font='3.4px sans-serif';G.textAlign='center';G.fillStyle=isGMuid(p.uid)?'rgba(200,140,0,.9)':'rgba(28,36,64,.75)';const nm=(isGMuid(p.uid)?'GM ':'')+(p.nick||'요원');const w=G.measureText(nm).width+3;G.fillRect(x-w/2,y-30,w,5);G.fillStyle='#FFFFFF';G.fillText(nm,x,y-26.6);G.restore();
+    if(p.phase==='break'||p.phase==='auto'){G.globalAlpha=.6+.4*Math.sin(T*4+i);px(x-1,y-37,3,3,'#FF8FA3');G.globalAlpha=1}
   });
-  drawHero(S.role||'sentinel',S.look,96,96,{s:.75,tier:visTier(),attrs:S.attrs||[],dx:0});
+  drawHero(S.role||'sentinel',S.look,96,96,{s:CHAR_S,tier:visTier(),attrs:S.attrs||[],dx:0});
   // 데스크 직원
   disc(96,64,3,'#5A3A26');px(93,64,7,4,'#FCE3CC');px(94,65,1,1,INK);px(98,65,1,1,INK);px(92,68,9,2,'#2F5BEA');
 }
@@ -3633,7 +3647,7 @@ function drawOffice(dt,working){
   px(54,74,84,4,'#C49562');px(58,78,3,18,'#A8754F');px(131,78,3,18,'#A8754F');
   px(84,58,24,16,'#3A3F55');px(86,60,20,12,working?'#D6F1FF':'#9AA3C2');if(working)for(let i=0;i<4;i++)px(88,62+i*2.5,4+((Math.floor(T*6)+i*3)%12),1,'#2F5BEA');
   px(62,68,12,6,'#FFFFFF');px(64,66,12,6,'#F4F5F9');px(116,68,12,6,'#FFFFFF');
-  drawHero(S.role||'sentinel',S.look,96,98,{s:.75,tier:visTier(),attrs:S.attrs||[],dx:0,atk:working&&Math.floor(T*3)%2?.1:0});
+  drawHero(S.role||'sentinel',S.look,96,98,{s:CHAR_S,tier:visTier(),attrs:S.attrs||[],dx:0,atk:working&&Math.floor(T*3)%2?.1:0});
   if(working&&Math.random()<.04&&!reduce)parts.push({x:70+Math.random()*50,y:66,vx:(Math.random()-.5)*8,vy:-10,life:1,c:'#FFFFFF',g:12});
 }
 
@@ -3973,8 +3987,8 @@ function drawPairRoom(){
   const c=pairOtherCard();if(!c)return false;
   const mood=pairMood(),other=S.role==='guide'?'sentinel':'guide',t=T;
   const turn=mood==='bicker'&&Math.floor(t/3)%3===1;
-  drawHero(S.role||'sentinel',S.look,68,98,{tier:visTier(),attrs:S.attrs||[],dx:turn?-1:1,wp:myWeapon()});
-  drawHero(other,normLook(c.look,other),102,98,{tier:VTIER[clampI(c.gr,7)],attrs:Array.isArray(c.attrs)?c.attrs:[],dx:turn?1:-1,ph:.6});
+  drawHero(S.role||'sentinel',S.look,68,98,{s:CHAR_S,tier:visTier(),attrs:S.attrs||[],dx:turn?-1:1,wp:myWeapon()});
+  drawHero(other,normLook(c.look,other),102,98,{s:CHAR_S,tier:VTIER[clampI(c.gr,7)],attrs:Array.isArray(c.attrs)?c.attrs:[],dx:turn?1:-1,ph:.6});
   G.save();G.font='600 4px "IBM Plex Sans KR",sans-serif';G.textAlign='center';const nm=String(c.nick||S.pairNick||'페어').slice(0,10),w=G.measureText(nm).width+6;
   G.fillStyle='rgba(28,36,64,.65)';G.fillRect(102-w/2,58,w,6);G.fillStyle='#FFFFFF';G.fillText(nm,102,62.5);G.restore();
   if(mood==='love'){for(let i=0;i<3;i++){const ph=(t*.5+i/3)%1;G.globalAlpha=1-ph;heartPx(84+Math.sin(t*2+i*2)*3,72-ph*22,i%2?'#FF8FA3':'#F0544F')}G.globalAlpha=1}
@@ -4105,7 +4119,7 @@ function previewDecor(id){
   const ctx=$('pvCv').getContext('2d');
   const loop=()=>{if(!pvId)return;const p=G;G=ctx;G.setTransform(6,0,0,6,0,0);G.imageSmoothingEnabled=false;
     const od=S.decor,oo=S.decorOn;S.decor=[...new Set([...(od||[]),pvId])];S.decorOn={...(oo||{}),[pvId]:true};
-    try{G.drawImage(roomBg(S.role||'sentinel'),0,0);drawRugOverride();drawDecor();drawDecor2();drawHero(S.role||'sentinel',S.look,82,98,{tier:visTier(),attrs:S.attrs||[],dx:0,wp:myWeapon()})}catch(e){}
+    try{G.drawImage(roomBg(S.role||'sentinel'),0,0);drawRugOverride();drawDecor();drawDecor2();drawHero(S.role||'sentinel',S.look,82,98,{s:CHAR_S,tier:visTier(),attrs:S.attrs||[],dx:0,wp:myWeapon()})}catch(e){}
     S.decor=od;S.decorOn=oo;G=p;pvRaf=requestAnimationFrame(loop)};
   cancelAnimationFrame(pvRaf);loop();
 }
@@ -4389,14 +4403,14 @@ function gateGuide(auto){
   if((c.ggAt||0)>t){if(!auto)pop(`다음 가이딩까지 ${Math.ceil((c.ggAt-t)/1000)}초`,'miss');return}
   const hs=hpNow();if(hs&&hs.down){if(!auto)pop('쓰러져 있어 가이딩할 수 없습니다','miss');return}
   ac();c.ggAt=t+GG_CD;const mul=gMastMul()*(matchN()>0?1.2:1);
-  const cut=Math.round(2.5*mul*10)/10;c.gCut=Math.round(((c.gCut||0)+cut)*10)/10;
+  const cut=Math.round(2.5*mul*10)/10,tg=ggTarget();if(tg)ggSend(tg,cut,.04*mul,1);else c.gCut=Math.round(((c.gCut||0)+cut)*10)/10;
   if(hs&&c.hpNet!=null){const heal=Math.round(hs.max*.04*mul);newSeg(t,{});c.seg.hp0=Math.min(hs.max,hs.hp+heal);floats.push({x:76,y:60,n:'+'+heal,c:'#6CE38A',t:.9})}
   S.bond=(S.bond||0)+1;c.ggN=(c.ggN||0)+1;
   ggFx=1;beep(880,.08,'triangle',.04);beep(1175,.12,'triangle',.035,.08);
-  if(!auto||!document.hidden)pop(`가이딩! 폭주 -${cut}`,'good');save();updateUI();
+  if(!auto||!document.hidden)pop(tg?`${tg.nick} 가이딩! 폭주 -${cut}`:`가이딩! 폭주 -${cut}`,'good');save();updateUI();
 }
 /* 한 번 누르면 그 게이트가 끝날 때까지 5초마다 자동으로 가이딩합니다. 탭을 닫아 두었다가 돌아오면 밀린 만큼 한꺼번에 계산합니다 */
-function ggCatchUp(){const c=S.curGate;if(S.phase!=='focus'||S.role!=='guide'||!c||!c.ggAuto)return;const end=Math.min(now(),S.phaseEnd);let n=0;while((c.ggAt||0)<=end&&n<800){const s0=hpSeg(),at=Math.max(c.ggAt||end,s0?s0.t0:0);const hs=hpNow(at);c.ggAt=at+GG_CD;n++;if(hs&&hs.down)continue;const mul=gMastMul()*(matchN()>0?1.2:1);c.gCut=Math.round(((c.gCut||0)+Math.round(2.5*mul*10)/10)*10)/10;if(hs&&c.hpNet!=null){newSeg(at,{});c.seg.hp0=Math.min(hs.max,hs.hp+Math.round(hs.max*.04*mul))}S.bond=(S.bond||0)+1;c.ggN=(c.ggN||0)+1}if(n){if(!document.hidden&&!cine){ggFx=1;beep(880,.06,'triangle',.03)}save()}}
+function ggCatchUp(){const c=S.curGate;if(S.phase!=='focus'||S.role!=='guide'||!c||!c.ggAuto)return;const end=Math.min(now(),S.phaseEnd);let n=0,tc=0,th=0;const tg=ggTarget();while((c.ggAt||0)<=end&&n<800){const s0=hpSeg(),at=Math.max(c.ggAt||end,s0?s0.t0:0);const hs=hpNow(at);c.ggAt=at+GG_CD;n++;if(hs&&hs.down)continue;const mul=gMastMul()*(matchN()>0?1.2:1),ct=Math.round(2.5*mul*10)/10;if(tg){tc+=ct;th+=.04*mul}else c.gCut=Math.round(((c.gCut||0)+ct)*10)/10;if(hs&&c.hpNet!=null){newSeg(at,{});c.seg.hp0=Math.min(hs.max,hs.hp+Math.round(hs.max*.04*mul))}S.bond=(S.bond||0)+1;c.ggN=(c.ggN||0)+1}if(tg&&tc>0)ggSend(tg,Math.round(tc*10)/10,th,n);if(n){if(!document.hidden&&!cine){ggFx=1;beep(880,.06,'triangle',.03)}save()}}
 setInterval(()=>{if(!cine)ggCatchUp()},1000);
 let ggFx=0;
 function say(key){
@@ -4594,7 +4608,7 @@ function fxUpdate(dt,bx,gate){
   mons.forEach((mm,i)=>{mm.ac=(mm.ac??(1+Math.random()*1.5))-dt;mm.lg=Math.max(0,(mm.lg||0)-dt);
     if(mm.ac<=0){mm.ac=1.8+Math.random()*1.6;
       if(MON_FLY.has(mm.type)&&mm.x<170)bfx.push({k:'orb',x:mm.x-5,y:72,vx:-70,c:'#FF8FA3'});
-      else if(mm.x<=bx+12.5+i*16+1){mm.lg=.25;bfx.push({k:'slash',x:bx+5,y:80,t:.25,d:.1,c:'#FFFFFF'});bfx.push({k:'hitme',t:.35,small:true})}}});
+      else if(mm.x<=bx+15.5+i*16+1){mm.lg=.25;bfx.push({k:'slash',x:bx+5,y:80,t:.25,d:.1,c:'#FFFFFF'});bfx.push({k:'hitme',t:.35,small:true})}}});
   bfx=bfx.filter(f=>{
     if(f.d>0){f.d-=dt;return true}
     if(f.k==='drop'){f.y+=f.vy*dt;if(f.y>=90){burst(f.x,90,[f.c,'#FFFFFF'],3,16,0);return false}return true}
@@ -4638,8 +4652,8 @@ function battleUpdate(dt,bx,berserk,gate,gx,frontS){
   const mhp=12+gate.g*7;
   if(frac<.6&&spawnT<=0&&mons.length<3){mons.push({x:180,type:gate.raid?pick([0,1,2,4,5,6,7,8,9,10,11]):gate.train?3:pick(dist.mon),hp:mhp,max:mhp,flash:0,ph:Math.random()*6});spawnT=2.2+Math.random()*1.4}
   atkCD-=dt;atkT=Math.max(0,atkT-dt);gCD-=dt;gAtk=Math.max(0,gAtk-dt);
-  mons.forEach((mm,i)=>{mm.x=Math.max(bx+12+i*16,mm.x-12*dt);mm.flash=Math.max(0,mm.flash-dt)});
-  if(boss){boss.x=Math.max(bx+(mons.length?30+mons.length*16:23),boss.x-8*dt);boss.flash=Math.max(0,boss.flash-dt)}
+  mons.forEach((mm,i)=>{mm.x=Math.max(bx+15+i*16,mm.x-12*dt);mm.flash=Math.max(0,mm.flash-dt)});
+  if(boss){boss.x=Math.max(bx+(mons.length?33+mons.length*16:26),boss.x-8*dt);boss.flash=Math.max(0,boss.flash-dt)}
   const satt=ATTRS[si.attrs[0]??2];
   const hit=(t,dmg,c,big)=>{
     t.flash=.14;floats.push({x:t.x-4+Math.random()*6,y:t===boss?56:70,n:dmg,c,t:.8});
@@ -4648,7 +4662,7 @@ function battleUpdate(dt,bx,berserk,gate,gx,frontS){
     if(t!==boss){t.hp-=dmg;if(big)t.x+=5;
       if(t.hp<=0){burst(t.x,82,[col,shade(col,.5),'#FFFFFF'],16);mons.splice(mons.indexOf(t),1);S.kills++}}
   };
-  const f=mons[0],target=f&&f.x<=bx+12.5?f:(!f&&boss&&boss.x<=bx+23.5?boss:null);
+  const f=mons[0],target=f&&f.x<=bx+15.5?f:(!f&&boss&&boss.x<=bx+26.5?boss:null);
   const hs=hpNow(),dn=hs&&hs.down,dm=(1+((gate.dmg||0)/100))*(gate.aff||1),cr=()=>Math.random()*100<(gate.crit||5);
   if(target&&atkCD<=0&&(frontS??S.role!=='guide')&&!(S.role==='sentinel'&&dn&&gx===bx)){atkCD=berserk?.32:.6;atkT=.22;const c=cr();
     hit(target,Math.round((3+powerOf(si.lv,si.gr)*.9+Math.random()*3)*(1+.1*n)*(berserk?2:1)*(S.role==='sentinel'?myMast():1)*dm*(c?2:1)),c?'#FFB627':berserk?'#F0544F':'#FFFFFF',true);if(c)floats.push({x:target.x,y:(target===boss?48:62),n:'치명!',c:'#FFB627',t:.8})}
@@ -4692,7 +4706,7 @@ function allySlots(gate){
 }
 /* 줄 세우기: 센티넬이 앞에서 싸우고 가이드는 뒤에서 돕습니다. 같은 역할끼리는 플레이어 → NPC, 그다음 UID 순서라
    같은 게이트의 모든 플레이어가 같은 순서로 봅니다. 맨 앞(76) 자리가 몬스터와 맞붙는 자리입니다. */
-const LINE_POS=[[76,92],[56,92],[40,88],[24,92]];
+const LINE_POS=[[76,92],[56,92],[37,89],[18,92]];
 function lineup(gate){
   const meE={me:true,role:S.role||'sentinel',uid:NET.uid||'~me',npc:false};
   const al=(!cine&&S.curGate&&!gate.train&&!gate.report)?allySlots(gate):[];
@@ -4703,9 +4717,9 @@ function lineup(gate){
 function drawAllies(dt,gate,line){
   line.forEach((a,i)=>{if(a.me)return;const x=a.x,fy=a.fy;
     const atk=a.front?(a.role==='sentinel'?atkT:0):(Math.sin(T*2+i*1.3)>.85?.2:0);
-    drawHero(a.role,a.look,x-(a.front&&heroHit>0?2:0),fy,{s:.5,wp:a.wp,wa:a.wa,tier:a.tier,attrs:a.attrs,dx:1,ph:i+.3,atk});
+    drawHero(a.role,a.look,x-(a.front&&heroHit>0?2:0),fy,{s:CHAR_S,wp:a.wp,wa:a.wa,tier:a.tier,attrs:a.attrs,dx:1,ph:i+.3,atk});
     if(!reduce&&Math.random()<dt*.6)burst(x+10,fy-12,['#FFFFFF',ATTRS[(a.attrs||[])[0]??0].col],3,18,0);
-    if(!a.npc){G.save();G.font='600 3.4px "IBM Plex Sans KR",sans-serif';G.textAlign='center';const nm=(isGMuid(a.uid)?'GM ':'')+String(a.nick).slice(0,8),w=G.measureText(nm).width+4;G.fillStyle=isGMuid(a.uid)?'rgba(200,140,0,.92)':a.away?'rgba(120,128,150,.85)':'rgba(47,91,234,.85)';G.fillRect(x-w/2,fy-24,w,4.6);G.fillStyle='#fff';G.fillText(nm,x,fy-20.6);G.restore()}});
+    if(!a.npc){G.save();G.font='600 3.4px "IBM Plex Sans KR",sans-serif';G.textAlign='center';const nm=(isGMuid(a.uid)?'GM ':'')+String(a.nick).slice(0,8),w=G.measureText(nm).width+4;G.fillStyle=isGMuid(a.uid)?'rgba(200,140,0,.92)':a.away?'rgba(120,128,150,.85)':'rgba(47,91,234,.85)';G.fillRect(x-w/2,fy-31,w,4.6);G.fillStyle='#fff';G.fillText(nm,x,fy-27.6);G.restore()}});
 }
 function drawBattle(dt){
   const gate=cine?cine.gate:S.curGate;if(!gate)return;
@@ -4729,16 +4743,16 @@ function drawBattle(dt){
   if(!cine)drawAllies(dt,gate,line);
   if(!cine)battleUpdate(dt,bx,rw>=100,gate,mx,line[0]&&line[0].role==='sentinel');
   const hs=!cine&&!gate.train?hpNow():null;
-  if(hs&&hs.down){G.globalAlpha=.45;drawHero(me,S.look,mx,my,{s:.5,tier:visTier(),attrs:S.attrs||[],still:true,dx:1});G.globalAlpha=1;
-    px(mx-9,my+1,18,2,'rgba(28,36,64,.25)');G.save();G.font='bold 4.5px sans-serif';G.textAlign='center';G.fillStyle='#FFFFFF';G.strokeStyle='rgba(28,36,64,.8)';G.lineWidth=1.4;const t='부활까지 '+mmss(hs.left);G.strokeText(t,mx,my-30);G.fillText(t,mx,my-30);G.restore();
+  if(hs&&hs.down){G.globalAlpha=.45;drawHero(me,S.look,mx,my,{s:CHAR_S,tier:visTier(),attrs:S.attrs||[],still:true,dx:1});G.globalAlpha=1;
+    px(mx-9,my+1,18,2,'rgba(28,36,64,.25)');G.save();G.font='bold 4.5px sans-serif';G.textAlign='center';G.fillStyle='#FFFFFF';G.strokeStyle='rgba(28,36,64,.8)';G.lineWidth=1.4;const t='부활까지 '+mmss(hs.left);G.strokeText(t,mx,my-38);G.fillText(t,mx,my-38);G.restore();
     if(Math.random()<dt*2)parts.push({x:mx-4+Math.random()*8,y:my-12,vx:0,vy:-6,life:1,c:'#7DD181',g:0})}
-  else drawHero(me,S.look,mx-(mine.front&&heroHit>0?2:0),my,{s:.5,wp:myWeapon(),wa:myWeaponAttr(),tier:visTier(),attrs:S.attrs||[],atk:cine?0:(me==='guide'?gAtk:mine.front?atkT:0),rw:me==='sentinel'?rw:0,berserk:me==='sentinel'&&rw>=100,dx:1});
+  else drawHero(me,S.look,mx-(mine.front&&heroHit>0?2:0),my,{s:CHAR_S,wp:myWeapon(),wa:myWeaponAttr(),tier:visTier(),attrs:S.attrs||[],atk:cine?0:(me==='guide'?gAtk:mine.front?atkT:0),rw:me==='sentinel'?rw:0,berserk:me==='sentinel'&&rw>=100,dx:1});
   /* 내 HP: 내 캐릭터 머리 위에 크게 표시합니다 */
-  if(hs){const w=26,f=hs.hp/hs.max,y0=my-34;px(mx-w/2-1,y0,w+2,5,'rgba(28,36,64,.85)');px(mx-w/2,y0+1,w,3,'#3A2A3A');px(mx-w/2,y0+1,Math.round(w*f),3,f>.5?'#6CE38A':f>.25?'#FFC23D':'#F0544F');px(mx-w/2,y0+1,Math.round(w*f),1,'rgba(255,255,255,.45)');
+  if(hs){const w=26,f=hs.hp/hs.max,y0=my-42;px(mx-w/2-1,y0,w+2,5,'rgba(28,36,64,.85)');px(mx-w/2,y0+1,w,3,'#3A2A3A');px(mx-w/2,y0+1,Math.round(w*f),3,f>.5?'#6CE38A':f>.25?'#FFC23D':'#F0544F');px(mx-w/2,y0+1,Math.round(w*f),1,'rgba(255,255,255,.45)');
     if(!hs.down){G.save();G.font='bold 4.2px "IBM Plex Sans KR",sans-serif';G.textAlign='center';G.lineWidth=1.3;G.strokeStyle='rgba(28,36,64,.9)';const t=`HP ${hs.hp}/${hs.max}`;G.strokeText(t,mx,y0-1.2);G.fillStyle='#FFFFFF';G.fillText(t,mx,y0-1.2);G.restore()}}
   if(!cine){drawShots();drawFx(bx);
-    if(ggFx>0){ggFx=Math.max(0,ggFx-dt*1.2);const tx=bx,r=(1-ggFx)*26;G.globalAlpha=ggFx;circle(mx,my-12,4+r*.6,'#6CE38A');for(let i=0;i<6;i++){const k=((1-ggFx)+i/6)%1;px(mx+(tx-mx)*k,74-Math.sin(k*Math.PI)*10,2,2,i%2?'#FFFFFF':'#9FF0B5')}G.globalAlpha=1}
-    if(S.role==='guide'&&S.phase==='focus'&&S.curGate&&!S.curGate.train&&(S.curGate.ggAt||0)<=now()&&Math.floor(T*2)%2){G.save();G.font='bold 4px sans-serif';G.textAlign='center';G.fillStyle='#21A574';G.fillText(S.curGate.ggAuto?'자동 가이딩':'가이딩 준비',mx,my-41);G.restore()}}
+    if(ggFx>0){ggFx=Math.max(0,ggFx-dt*1.2);const tgu=ggTarget(),tl=tgu&&line.find(e=>e.uid===tgu.uid),tx=tl?tl.x:bx,r=(1-ggFx)*26;G.globalAlpha=ggFx;circle(mx,my-12,4+r*.6,'#6CE38A');for(let i=0;i<6;i++){const k=((1-ggFx)+i/6)%1;px(mx+(tx-mx)*k,74-Math.sin(k*Math.PI)*10,2,2,i%2?'#FFFFFF':'#9FF0B5')}G.globalAlpha=1}
+    if(S.role==='guide'&&S.phase==='focus'&&S.curGate&&!S.curGate.train&&(S.curGate.ggAt||0)<=now()&&Math.floor(T*2)%2){G.save();G.font='bold 4px sans-serif';G.textAlign='center';G.fillStyle='#21A574';G.fillText(S.curGate.ggAuto?'자동 가이딩':'가이딩 준비',mx,my-49);G.restore()}}
   G.restore();
 }
 const RING_P=1800,RING_TARGET=10;
@@ -4757,9 +4771,9 @@ function drawLobby(dt){
   const sx=inB?86:80,gx=inB?106:112;
   let sl=H_.s.look,gl=H_.g.look;
   if(S.assist)sl=S.assist.slook;else if(S.realGuide&&S.role==='sentinel')gl=S.realGuide.look;
-  drawHero('sentinel',sl,sx,98,{s:.5,tier:S.assist?2:H_.s.tier,attrs:H_.s.attrs,rw:S.assist?Math.max(0,S.assist.rw-S.assist.taps*7):S.phase==='auto'?liveRunaway():S.runaway,dx:1});
-  drawHero('guide',gl,gx,98,{s:.5,tier:H_.g.tier,attrs:H_.g.attrs,dx:-1,ph:.5});
-  if(S.realGuide||S.assist){G.save();G.font='bold 3.6px sans-serif';G.textAlign='center';G.fillStyle='#2F5BEA';G.fillText('플레이어',S.assist?sx:gx,78);G.restore()}
+  drawHero('sentinel',sl,sx,98,{s:CHAR_S,tier:S.assist?2:H_.s.tier,attrs:H_.s.attrs,rw:S.assist?Math.max(0,S.assist.rw-S.assist.taps*7):S.phase==='auto'?liveRunaway():S.runaway,dx:1});
+  drawHero('guide',gl,gx,98,{s:CHAR_S,tier:H_.g.tier,attrs:H_.g.attrs,dx:-1,ph:.5});
+  if(S.realGuide||S.assist){G.save();G.font='bold 3.6px sans-serif';G.textAlign='center';G.fillStyle='#2F5BEA';G.fillText('플레이어',S.assist?sx:gx,70);G.restore()}
   if(inB){for(let x=sx+7;x<gx-7;x++)if((x+Math.floor(T*10))%3===0)px(x,86,1,1,'#FFC23D');drawRing(S.phase==='auto')}
 }
 function drawMap(dt){
@@ -4781,8 +4795,8 @@ function drawMap(dt){
 function drawGym(dt){
   G.drawImage(trainBgFit(),0,0);const H_=heroLooks(),sw=(T*1.1)%1.8<.22;
   drawMon(3,'#000',150,92,{});drawMon(3,'#000',174,92,{ph:1});
-  drawHero(S.role||'sentinel',S.look,104,92,{s:.5,wp:myWeapon(),wa:myWeaponAttr(),tier:visTier(),attrs:S.attrs||[],dx:1,atk:sw?.2:0});
-  NET.peers.map(peerInfo).filter(p=>p.phase==='focus'&&p.gate&&p.gate.startsWith('tr')).slice(0,2).forEach((p,i)=>drawHero(p.role,p.look,64-i*22,92,{s:.5,tier:VTIER[p.gr],attrs:p.attrs,dx:1,ph:i,atk:Math.sin(T*3+i)>.8?.2:0}));
+  drawHero(S.role||'sentinel',S.look,104,92,{s:CHAR_S,wp:myWeapon(),wa:myWeaponAttr(),tier:visTier(),attrs:S.attrs||[],dx:1,atk:sw?.2:0});
+  NET.peers.map(peerInfo).filter(p=>p.phase==='focus'&&p.gate&&p.gate.startsWith('tr')).slice(0,2).forEach((p,i)=>drawHero(p.role,p.look,64-i*22,92,{s:CHAR_S,tier:VTIER[p.gr],attrs:p.attrs,dx:1,ph:i,atk:Math.sin(T*3+i)>.8?.2:0}));
   if(sw&&Math.random()<.25)burst(144,78,['#FFFFFF','#FFE27A'],3,20,0);
 }
 function draw(dt){
@@ -4815,6 +4829,7 @@ async function completeFocus(early){
   if(S.phase!=='focus')return;
   /* 탭을 닫아 둔 동안 밀린 자동 가이딩 · 보스 스킬 · 물약을 먼저 모두 계산한 뒤 결과를 냅니다 */
   try{ggCatchUp()}catch(e){}
+  try{await ggPull()}catch(e){}
   hpAdvance();
   const gate=S.curGate,eff=effMs(),hs=hpNow(),downMin=hs?Math.min(eff/60000,hs.downMin):0,effMin=Math.max(0,eff/60000-downMin),rw=liveRunaway(),bg=document.hidden;
   /* 대미지 · 치명타는 봉인 기여를 최대 30%까지만 올립니다. 장비가 아무리 좋아도 혼자 게이트를 순식간에 닫을 수는 없다 */
@@ -4954,7 +4969,7 @@ function useItem(id,slot){
 /* ═════════ 훈련 종류별 장면 ═════════ */
 let orbs=[];
 function drawTraining(id,dt){
-  const me=S.role||'sentinel',o={s:.5,tier:visTier(),attrs:S.attrs||[],dx:1,wp:myWeapon()};
+  const me=S.role||'sentinel',o={s:CHAR_S,tier:visTier(),attrs:S.attrs||[],dx:1,wp:myWeapon()};
   if(id==='tr10'){ // 기초 체력: 러닝머신 달리기 · 아령
     G.drawImage(trainBgFit(),0,0);
     px(70,90,40,4,'#3A3F55');for(let x=0;x<40;x+=4)px(70+((x+T*40)%40),91,2,1,'#7A809A');px(104,72,3,18,'#5A607A');px(100,70,10,3,'#5A607A');
@@ -4979,7 +4994,7 @@ function drawTraining(id,dt){
     G.drawImage(trainBgField(),0,0);
     const lap=(T*24)%(W+30)-15,jump=Math.abs(lap-127)<10?Math.sin((lap-117)/20*Math.PI)*8:0;
     drawHero(me,S.look,lap,88-jump,{...o,still:false,ph:T*3});
-    NET.peers.map(peerInfo).filter(p=>p.phase==='focus'&&p.gate==='trall').slice(0,2).forEach((p,i)=>drawHero(p.role,p.look,(lap-30-i*24+W+30)%(W+30)-15,90,{s:.5,tier:VTIER[p.gr],attrs:p.attrs,dx:1,ph:T*3+i}));
+    NET.peers.map(peerInfo).filter(p=>p.phase==='focus'&&p.gate==='trall').slice(0,2).forEach((p,i)=>drawHero(p.role,p.look,(lap-30-i*24+W+30)%(W+30)-15,90,{s:CHAR_S,tier:VTIER[p.gr],attrs:p.attrs,dx:1,ph:T*3+i}));
     sceneLabel(`${Math.floor(effMs()/60000)}분째 · 종합 훈련`,96,30);
   }else{ // 각성 집중: 명상 · 차오르는 오라
     G.drawImage(trainBgZen(),0,0);
@@ -5065,6 +5080,43 @@ function watchGMs(){
 setInterval(()=>{try{watchGMs()}catch(e){}},5000);
 const isGMuid=uid=>!!uid&&GMSET.ids.has(uid);
 const gmTag=uid=>isGMuid(uid)?'<i class="gmmark" title="운영자">GM</i>':'';
+
+/* ── 게이트 안 가이딩: 플레이어 우선 ──
+   같은 게이트에 플레이어 센티넬이 있으면, 가이드의 가이딩은 NPC 파트너 대신 그 센티넬에게 갑니다.
+   가이드는 gguide/{센티넬 uid} 문서에 자기가 준 폭주 감소 · 회복 합계를 적고, 센티넬 화면은 그 차이만큼 받아 적용합니다.
+   센티넬이 탭을 닫아 두었어도 합계로 남아 있으므로, 돌아오면 한꺼번에 받습니다. */
+function ggTarget(){
+  if(S.role!=='guide'||!S.curGate||!online())return null;
+  const ps=peersOn(S.curGate.id).filter(p=>p.role==='sentinel'&&p.uid).sort((a,b)=>String(a.uid).localeCompare(String(b.uid)));
+  for(const p of ps){const so=SORTIE.list.find(x=>x.uid===p.uid&&x.gate===S.curGate.id);if(so)return {uid:p.uid,nick:p.nick||'센티넬',ps:+so.startAt}}
+  return null;
+}
+const GG_SENT={};
+function ggSend(tg,cut,healPct,n){
+  const k=tg.uid+'|'+tg.ps,cur=GG_SENT[k]||(S.curGate.ggSent&&S.curGate.ggSent[k])||{cut:0,hp:0,n:0};
+  const nx={cut:Math.round((cur.cut+cut)*10)/10,hp:Math.round((cur.hp+healPct)*1000)/1000,n:cur.n+n};GG_SENT[k]=nx;
+  S.curGate.ggSent={...(S.curGate.ggSent||{}),[k]:nx};
+  NET.db.doc('gguide/'+tg.uid).update({ps:tg.ps,g:{[NET.uid]:{...nx,nick:(S.name||'가이드').slice(0,10),t:now()}}}).catch(()=>{});
+  if(!S.curGate.ggTo||S.curGate.ggTo!==tg.uid){S.curGate.ggTo=tg.uid;toastLater(`같은 게이트의 ${tg.nick} 센티넬에게 우선으로 가이딩합니다.`)}
+}
+/* 센티넬: 받은 가이딩 적용 */
+const GGR={sub:null,ps:0};
+function ggApply(d){
+  const c=S.curGate;if(!d||S.phase!=='focus'||!c||+d.ps!==S.phaseStart||!d.g)return;
+  let cut=0,hp=0,who=[];for(const k in d.g){const v=d.g[k];if(!v||k===NET.uid)continue;cut+=+v.cut||0;hp+=+v.hp||0;who.push(String(v.nick||'가이드'))}
+  const dc=Math.max(0,cut-(c.ggRecvCut||0)),dh=Math.max(0,hp-(c.ggRecvHp||0));if(dc<=0&&dh<=0)return;
+  c.ggRecvCut=cut;c.ggRecvHp=hp;c.gCut=Math.round(((c.gCut||0)+dc)*10)/10;
+  const hs=hpNow();if(hs&&!hs.down&&c.hpNet!=null&&dh>0){newSeg(now(),{});c.seg.hp0=Math.min(hs.max,hs.hp+Math.round(hs.max*Math.min(1,dh)))}
+  if(!c.ggFrom){c.ggFrom=1;toastLater(`${who[0]} 가이드가 이 게이트에서 가이딩해 주고 있습니다.`)}
+  if(!document.hidden&&!cine){ggFx=1;pop(`${who[0]}의 가이딩! 폭주 -${Math.round(dc*10)/10}`,'good')}
+  save();
+}
+async function ggPull(){if(S.role!=='sentinel'||!online()||S.phase!=='focus')return;const s=await NET.db.doc('gguide/'+NET.uid).get();ggApply(s.exists?s.data():null)}
+setInterval(()=>{
+  if(!online())return;const want=S.role==='sentinel'&&S.phase==='focus'&&S.curGate&&!S.curGate.train&&!S.curGate.report;
+  if(want&&!GGR.sub){try{GGR.sub=NET.db.doc('gguide/'+NET.uid).onSnapshot(s=>ggApply(s.exists?s.data():null),()=>{})}catch(e){}}
+  else if(!want&&GGR.sub){try{GGR.sub()}catch(e){}GGR.sub=null}
+},2000);
 /* ═════════ 계정 · 클라우드 저장 (Firebase 판) ═════════
    계정으로 로그인해야만 게임을 할 수 있습니다. 아이디와 비밀번호로 계정을 만듭니다.
    (Firebase에는 아이디@closegate.game 형태의 가짜 이메일로 저장합니다. 메일은 보내지 않습니다.)
@@ -5078,7 +5130,27 @@ const AUTH=()=>window.closeGateAuth||null;
 const authReady=()=>!!(NET.db&&AUTH());
 const cloudOK=()=>!!(authReady()&&NET.authed&&NET.uid&&AUTH().isMember());
 const cloudRef=()=>NET.db.doc('data/users/'+NET.uid+'/save');
-async function cloudGet(){const s=await cloudRef().get();return s.exists?s.data():null}
+/* ── 나눠 저장(v2) ──
+   data/users/<uid>/save : 기본 정보(json) + 저장 번호(rev) + 시각
+   data/users/<uid>/bag  : 가방 · 장비 · 준비해 둔 물약
+   data/users/<uid>/misc : 업적 · 기록 · 개인 우편 · 혼자 모드 게이트 등
+   바뀐 덩어리만, 트랜잭션 한 번으로 함께 올립니다(모두 올라가거나 모두 안 올라감). */
+const PARTS={bag:['items','equip','nextBuff'],misc:['ach','log','localMail','localGates','raidClaimed','chatSeen','pendingRolls','mast','attrEnh']};
+const SKIPK=new Set(['savedAt','cloudRev']);
+function partsOf(){
+  const inPart={};for(const k in PARTS)PARTS[k].forEach(x=>inPart[x]=k);
+  const o={core:{},bag:{},misc:{}};for(const k in S){if(SKIPK.has(k))continue;o[inPart[k]||'core'][k]=S[k]}
+  return {core:JSON.stringify(o.core),bag:JSON.stringify(o.bag),misc:JSON.stringify(o.misc)};
+}
+const partRef=n=>NET.db.doc('data/users/'+NET.uid+'/'+n);
+/* 클라우드 기록을 하나로 합쳐 돌려줍니다(예전 통짜 기록도 그대로 읽습니다) */
+async function cloudGet(){
+  const s=await cloudRef().get();if(!s.exists)return null;const d=s.data();
+  if(d.v!==2)return d;
+  const [b,m]=await Promise.all([partRef('bag').get(),partRef('misc').get()]);
+  let all={};try{all={...JSON.parse(d.json||'{}'),...JSON.parse((b.exists&&b.data().json)||'{}'),...JSON.parse((m.exists&&m.data().json)||'{}')}}catch(e){return null}
+  return {json:JSON.stringify(all),at:d.at,rev:d.rev,v:2};
+}
 /* 한 계정은 한 화면에서만: 다른 브라우저 · 기기에서 접속하면 먼저 있던 화면은 연결이 끊기고 더는 저장하지 않습니다.
    서로 다른 화면이 번갈아 저장하면서 기록(측정 결과 · 능력치)이 덮어써지는 일을 막습니다. */
 const SID=Math.random().toString(36).slice(2,10)+Date.now().toString(36);
@@ -5101,14 +5173,41 @@ async function cloudCommit(){
   for(let i=0;i<50&&ACC.pushing;i++)await new Promise(r=>setTimeout(r,100));
   return await cloudPut();
 }
+/* 저장 번호(rev): 올릴 때마다 1씩 늘립니다. 트랜잭션 안에서 클라우드 번호를 확인하므로, 두 기기가 동시에 저장해도
+   더 새 기록을 덮어쓰지 못합니다. 번호가 더 크면 덮어쓰지 않고 그 기록을 받아 옵니다. */
+function adoptNewer(ex){
+  const data=JSON.parse(ex.json);data.acct=S.acct;data.savedAt=+ex.at||Date.now();data.cloudRev=+ex.rev||0;
+  try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}window.__cgKicked=true;ACC.kicked=true;
+  toastLater('다른 곳에서 저장한 더 새 기록이 있어 그 기록을 불러옵니다.');setTimeout(()=>location.reload(),800);
+}
 async function cloudPut(force){
   if(!force&&!ACC.synced)return false;
-  if(!cloudOK()||ACC.pushing||ACC.kicked)return false;ACC.pushing=true;
-  try{await cloudRef().set({json:JSON.stringify(S),at:Date.now(),name:(S.name||'').slice(0,10),lv:myLevel()});ACC.dirty=false;ACC.lastPush=Date.now();renderAcc();return true}
+  if(!cloudOK()||ACC.pushing||ACC.kicked)return false;
+  try{flushSave()}catch(e){}
+  const P=partsOf(),last=ACC.last||{},ch=Object.keys(P).filter(k=>force||P[k]!==last[k]);
+  if(!ch.length){ACC.dirty=false;return true}
+  ACC.pushing=true;
+  try{
+    let conflict=false;const at=Date.now();
+    await NET.db.tx(async t=>{
+      const cur=await t.get('data/users/'+NET.uid+'/save');const d=cur.exists?cur.data():null,r=d?(+d.rev||0):0;
+      if(!force&&r>(+S.cloudRev||0)){conflict=true;return}
+      const rev=Math.max(r,+S.cloudRev||0)+1;
+      /* 예전 통짜 기록에서 처음 옮길 때는 세 덩어리를 모두 씁니다 */
+      const all=(!d||d.v!==2)?Object.keys(P):ch;
+      t.set('data/users/'+NET.uid+'/save',{v:2,json:P.core,rev,at,name:(S.name||'').slice(0,10),lv:myLevel()});
+      if(all.includes('bag'))t.set('data/users/'+NET.uid+'/bag',{json:P.bag,rev,at});
+      if(all.includes('misc'))t.set('data/users/'+NET.uid+'/misc',{json:P.misc,rev,at});
+      S.cloudRev=rev;
+    });
+    if(conflict){const ex=await cloudGet();if(ex&&typeof ex.json==='string')adoptNewer(ex);return false}
+    ACC.last=P;ACC.dirty=false;ACC.lastPush=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAcc();return true}
   catch(e){return false}finally{ACC.pushing=false}
 }
-function cloudDirty(){if(S.acct&&S.acct.mode==='cloud')ACC.dirty=true}
-setInterval(()=>{if(ACC.dirty&&S.acct&&S.acct.mode==='cloud'&&Date.now()-ACC.lastPush>15000)cloudPut()},3000);
+function cloudDirty(){if(S.acct&&S.acct.mode==='cloud'){if(!ACC.dirty)ACC.dirtyAt=Date.now();ACC.dirty=true}}
+/* 바뀐 내용이 있으면 2초 안에 클라우드에 올립니다(같은 내용이면 올리지 않고, 최소 4초 간격) */
+setInterval(()=>{if(ACC.dirty&&S.acct&&S.acct.mode==='cloud'&&Date.now()-ACC.lastPush>4000&&Date.now()-(ACC.dirtyAt||0)>1500)cloudPut()},1000);
+addEventListener('pagehide',()=>{if(ACC.dirty)cloudPut()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&ACC.dirty)cloudPut()});
 
 function accMsg(t,warn){const n=$('accNote');n.textContent=t;n.classList.toggle('warn',!!warn)}
@@ -5193,8 +5292,8 @@ $('accForm').addEventListener('submit',async e=>{
       NET.uid=await AUTH().signIn(id,pw);NET.authed=true;
       const ex=await cloudGet();
       if(ex&&typeof ex.json==='string'){
-        const data=JSON.parse(ex.json);data.acct={mode:'cloud',since:(data.acct&&data.acct.since)||Date.now(),id};data.savedAt=+ex.at||Date.now();
-        try{localStorage.setItem(KEY,JSON.stringify(data))}catch(err){}
+        const data=JSON.parse(ex.json);data.acct={mode:'cloud',since:(data.acct&&data.acct.since)||Date.now(),id};data.savedAt=+ex.at||Date.now();data.cloudRev=+ex.rev||0;
+        window.__cgKicked=true;try{localStorage.setItem(KEY,JSON.stringify(data))}catch(err){}
       }else{S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut(true)}
     }
     accMsg('접속 정보를 불러오는 중입니다.');
@@ -5224,7 +5323,7 @@ $('accOut').addEventListener('click',async()=>{
   if(S.phase!=='idle'){toast('출동이나 휴식 중에는 로그아웃할 수 없습니다.');return}
   const ok=await cloudPut();if(!ok){toast('클라우드에 저장하지 못해 로그아웃을 멈췄습니다.');return}
   try{await AUTH().signOut()}catch(e){}
-  try{localStorage.removeItem(KEY)}catch(e){}
+  window.__cgKicked=true;try{localStorage.removeItem(KEY)}catch(e){}
   location.reload();
 });
 
@@ -5241,9 +5340,9 @@ async function accOnNet(){
     try{await claimSession()}catch(e){}
     const ex=await cloudGet();
     /* 클라우드 기록이 이 화면의 기록보다 새로우면 언제나 클라우드 기록을 씁니다(출동 중이어도) */
-    if(ex&&typeof ex.json==='string'&&(+ex.at||0)>BOOT_SAVED_AT+1000){
-      const data=JSON.parse(ex.json);data.acct=S.acct||{mode:'cloud',since:Date.now(),id:AUTH().name()};data.savedAt=+ex.at;
-      try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
+    if(ex&&typeof ex.json==='string'&&((+ex.rev||0)>(+S.cloudRev||0)||(!(+ex.rev)&&(+ex.at||0)>BOOT_SAVED_AT+1000))){
+      const data=JSON.parse(ex.json);data.acct=S.acct||{mode:'cloud',since:Date.now(),id:AUTH().name()};data.savedAt=+ex.at;data.cloudRev=+ex.rev||0;
+      window.__cgKicked=true;try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
       location.reload();return;
     }
     if(!S.acct||S.acct.mode!=='cloud'){S.acct={mode:'cloud',since:Date.now(),id:AUTH().name()};save()}
@@ -5858,16 +5957,25 @@ function roJosa(w){const c=w.charCodeAt(w.length-1)-0xAC00;if(c<0||c>11171)retur
 /* PC: 아래 영역(대화 · 지갑 · 탭 · 메뉴)의 실제 높이를 재서, 남는 높이에 맞춰 게임 화면 크기를 정합니다.
    창 크기나 메뉴 구성이 바뀌어도 탭이 화면 아래로 숨지 않습니다 */
 let fitBusy=false;
+const dockKey=()=>'cg-dockmax-'+innerWidth+'x'+innerHeight;
+let dockMax=(()=>{try{return +localStorage.getItem(dockKey())||0}catch(e){return 0}})();
 function fitStage(){
   if(fitBusy)return;const g=$('game'),d=document.querySelector('.hudgame .dock');if(!g||g.hidden||!d)return;
   if(matchMedia('(max-width:760px)').matches||matchMedia('(min-width:1000px) and (max-height:720px)').matches){g.style.removeProperty('--dockH');return}
   fitBusy=true;
+  /* 처음 한 번: 메뉴가 가장 높은 장면(센터 · 훈련장)의 높이를 그리기 전에 몰래 재 둡니다. 화면이 깜빡이지 않습니다 */
+  if(!dockMax&&S.phase==='idle'&&!cine&&S.role){const v0=S.view,s0=S.selGate;let m=0;
+    for(const v of ['center','gym','office','home','map']){S.view=v;try{updateUI(true)}catch(e){}m=Math.max(m,Math.ceil(d.getBoundingClientRect().height))}
+    S.view=v0;S.selGate=s0;try{updateUI(true)}catch(e){}
+    const tb0=document.querySelector('.hudgame .tabs'),ft0=tb0&&getComputedStyle(tb0).position==='fixed'?Math.ceil(tb0.getBoundingClientRect().height)+6:0;
+    dockMax=m+8+ft0;try{localStorage.setItem(dockKey(),String(dockMax))}catch(e){}}
   const tb=document.querySelector('.hudgame .tabs'),fixedTabs=tb&&getComputedStyle(tb).position==='fixed'?Math.ceil(tb.getBoundingClientRect().height)+6:0;
-  for(let i=0;i<4;i++){const want=Math.ceil(d.getBoundingClientRect().height)+8+fixedTabs,cur=parseFloat(getComputedStyle(g).getPropertyValue('--dockH'))||0;
+  /* 장면마다 아래 메뉴 높이가 달라 게임 화면(배경) 크기가 바뀌지 않도록, 지금 창 크기에서 가장 높았던 메뉴 높이에 맞춰 둡니다 */
+  for(let i=0;i<4;i++){const want=Math.max(dockMax,Math.ceil(d.getBoundingClientRect().height)+8+fixedTabs);if(want>dockMax){dockMax=want;try{localStorage.setItem(dockKey(),String(want))}catch(e){}}const cur=parseFloat(getComputedStyle(g).getPropertyValue('--dockH'))||0;
     if(Math.abs(want-cur)<3)break;g.style.setProperty('--dockH',want+'px')}
   fitBusy=false;
 }
-addEventListener('resize',()=>requestAnimationFrame(fitStage));
+addEventListener('resize',()=>{dockMax=(()=>{try{return +localStorage.getItem(dockKey())||0}catch(e){return 0}})();requestAnimationFrame(fitStage)});
 setInterval(fitStage,800);
 
 document.addEventListener('click',e=>{if(e.target.closest('[data-awk],#wallet .wap'))openAwaken()});
