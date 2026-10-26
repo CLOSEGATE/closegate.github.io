@@ -1385,8 +1385,8 @@ const SKIN=['#FCE3CC','#F7CFA8','#E8B48A','#C98E66','#9C6644','#6E4530'];
 const HAIRC=['#2B2238','#5A3A26','#A0663A','#E8C46A','#ECE8F2','#D2484A','#EE8DBA','#5577E0','#3FB894','#8E6CF0'];
 const EYEC=['#2B2238','#7A4A22','#2F5BEA','#21A574','#D2484A','#D49A1E','#8E6CF0'];
 const OUTC=['#2F5BEA','#2A3150','#F1F3F8','#D2484A','#21A574','#7F5CE0','#F2B233','#EE8DBA'];
-const FRONT_N=['일자 앞머리','가르마','옆으로 넘긴 앞머리','올백','뾰족한 머리','한쪽 눈 가린 앞머리','5:5 앞머리 (짧게)','5:5 앞머리 (길게)'];
-const BACK_N=['숏컷','단발','긴 생머리','포니테일','트윈테일','올림머리','반묶음','울프컷','귀 높이 반묶음','내려 묶은 장발'];
+const FRONT_N=['일자 앞머리','가르마','옆으로 넘긴 앞머리','올백','뾰족한 머리','한쪽 눈 가린 앞머리','5:5 앞머리 (짧게)','5:5 앞머리 (길게)','시스루 앞머리','처피뱅','바보털','옆으로 내린 앞머리'];
+const BACK_N=['숏컷','단발','긴 생머리','포니테일','트윈테일','올림머리','반묶음','울프컷','귀 높이 반묶음','내려 묶은 장발','양쪽 번','양갈래 땋은 머리','웨이브 장발','히메컷','높은 포니테일','곱슬 단발','한쪽 땋은 머리'];
 const EYES_N=['기본','반짝이는 눈','웃는 눈','감은 눈','졸린 눈','속눈썹 눈'];
 const OUTFIT_N=['센터 제복 재킷','롱 코트','후드 집업','정장 재킷','가이드 로브','전투 슈트','세일러 블라우스','셔츠와 니트 조끼'];
 const BOTTOM_N=['슬랙스','반바지','플리츠 스커트','롱스커트','와이드 팬츠'];
@@ -1809,7 +1809,7 @@ for(const k in TALK2)Object.assign(TALK[k],TALK2[k]);
 /* 다른 사람이 말하는 것처럼 대화창에 띄운다 */
 function sayAs(name,line,look){
   $('talkName').textContent=name;const el=$('talkLine');el.textContent=line;el.classList.remove('fresh');void el.offsetWidth;el.classList.add('fresh');
-  if(look){const c=$('talkFace'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,24,24);g.drawImage(buildDoll(look,'a',0),2,0,24,24,0,0,24,24)}
+  if(look){const c=$('talkFace'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,24,24);g.drawImage(buildDoll(look,'a',0),4,0,24,24,0,0,24,24)}
 }
 let chatT=0;
 function chatterTick(){
@@ -1826,33 +1826,45 @@ function chatterTick(){
   }else chatT=t+20000;
 }
 /* ═════════ 캐릭터: 작은 도트 (12×16 지도 → 외곽선 → 2배 = 28×36) ═════════ */
-const DW=28,DH=36,dollCache=new Map();
+const DW=32,DH=36,dollCache=new Map();
 const clampI=(v,n)=>Number.isInteger(v)&&v>=0&&v<n?v:0;
-const TINY_W=12,TINY_H=16;
+/* 지도는 14칸 폭입니다. 12칸으로 쓴 줄은 가운데(1칸 들여)에 놓이고, 14칸으로 쓴 줄은 양옆 끝까지 씁니다(트윈테일 · 번 · 땋은 머리용) */
+const TINY_W=14,TINY_H=16;
 /* 겹쳐 찍는 문자 지도. '.'은 아래 칸을 그대로 둔다 */
 const T_HEAD=['','','','..SSSSSSSS..','.SSSSSSSSSs.','.SSSSSSSSSs.','.SSSSSSSSSs.','.SSSSSSSSSs.','.SrSSSSSSrs.','..sSSSSSSs..'];
-const T_DOME=['','...HHHHH....','..HLLHHHHh..','.HHHHHHHHHh.'];
+const T_DOME=['','...HHHHHh...','..HLLHHHHh..','.HLLHHHHHHh.'];
 const T_FRONT=[
-  ['','','','','.HHHHHHHHHh.','.H........h.'],                       // 일자
-  ['','','','','.HHHh.HHHHh.','.H........h.'],                       // 가르마
-  ['','','','','.HHHHHHHhh..','.HHH......h.'],                       // 옆으로 넘긴
+  ['','','','','.HHLLHHHHHh.','.Hh.hH.hHhh.'],                       // 일자
+  ['','','','','.HHHh.HLHHh.','.Hh......hh.'],                       // 가르마
+  ['','','','','.HLHHHHHHhh.','.HHHh.....h.','.Hh........'],         // 옆으로 넘긴
   ['','','','','.h........h.','.h........h.'],                       // 올백
-  ['...H..H.H...','..HHHHHHHH..','','','.HHhHHhHHHh.','.H........h.'], // 뾰족
-  ['','','','','.HHHHHHHHHh.','.H....HHHHh.','......HHHh..','.......hh...'], // 눈 가린
-  ['','','','','.HHHh..HHHh.','.HHh....hHh.'],                       // 5:5 짧은
-  ['','','','','.HHHh..HHHh.','.HHh....hHh.','.Hh......hh.','.H........h.','.h........h.'] // 5:5 긴
+  ['...H..H.H...','..HHLHHHHH..','','','.HHhHHhHHHh.','.H........h.'], // 뾰족
+  ['','','','','.HHLHHHHHHh.','.H....HHHHh.','......HHHh..','.......hh...'], // 눈 가린
+  ['','','','','.HLHh..HHHh.','.HHh....hHh.'],                       // 5:5 짧은
+  ['','','','','.HLHh..HHHh.','.HHh....hHh.','.Hh......hh.','.H........h.','.h........h.'], // 5:5 긴
+  ['','','','','.HHLHHHHHHh.','.H.h.h.h.hh.'],                       // 시스루
+  ['','','','','.HLHHHHHHHh.','.HhHhHhHhHh.'],                       // 처피뱅
+  ['......hH....','.......H....','','','.HHLHHHHHHh.','.Hh......hh.'], // 바보털
+  ['','','','','.HHHHHHLHHh.','.HHHHh....h.','.Hh.......h.','.h.........'] // 옆으로 내린
 ];
 const T_BEHIND=[
   null,                                                              // 숏컷
   null,                                                              // 단발
   ['','','','','','.HHHHHHHHHh.','HHHHHHHHHHhh','HHHHHHHHHHhh','HHHHHHHHHHhh','HH........hh','HH........hh','HH........hh','.h........h.'], // 긴 생머리
-  ['','..........hH','.........hHh','..........Hh','..........Hh','..........Hh','..........Hh','..........h.'], // 포니테일
-  ['','','','R..........R','H..........H','H..........h','H..........h','H..........h','H..........h','h..........h'], // 트윈테일
+  ['','...........hH.','..........hHHh','...........HHh','...........HHh','............Hh','............Hh','............h.'], // 포니테일
+  ['','','','.R..........R.','HH..........HH','HH..........HH','HH..........hH','Hh..........hH','Hh..........hh','.h..........h.','.h..........h.'], // 트윈테일
   ['....LHHh....'],                                                   // 올림머리
   ['','.........hA'],                                                 // 반묶음
   null,                                                              // 울프컷
   ['','','','','','','..........hH','..........NH','..........HH','...........h'],  // 귀 높이 반묶음
-  ['','','','','','','','','','..........A.','...........H','...........H','...........h','...........h'] // 내려 묶은 장발
+  ['','','','','','','','','','..........A.','...........H','...........H','...........h','...........h'], // 내려 묶은 장발
+  ['..HH......HH..','.HLHh....HLHh.','.HHHh....HHHh.','..hh......hh..'], // 양쪽 번
+  ['','','','','.H..........H.','HH..........HH','hH..........Hh','HH..........HH','hH..........Hh','HH..........HH','.R..........R.','Hh..........hH','.h..........h.'], // 양갈래 땋은 머리
+  ['','','','','..HHHHHHHHHH..','..HHHHHHHHHh..','.HH........hh.','HH..........hh','.HH........hh.','HH..........hh','.HH........hh.','HH..........hh','.h..........h.'], // 웨이브 장발
+  ['','','','','','.HHHHHHHHHh.','HHHHHHHHHHhh','HH........hh','HH........hh','HH........hh','HH........hh','HH........hh','hh........hh'], // 히메컷
+  ['.........RhH..','.........HLHh.','..........HHh.','...........HHh','...........HHh','............Hh','............Hh','............Hh','............h.'], // 높은 포니테일
+  ['','','','','','.HHH......hhh.','HH..........hh','.HHh......hHh.'], // 곱슬 단발
+  null                                                               // 한쪽 땋은 머리
 ];
 const T_SIDE=[
   [],
@@ -1864,7 +1876,14 @@ const T_SIDE=[
   ['','','','','H..........h','HH........hh','HH........hh','HH........hh','Hh........hh'],
   ['','','','','H..........h','HH........hh','H.........h.','HH........hh','.H........h.'],
   ['','','','','H..........h','HH........hh','HH........hh','Hh........h.'],
-  ['','','','','H..........h','HH........hh','HH........hh','HH........hh','HH........hh','.h........h.']
+  ['','','','','H..........h','HH........hh','HH........hh','HH........hh','HH........hh','.h........h.'],
+  ['','','','','H..........h','HH........hh','HH........hh','Hh........hh'],
+  ['','','','','H..........h','HH........hh','HH........hh','HH........hh','Hh........hh'],
+  ['','','','','H..........h','HH........hh','HH........hh','HH........hh','HH........hh','HH........hh','Hh........hh'],
+  ['','','','','H..........h','HH........hh','HH........hh','HH........hh','HH........hh','hh........hh'],
+  [],
+  ['','','','','H..........h','HH........hh','Hh........Hh','HH........hh','HhH....HhHh.'],
+  ['','','','','H..........h','HH........hh','HH........hh','.HH.......hh','.hH........h','.HH.........','.hH.........','.R..........','.h..........']
 ];
 const T_OUT=[
   ['','','','','','','','','','','..ACTAATCA..','.SCCCAACCcS.','..CCDDDDcc..'],          // 제복
@@ -1898,8 +1917,8 @@ const T_ACC=[
 ];
 function tinyMap(L,frame){
   const M=Array.from({length:TINY_H},()=>Array(TINY_W).fill('.'));
-  const lay=rows=>rows&&rows.forEach((r,y)=>{for(let x=0;x<r.length&&x<TINY_W;x++)if(r[x]!=='.'&&y<TINY_H)M[y][x]=r[x]});
-  const put=(x,y,ch)=>{if(x>=0&&y>=0&&x<TINY_W&&y<TINY_H)M[y][x]=ch};
+  const lay=rows=>rows&&rows.forEach((r,y)=>{const o=r.length>=14?0:1;for(let x=0;x<r.length&&x+o<TINY_W;x++)if(r[x]!=='.'&&y<TINY_H)M[y][x+o]=r[x]});
+  const put=(x,y,ch)=>{x+=1;if(x>=0&&y>=0&&x<TINY_W&&y<TINY_H)M[y][x]=ch};
   const robe=L.outfit===4;
   lay(T_BEHIND[L.back]);
   lay(T_HEAD);
@@ -1948,7 +1967,7 @@ function buildDoll(L,frame,dx){
   else g.drawImage(small,0,0,DW,DH);
   dollCache.set(key,c);return c;
 }
-const drawDoll=(L,x,fy,frame,dx)=>G.drawImage(buildDoll(L,frame,dx),Math.round(x-14),Math.round(fy-33));
+const drawDoll=(L,x,fy,frame,dx)=>G.drawImage(buildDoll(L,frame,dx),Math.round(x-16),Math.round(fy-33));
 
 /* ═════════ 몬스터 (귀여운 버전) ═════════ */
 const monCache=new Map();
@@ -4955,7 +4974,7 @@ function renderCrew(){
   ul.innerHTML=ps.slice(0,12).map((p,i)=>{const g=p.gate?gateById(p.gate):null;
     const st=p.phase==='focus'?(g?esc(gateName(g))+' 공략 중':'게이트 공략 중'):p.phase==='break'?'가이딩 중':p.phase==='auto'?'자동 가이딩 중':'센터 대기';
     return `<li><canvas width="48" height="48" data-i="${i}"></canvas><span class="who"><b></b>${p.title?`<em>${esc(p.title)}</em>`:''}<span>${p.role==='guide'?'가이드':'센티넬'} · Lv.${p.lv} · ${st}</span></span><span class="rkb" style="background:${GCOL[p.gr]}">${GRADES[p.gr]}</span>${p.uid&&online()&&!isFriend(p.uid)?`<button type="button" class="sbtn" data-fadd="${esc(p.uid)}" data-fnick="${esc(p.nick||'')}" data-frole="${p.role}">친구 신청</button>`:''}</li>`}).join('');
-  ul.querySelectorAll('li').forEach((li,i)=>{const p=ps[i];li.querySelector('b').textContent=p.nick||'이름 없는 요원';const c=li.querySelector('canvas'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(buildDoll(p.look,'a',0),2,0,24,24,0,0,48,48)});
+  ul.querySelectorAll('li').forEach((li,i)=>{const p=ps[i];li.querySelector('b').textContent=p.nick||'이름 없는 요원';const c=li.querySelector('canvas'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(buildDoll(p.look,'a',0),4,0,24,24,0,0,48,48)});
   const np=$('netPill');np.classList.toggle('solo',NET.mode!=='online');
   $('netText').textContent=NET.mode==='online'?(matchMedia('(max-width:760px)').matches?`접속 ${ps.length+1}명`:`온라인 · ${ps.length+1}명 접속`):'혼자';
 }
@@ -5072,7 +5091,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
   if(full){
     const bc=$('bagCount'),bn=betterCount();if(curTab==='bag'||(S.bagSeen||0)>S.items.length)S.bagSeen=S.items.length;const nw=Math.max(0,S.items.length-(S.bagSeen||0));bc.hidden=!bn&&!nw;bc.textContent=bn?'▲'+bn:nw;bc.classList.toggle('up',bn>0);bc.title=bn?`더 좋은 장비 ${bn}개`:'';
     const cc=$('crewCount'),fr=(S._socN||0);cc.hidden=!fr;cc.textContent=fr;/* 요원 탭 숫자: 받은 친구 · 페어 신청이 있을 때만 */
-    {const c=$('hudFace'),g2=c.getContext('2d');g2.imageSmoothingEnabled=false;g2.clearRect(0,0,24,24);if(S.look)g2.drawImage(buildDoll(S.look,'a',0),2,0,24,24,0,0,24,24)}
+    {const c=$('hudFace'),g2=c.getContext('2d');g2.imageSmoothingEnabled=false;g2.clearRect(0,0,24,24);if(S.look)g2.drawImage(buildDoll(S.look,'a',0),4,0,24,24,0,0,24,24)}
     applyTheme();
     $('topbar').hidden=!role;
     $('who').innerHTML=`<span>${esc(S.name||'이름 없음')}</span><span class="muted">Lv.${lvI.lv}</span><span class="rk">${GRADES[gr]}</span>`;
@@ -5091,7 +5110,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
   if(!$('talkLine').textContent&&S.partner)say('idle');
   if(armedReset<t&&$('resetBtn').classList.contains('armed')){$('resetBtn').classList.remove('armed');$('resetBtn').textContent='초기화'}
 }
-function drawFace(){if(!S.partner)return;const L=S.assist?S.assist.slook:S.realGuide&&S.role==='sentinel'&&(S.phase==='break'||S.phase==='auto')?S.realGuide.look:S.partner.look;const c=$('talkFace'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,24,24);g.drawImage(buildDoll(L,'a',0),2,0,24,24,0,0,24,24)}
+function drawFace(){if(!S.partner)return;const L=S.assist?S.assist.slook:S.realGuide&&S.role==='sentinel'&&(S.phase==='break'||S.phase==='auto')?S.realGuide.look:S.partner.look;const c=$('talkFace'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,24,24);g.drawImage(buildDoll(L,'a',0),4,0,24,24,0,0,24,24)}
 
 /* ═════════ 이벤트 ═════════ */
 $('mainBtn').addEventListener('click',()=>{
