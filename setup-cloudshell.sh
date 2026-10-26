@@ -110,8 +110,17 @@ if git diff --cached --quiet; then
   ok "올릴 변경 사항이 없다"
 else
   git commit -qm "클로즈 게이트 업데이트 $(date +%Y-%m-%d)" && ok "커밋 완료"
-  echo "  GitHub 토큰을 붙여 넣는다 (입력 내용은 화면에 보이지 않는다). 그냥 Enter를 누르면 건너뛴다."
-  read -rsp "  GitHub 토큰: " GT; echo
+  echo "  GitHub 토큰을 붙여 넣습니다. 입력한 글자는 *로 표시됩니다. 그냥 Enter를 누르면 건너뜁니다."
+  GT=""; printf "  GitHub 토큰: "
+  while IFS= read -rsn1 ch; do
+    [[ -z "$ch" ]] && break                                   # Enter
+    if [[ "$ch" == $'\x7f' || "$ch" == $'\b' ]]; then          # 지우기
+      [[ -n "$GT" ]] && { GT="${GT%?}"; printf '\b \b'; }
+    else GT+="$ch"; printf '*'; fi
+  done; echo
+  if [[ -n "$GT" ]]; then
+    printf "  \033[1;32m✔ 토큰 입력됨\033[0m: %s…%s (%d자)\n" "${GT:0:4}" "${GT: -4}" "${#GT}"
+  else echo "  토큰을 넣지 않아 GitHub 올리기를 건너뜁니다."; fi
   if [ -n "$GT" ]; then
     if git push -q "https://x-access-token:${GT}@github.com/${REPO_PATH}.git" HEAD:main; then
       ok "올리기 완료. 1~2분 뒤 https://${SITE_DOMAIN}/ 을 새로고침한다."

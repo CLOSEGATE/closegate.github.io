@@ -806,6 +806,15 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
 .delrow{display:grid;grid-template-columns:1fr auto;gap:8px}
 .delrow input{font:inherit;font-size:.88rem;border:1px solid var(--line2,#C7D2EF);border-radius:10px;padding:7px 10px;background:var(--panel);color:var(--ink);min-width:0}
 .sbtn.del:not(:disabled){background:var(--coral);color:#fff;border-color:transparent}
+#gcAttrCv{image-rendering:auto!important}
+.wpcard{display:grid;gap:8px;margin-top:4px}.wpcard .wpt{font-size:1rem}
+#wpChips{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+@media (max-width:560px){#wpChips{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+.wpb{display:grid!important;justify-items:center;gap:3px;padding:8px 4px!important}.wpb .ico{width:34px;height:34px;background:transparent}
+.wpgrid{display:grid;grid-template-columns:minmax(0,240px) minmax(0,1fr);gap:12px;align-items:center}
+#wpPv{width:100%;height:auto;border-radius:12px;image-rendering:pixelated;background:#EAF1FC}
+#wpChips{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+@media (max-width:560px){.wpgrid{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -885,11 +894,12 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
       <p class="muted" id="gDesc">센터가 요원의 능력과 등급을 측정합니다. 등급은 F부터 S까지이며, 높을수록 나올 확률이 낮습니다. 낮게 나와도 레벨을 올리고 승급 시험을 통과하면 S급까지 오를 수 있습니다.</p>
     </div>
     <div class="gcards">
-      <div class="gcard" id="gcAttr"><span class="eyebrow" id="gcAttrLab">Ability</span><canvas id="gcAttrCv" width="48" height="48" aria-hidden="true"></canvas><b id="gcAttrName">?</b><span class="muted" id="gcAttrSkill">측정 전</span></div>
+      <div class="gcard" id="gcAttr"><span class="eyebrow" id="gcAttrLab">Ability</span><canvas id="gcAttrCv" width="192" height="192" aria-hidden="true"></canvas><b id="gcAttrName">?</b><span class="muted" id="gcAttrSkill">측정 전</span></div>
       <div class="gcard" id="gcGrade"><span class="eyebrow">Grade</span><div class="gbig" id="gcGradeL">?</div><b id="gcGradeName">측정 전</b><span class="muted" id="gcGradeOdds"></span></div>
       <div class="gcard"><span class="eyebrow">Level</span><div class="gbig lv">1</div><b>레벨 1</b><span class="muted">모든 요원은 레벨 1부터 시작합니다</span></div>
     </div>
     <div class="odds" id="gOdds"></div>
+    <div class="card wpcard" id="wpField" hidden><span class="eyebrow">Starting weapon</span><b class="wpt">시작 무기 고르기</b><div class="wpgrid"><canvas id="wpPv" width="720" height="360" aria-label="무기 공격 모션 미리보기"></canvas><div class="pchips three" id="wpChips" role="group" aria-label="시작 무기"></div></div><span class="muted" id="wpDesc"></span></div>
     <div class="row">
       <button class="btn" type="button" id="gRoll">측정 시작</button>
       <button class="btn ghost" type="button" id="gReroll" hidden>다시 측정하기 (남은 횟수 3)</button>
@@ -913,7 +923,6 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
           <label for="nameInput">이름</label>
           <input id="nameInput" maxlength="10" placeholder="이름을 입력합니다 (선택)" autocomplete="off">
         </div>
-        <div class="field" id="wpField"><span class="flab">시작 무기</span><div class="pchips three" id="wpChips" role="group" aria-label="시작 무기"></div><span class="muted" id="wpDesc"></span></div>
         <div class="field"><span class="flab">성격</span><div class="pchips" id="persChips" role="group" aria-label="성격"></div><span class="muted" id="persDesc"></span></div>
         <div class="field"><span class="flab">말투</span><div class="pchips three" id="spChips" role="group" aria-label="말투"></div></div>
         <div class="saybox"><span class="eyebrow">한마디 미리 듣기</span><p id="sayPrev"></p><button class="sbtn" type="button" id="sayAgain">다른 대사 듣기</button></div>
@@ -2143,27 +2152,37 @@ const MAPC=withCanvas(W,H,()=>{
 
 /* ═════════ 무기와 공격 모션 (손 위치 기준) ═════════ */
 function drawWeapon(w,hx,hy,a,at,bob,berserk){
-  const k=a>0?1-a/.22:0,W_='#EEF4FF',GL='#FFB627',BR='#A8754F',ac=berserk?'#F0544F':at.col,ac2=berserk?'#FF9C96':at.col2;
+  /* 무기마다 실루엣이 확실히 다르게: 검(넓은 날+가드), 창(긴 자루+잎날+술), 활(굽은 활대+시위), 지팡이(구슬+고리), 해머(큰 머리), 쌍단검(양손 짧은 날) */
+  const k=a>0?1-a/.22:0,W_='#EEF4FF',W2='#B9C1DA',GL='#FFB627',BR='#8B5E3C',ST='#9AA3C2',ST2='#D5DAE6',ac=berserk?'#F0544F':at.col,ac2=berserk?'#FF9C96':at.col2;
+  const y=hy+bob;
   if(w==='sword'){
-    if(a>0){px(hx+1,hy-4,13,1,W_);px(hx+1,hy-3,12,1,ac2);px(hx,hy-6,1,4,GL);G.globalAlpha=Math.min(1,a*5);for(let t=-1.1;t<=1.1;t+=.14)px(hx+3+Math.cos(t)*14,hy-4+Math.sin(t)*11,1,1,ac);G.globalAlpha=1}
-    else{px(hx,hy-12+bob,1,11,W_);px(hx+1,hy-11+bob,1,10,shade(at.col,.3));px(hx-1,hy-1+bob,3,1,GL)}}
+    if(a>0){px(hx+2,hy-5,13,2,W_);px(hx+2,hy-4,13,1,W2);px(hx+15,hy-4,1,1,W_);px(hx,hy-7,2,6,GL);px(hx-2,hy-5,2,2,BR);
+      G.globalAlpha=Math.min(1,a*5);for(let t=-1.1;t<=1.1;t+=.12)px(hx+3+Math.cos(t)*15,hy-4+Math.sin(t)*12,2,1,ac);G.globalAlpha=1}
+    else{px(hx,y-14,2,12,W_);px(hx+1,y-14,1,12,W2);px(hx,y-15,1,1,W_);px(hx-2,y-2,6,1,GL);px(hx-2,y-3,1,1,GL);px(hx+3,y-3,1,1,GL);px(hx,y-1,2,3,BR);px(hx,y+2,2,1,GL)}}
   else if(w==='spear'){
-    if(a>0){const r=Math.round(6+k*10);px(hx-6,hy-3,r+8,1,BR);px(hx+r+2,hy-4,3,3,W_);px(hx+r+5,hy-3,1,1,W_);G.globalAlpha=.6;for(let i=0;i<3;i++)px(hx-10+i*3,hy-6+i*3,5,1,ac);G.globalAlpha=1}
-    else{px(hx,hy-18+bob,1,24,BR);px(hx-1,hy-21+bob,3,3,W_);px(hx,hy-22+bob,1,1,W_);px(hx-1,hy-17+bob,3,1,ac)}}
+    if(a>0){const r=Math.round(6+k*10);px(hx-8,hy-3,r+10,1,BR);px(hx+r+2,hy-5,4,5,W_);px(hx+r+6,hy-4,2,3,W_);px(hx+r+8,hy-3,1,1,W_);px(hx+r,hy-4,2,3,'#F0544F');
+      G.globalAlpha=.6;for(let i=0;i<3;i++)px(hx-12+i*3,hy-6+i*3,6,1,ac);G.globalAlpha=1}
+    else{px(hx,y-18,1,26,BR);px(hx-1,y-23,3,5,W_);px(hx,y-25,1,2,W_);px(hx+1,y-22,1,3,W2);px(hx-1,y-18,3,1,GL);px(hx-1,y-17,1,3,'#F0544F');px(hx+1,y-17,1,2,'#F0544F')}}
   else if(w==='bow'){
-    const pull=a>0?2:0;for(let d=-7;d<=7;d++)px(hx+3+Math.round((1-(d/7)**2)*3),hy-5+d,1,1,'#8B5E3C');px(hx+3-pull,hy-12,1,14,'#FFFFFF');
-    if(a>0){const ax=hx+4+Math.round(k*40);px(ax,hy-5,7,1,'#C9946A');px(ax+7,hy-6,2,3,W_);G.globalAlpha=.5;px(ax-6,hy-5,5,1,ac);G.globalAlpha=1}}
+    const pull=a>0?3:0;
+    for(let d=-8;d<=8;d++){const bx=hx+3+Math.round((1-(d/8)**2)*4);px(bx,hy-5+d,2,1,BR)}
+    px(hx+3,hy-14,2,1,GL);px(hx+3,hy+4,2,1,GL);px(hx+6,hy-6,2,3,'#5A3A26');
+    px(hx+3-pull,hy-13,1,17,'#FFFFFF');
+    if(a>0){const ax=hx+4+Math.round(k*42);px(ax,hy-5,8,1,'#C9946A');px(ax+8,hy-6,2,3,W_);px(ax-1,hy-6,1,3,ac);G.globalAlpha=.5;px(ax-7,hy-5,6,1,ac);G.globalAlpha=1}
+    else{px(hx,hy-5,7,1,'#C9946A');px(hx+7,hy-6,2,3,W_)}}
   else if(w==='staff'){
-    px(hx,hy-14+bob,1,18,'#8B5E3C');disc(hx,hy-16+bob,2,ac);px(hx-1,hy-17+bob,1,1,'#FFFFFF');
-    if(a>0){G.globalAlpha=Math.min(1,a*5);circle(hx,hy-16,4+k*6,ac2);for(let i=0;i<6;i++){const t=i/6*Math.PI*2+k*2;px(hx+Math.cos(t)*(6+k*6),hy-16+Math.sin(t)*(6+k*6),1,1,'#FFFFFF')}G.globalAlpha=1}}
+    px(hx,y-14,2,20,BR);px(hx,y-14,1,20,'#A8754F');
+    circle(hx+1,y-17,4,GL);disc(hx+1,y-17,2,ac);px(hx,y-18,1,1,'#FFFFFF');px(hx-3,y-13,2,1,GL);px(hx+3,y-13,2,1,GL);
+    if(a>0){G.globalAlpha=Math.min(1,a*5);circle(hx+1,hy-17,5+k*7,ac2);for(let i=0;i<8;i++){const t=i/8*Math.PI*2+k*2;px(hx+1+Math.cos(t)*(7+k*7),hy-17+Math.sin(t)*(7+k*7),2,2,i%2?'#FFFFFF':ac)}G.globalAlpha=1}}
   else if(w==='hammer'){
-    if(a>.11){px(hx-1,hy-16,1,14,BR);px(hx-4,hy-21,7,5,'#9AA3C2');px(hx-4,hy-21,7,1,'#C9CEDB')}
-    else if(a>0){px(hx+1,hy-3,12,1,BR);px(hx+12,hy-6,5,8,'#9AA3C2');px(hx+12,hy-6,1,8,'#C9CEDB');G.globalAlpha=.7;for(let i=0;i<5;i++)px(hx+10+i*3,hy+8-(i%2),2,1,ac);G.globalAlpha=1}
-    else{px(hx,hy-8+bob,1,10,BR);px(hx-2,hy-12+bob,5,4,'#9AA3C2');px(hx-2,hy-12+bob,5,1,'#C9CEDB')}}
+    const head=(x0,y0,vw,vh)=>{px(x0,y0,vw,vh,ST);px(x0,y0,vw,1,ST2);px(x0,y0+vh-1,vw,1,'#6A708A');px(x0+Math.floor(vw/2)-1,y0,2,vh,GL)};
+    if(a>.11){px(hx,hy-17,2,15,BR);head(hx-4,hy-23,10,6)}
+    else if(a>0){px(hx+1,hy-4,13,2,BR);head(hx+12,hy-8,6,10);G.globalAlpha=.75;for(let i=0;i<6;i++)px(hx+8+i*3,hy+8-(i%2),2,1,ac);G.globalAlpha=1}
+    else{px(hx,y-9,2,12,BR);head(hx-4,y-15,10,6)}}
   else if(w==='dagger'){
-    const b2=hx-16;
-    if(a>0){const ph=a>.11;px(hx+2,hy-6+(ph?0:4),6,1,W_);px(b2+14,hy-2-(ph?0:4),6,1,W_);G.globalAlpha=Math.min(1,a*5);for(let i=0;i<6;i++){px(hx+4+i,hy-9+i,1,1,ac);px(hx+4+i,hy-3-i,1,1,ac2)}G.globalAlpha=1}
-    else{px(hx,hy-5+bob,1,5,W_);px(hx-1,hy+bob,3,1,GL);px(b2,hy-5+bob,1,5,W_);px(b2-1,hy+bob,3,1,GL)}}
+    const b2=hx-16,dag=(x0,y0)=>{px(x0,y0-6,2,6,W_);px(x0+1,y0-6,1,6,W2);px(x0,y0-7,1,1,W_);px(x0-1,y0,4,1,GL);px(x0,y0+1,2,2,BR)};
+    if(a>0){const ph=a>.11;px(hx+2,hy-7+(ph?0:4),8,2,W_);px(hx+1,hy-7+(ph?0:4),1,2,GL);px(b2+12,hy-3-(ph?0:4),8,2,W_);G.globalAlpha=Math.min(1,a*5);for(let i=0;i<7;i++){px(hx+4+i,hy-10+i,1,1,ac);px(hx+4+i,hy-3-i,1,1,ac2)}G.globalAlpha=1}
+    else{dag(hx,y);dag(b2,y)}}
 }
 /* ═════════ 캐릭터 + 효과 ═════════ */
 function drawHero(kind,L,X,FY,o={}){G.save();G.translate(Math.round(X),Math.round(FY));if(o.s)G.scale(o.s,o.s);try{heroBody(kind,L,X,FY,o)}finally{G.restore()}}
@@ -2439,6 +2458,30 @@ function mapLabels(){
     G.fillStyle=d.mc;G.beginPath();G.arc(x+3.4,y,1.3,0,Math.PI*2);G.fill();
     G.fillStyle=isNight()?'#E8EDFF':'#1C2440';G.fillText(t,x+6,y+.3)});
   G.restore();
+}
+
+/* ═════════ 속성 아이콘 (벡터) ═════════
+   한자 대신 모양으로 속성을 보여 줍니다. (cx,cy) 중심, 크기 s(대략 반지름) 안에 흰색으로 그립니다. */
+function attrGlyph(g,a,cx,cy,s,col){
+  g.save();g.translate(cx,cy);g.scale(s/10,s/10);g.fillStyle=col||'#FFFFFF';g.strokeStyle=col||'#FFFFFF';g.lineCap='round';g.lineJoin='round';
+  const P=()=>g.beginPath(),F=()=>g.fill(),St=w=>{g.lineWidth=w;g.stroke()};
+  switch(a){
+    case 0: P();g.moveTo(0,-9);g.bezierCurveTo(5,-2,7,1,7,4);g.arc(0,4,7,0,Math.PI);g.bezierCurveTo(-7,1,-5,-2,0,-9);F();break; // 물: 물방울
+    case 1: P();g.moveTo(0,-10);g.bezierCurveTo(6,-4,8,1,7,4);g.bezierCurveTo(6,9,2,10,0,10);g.bezierCurveTo(-4,10,-7,7,-7,3);g.bezierCurveTo(-7,0,-5,-2,-4,-4);g.bezierCurveTo(-3,-1,-2,0,-1,0);g.bezierCurveTo(-2,-4,-2,-7,0,-10);F();break; // 불: 불꽃
+    case 2: P();g.moveTo(-8,-4);g.lineTo(3,-4);g.arc(3,-7,3,Math.PI/2,-Math.PI*0.9,true);St(2.4);P();g.moveTo(-8,1);g.lineTo(6,1);g.arc(6,-2.5,3.5,Math.PI/2,-Math.PI*0.9,true);St(2.4);P();g.moveTo(-6,6);g.lineTo(2,6);g.arc(2,8.5,2.5,-Math.PI/2,Math.PI*0.9);St(2.4);break; // 바람: 소용돌이 바람
+    case 3: P();g.moveTo(-10,8);g.lineTo(-3,-6);g.lineTo(1,0);g.lineTo(4,-3);g.lineTo(10,8);g.closePath();F();break; // 땅: 산
+    case 4: P();g.arc(0,0,4.5,0,Math.PI*2);F();for(let i=0;i<8;i++){const r=i*Math.PI/4;P();g.moveTo(Math.cos(r)*6.5,Math.sin(r)*6.5);g.lineTo(Math.cos(r)*9.5,Math.sin(r)*9.5);St(2)}break; // 빛: 해
+    case 5: P();g.arc(0,0,8,0,Math.PI*2);g.arc(4,-3,7,0,Math.PI*2,true);g.fill('evenodd');break; // 어둠: 초승달
+    case 6: case 12: P();g.roundRect?g.roundRect(-7,-3,14,11,3):g.rect(-7,-3,14,11);F();for(let i=0;i<4;i++){P();g.roundRect?g.roundRect(-7+i*3.6,-8,3,6,1.5):g.rect(-7+i*3.6,-8,3,6);F()}P();g.roundRect?g.roundRect(-10,-1,4,7,2):g.rect(-10,-1,4,7);F();break; // 신체 강화 · 물리: 주먹
+    case 7: P();g.moveTo(0,-9);g.lineTo(8,-6);g.lineTo(7,2);g.bezierCurveTo(6,6,3,8,0,10);g.bezierCurveTo(-3,8,-6,6,-7,2);g.lineTo(-8,-6);g.closePath();F();break; // 강철 피부: 방패
+    case 8: P();g.moveTo(2,-10);g.lineTo(-6,1);g.lineTo(0,1);g.lineTo(-2,10);g.lineTo(7,-2);g.lineTo(1,-2);g.closePath();F();break; // 초가속: 번개
+    case 9: P();g.arc(0,0,3.2,0,Math.PI*2);F();[6,9.5].forEach(r=>{P();g.arc(0,0,r,-Math.PI*0.8,-Math.PI*0.2);St(1.8);P();g.arc(0,0,r,Math.PI*0.2,Math.PI*0.8);St(1.8)});break; // 염력: 퍼지는 파동
+    case 10: P();g.rect(-4,-4,8,8);F();[[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx,dy])=>{P();g.moveTo(dx*7,dy*7);g.lineTo(dx*10,dy*10);St(2);P();g.moveTo(dx*10+dy*2,dy*10+dx*2);g.lineTo(dx*10,dy*10);g.lineTo(dx*10-dy*2,dy*10-dx*2);St(2)});break; // 염동력: 움직이는 상자
+    case 11: P();for(let t=0;t<=Math.PI*4.2;t+=.15){const r=1+t*.65;const x=Math.cos(t)*r,y=Math.sin(t)*r;t?g.lineTo(x,y):g.moveTo(x,y)}St(2);break; // 정신 공격: 소용돌이
+    case 13: P();for(let i=0;i<4;i++){const r=i*Math.PI/2;g.lineTo(Math.cos(r)*10,Math.sin(r)*10);g.lineTo(Math.cos(r+Math.PI/4)*3,Math.sin(r+Math.PI/4)*3)}g.closePath();F();break; // 정신(가이드): 반짝임
+    default: P();g.arc(0,0,5,0,Math.PI*2);F();
+  }
+  g.restore();
 }
 /* ═════════ 업적 · 칭호 ═════════ */
 const maxMast=()=>Math.max(0,...Object.values(S.mast||{}).map(v=>+v||0));
@@ -3398,12 +3441,18 @@ setInterval(()=>{if(inBattle())renderPotBar()},1000);
 /* ═════════ 아이템 도트 아이콘 (12×12) ═════════
    무기는 종류별 모양, 방어구 · 장신구는 등급별 모양, 각성석은 속성 색 보석, 물약은 병 색으로 구분합니다. */
 const ICO={
-  sword:['..........WW','.........WWl','........WWl.','.......WWl..','......WWl...','.....WWl....','..G.WWl.....','...GWl......','...GG.......','..bG.G......','.bb.........','bb..........'],
-  spear:['.........WW.','........WWWW','.........WW.','........bl..','.......bl...','......bl....','.....bl.....','....bl......','...bl.......','..bl........','.bl.........','b...........'],
-  bow:['....bbb.....','...b...s....','..b.....s...','..b......s..','.b.......s..','.b..AAAAAAW.','.b.......s..','..b......s..','..b.....s...','...b...s....','....bbb.....','............'],
-  staff:['........AA..','.......AWAA.','.......AAAA.','........AA..','.......bb...','......bb....','.....bb.....','....bb......','...bb.......','..bb........','.bb.........','bb..........'],
-  hammer:['....WWWW....','...WWlWWW...','...WllWWW...','....WWWW....','.....bb.....','.....bb.....','.....bb.....','.....bb.....','.....bb.....','.....bb.....','....GGGG....','............'],
-  dagger:['...W.....W..','...WW...WW..','...Wl...lW..','...Wl...lW..','...Wl...lW..','...Wl...lW..','..GGGG.GGGG.','...bb...bb..','...bb...bb..','...GG...GG..','............','............'],
+  sword:["..............WW", ".............WWl", "............WWl.", "...........WWl..", "..........WWl...", ".........WWl....", "........WWl.....", ".......WWl......", "..G...WWl.......", "...G.WWl........", "....GWl.........", "....GG..........", "...bGGG.........", "..bb..G.........", ".bb.............", "GG.............."],
+
+  spear:["............WW..", "...........WWWW.", "............WWW.", "...........WWW..", "..........RlR...", ".........bRR....", "........bb......", ".......bb.......", "......bb........", ".....bb.........", "....bb..........", "...bb...........", "..bb............", ".bb.............", "bb..............", "b..............."],
+
+  bow:[".....bbb........", "....bG..s.......", "...bb....s......", "..bb......s.....", "..b........s....", ".bb.........s...", ".b...........s..", ".bWWWWWWWWWWWWWW", ".b...........s..", ".bb.........s...", "..b........s....", "..bb......s.....", "...bb....s......", "....bG..s.......", ".....bbb........", "................"],
+
+  staff:["..........GGGG..", ".........G.AA.G.", ".........GAWAAG.", ".........GAAAAG.", "..........GAAG..", ".........bbGG...", "........bb......", ".......bb.......", "......bb........", ".....bb.........", "....bb..........", "...bb...........", "..bb............", ".bb.............", "bb..............", "G..............."],
+
+  hammer:["....llllllll....", "...lWWWWWWWWl...", "...lWWWGGWWWl...", "...lWWWGGWWWl...", "...lllllllll....", ".......bb.......", ".......bb.......", ".......bb.......", ".......bb.......", ".......bb.......", ".......bb.......", ".......bb.......", ".......bb.......", "......GbbG......", ".......GG.......", "................"],
+
+  dagger:["..W.........W...", "..WW.......WW...", "..WWl.....lWW...", "..WWl.....lWW...", "..WWl.....lWW...", "..WWl.....lWW...", "..WWl.....lWW...", ".GGGGG...GGGGG..", "...bb.....bb....", "...bb.....bb....", "...GG.....GG....", "................", "................", "................", "................", "................"],
+
   armor:['............','..CC....CC..','.CCCCCCCCCC.','.CClCCCClCC.','.CCCCCCCCCC.','..CCCAACCC..','..CCCAACCC..','..CCCCCCCC..','..CCCCCCCC..','..cCCCCCCc..','...cccccc...','............'],
   acc0:['............','....bbbb....','...b....b...','...b....b...','....b..b....','.....AA.....','....AAAA....','....AWAA....','....AAAA....','.....AA.....','............','............'],
   acc1:['............','.....AA.....','....AWAA....','.....AA.....','....GGGG....','...G....G...','..G......G..','..G......G..','...G....G...','....GGGG....','............','............'],
@@ -3425,8 +3474,8 @@ function icoKey(it){
 function itemIcon(it,size){
   const [shape,a,t]=icoKey(it),key=shape+a+t;
   if(!icoCache.has(key)){
-    const pal={W:'#F4F7FF',l:'#B9C1DA',G:'#FFC23D',b:'#8A5E3C',s:'#E8E8F0',A:a,a:shade(a,-.3),C:t,c:shade(t,-.3)};
-    const c=document.createElement('canvas');c.width=14;c.height=14;const g=c.getContext('2d');
+    const pal={W:'#F4F7FF',l:'#B9C1DA',G:'#FFC23D',b:'#8A5E3C',s:'#E8E8F0',R:'#F0544F',A:a,a:shade(a,-.3),C:t,c:shade(t,-.3)};
+    const N=ICO[shape].length,c=document.createElement('canvas');c.width=N+2;c.height=N+2;const g=c.getContext('2d');
     const P=[];ICO[shape].forEach((r,y)=>[...r].forEach((ch,x)=>{if(pal[ch])P.push([x+1,y+1,pal[ch]])}));
     const on=new Set(P.map(([x,y])=>x+','+y));
     g.fillStyle='#1C2440';P.forEach(([x,y])=>[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{if(!on.has((x+dx)+','+(y+dy)))g.fillRect(x+dx,y+dy,1,1)}));
@@ -4350,11 +4399,18 @@ $('pickSentinel').addEventListener('click',()=>{if(roleLocked())return;picked='s
 $('pickGuide').addEventListener('click',()=>{if(roleLocked())return;picked='guide';syncPick()});
 $('nextBtn').addEventListener('click',()=>{if(!picked)return;if(S.grade==null)showGacha('new');else showCustom(S.role?'role':'new')});
 function drawAttrIcon(a){
-  const c=$('gcAttrCv'),p=G;G=c.getContext('2d');G.setTransform(1,0,0,1,0,0);G.clearRect(0,0,48,48);
-  if(a==null){disc(24,24,16,'#E8EEFC');px(20,15,8,3,'#B9C1DA');px(25,18,3,6,'#B9C1DA');px(22,24,3,4,'#B9C1DA');px(22,31,3,3,'#B9C1DA');G=p;return}
-  const at=ATTRS[a];disc(24,24,16,shade(at.col,.55));disc(24,24,13,at.col);G.font='bold 15px serif';G.textAlign='center';G.textBaseline='middle';G.fillStyle='#FFFFFF';G.fillText(at.sym,24,25);G.font='bold 6px sans-serif';G.fillStyle=shade(at.col,-.4);G.fillText(at.cat,24,44);
-  G=p;
+  /* 휴대폰 · 고해상도 화면에서도 글자가 깨지지 않도록 4배 해상도로 매끄럽게 그립니다 */
+  const c=$('gcAttrCv');if(c.width!==192){c.width=192;c.height=192}
+  const g=c.getContext('2d');g.setTransform(4,0,0,4,0,0);g.imageSmoothingEnabled=true;g.clearRect(0,0,48,48);
+  const ring=(r,col)=>{g.beginPath();g.arc(24,21,r,0,Math.PI*2);g.fillStyle=col;g.fill()};
+  g.textAlign='center';g.textBaseline='middle';
+  if(a==null){ring(16,'#E8EEFC');g.fillStyle='#B9C1DA';g.font='700 18px "IBM Plex Sans KR",sans-serif';g.fillText('?',24,22);return}
+  const at=ATTRS[a];ring(17,shade(at.col,.6));ring(14,at.col);
+  g.fillStyle='rgba(255,255,255,.25)';g.beginPath();g.ellipse(19,15,6,3.5,-.5,0,Math.PI*2);g.fill();
+  attrGlyph(g,a,24,21,8.5,'#FFFFFF');
+  g.font='700 6.2px "IBM Plex Sans KR",sans-serif';g.fillStyle=shade(at.col,-.45);g.fillText(at.cat,24,44.5);
 }
+
 function showGacha(mode){
   showScreen('gacha');roll=null;rerollLeft=mode==='new'?3:Math.max(0,3-(+S.rerolled||0));
   const role=picked||S.role;document.body.dataset.role=role;
@@ -4363,12 +4419,12 @@ function showGacha(mode){
   $('gcAttrName').textContent='?';$('gcAttrSkill').textContent=role==='guide'?'가이딩 파장 측정 전':'능력 측정 전';
   $('gcGradeL').textContent='?';$('gcGradeL').style.background='';$('gcGradeName').textContent='측정 전';$('gcGradeOdds').textContent='';
   $('gOdds').innerHTML='<span>등장 확률</span>'+GRADES.map((g,i)=>`<span>${g} ${GRADE_W[i]}%</span>`).join('');
-  $('gRoll').hidden=false;$('gReroll').hidden=true;$('gNext').hidden=true;drawAttrIcon(null);
+  $('gRoll').hidden=false;$('gReroll').hidden=true;$('gNext').hidden=true;drawAttrIcon(null);$('wpField').hidden=true;wpPicked=false;
 }
 function doRoll(){
   const role=picked||S.role;
   $('gRoll').hidden=true;$('gReroll').hidden=true;$('gNext').hidden=true;
-  ['gcAttr','gcGrade'].forEach(id=>{$(id).classList.remove('reveal');$(id).classList.add('rolling')});
+  ['gcAttr','gcGrade'].forEach(id=>{$(id).classList.remove('reveal');$(id).classList.add('rolling')});$('wpField').hidden=true;
   ac();let i=0;const t0=now();
   const res={grade:rollGrade(),attr:rollAttr(role)};
   const iv=setInterval(()=>{
@@ -4379,6 +4435,7 @@ function doRoll(){
       $('gcGradeL').textContent=GRADES[res.grade];$('gcGradeL').style.background=GCOL[res.grade];$('gcGradeName').textContent=`${GRADES[res.grade]}급 ${role==='guide'?'가이드':'센티넬'}`;
       $('gcGradeOdds').textContent=`이 등급이 나올 확률 ${GRADE_W[res.grade]}%`;
       if(res.grade>=5){fanfare();burst(96,54,['#FFE27A'],1)}else chime();
+      {const need=!S.items.some(x=>x.kind==='gear'&&x.slot==='weapon');$('wpField').hidden=!need;wpPicked=need;if(need)buildWp()}
       $('gReroll').hidden=rerollLeft<=0;$('gReroll').textContent=`다시 측정하기 (남은 횟수 ${rerollLeft})`;$('gNext').hidden=false;
     }
   },70);
@@ -4400,14 +4457,25 @@ function showCustom(mode){
   $('cBack').textContent=mode==='edit'?'취소':'뒤로';
   $('cSave').textContent=mode==='new'?'센터에 등록하기':'저장하기';
   document.body.dataset.role=role;buildOpts();
-  const needWp=mode!=='edit'&&!S.items.some(x=>x.kind==='gear'&&x.slot==='weapon');$('wpField').hidden=!needWp;if(needWp)buildWp();
 }
-let dWp='sword';
+let dWp='sword',wpPicked=false,wpRaf=0;
+/* 무기 모션 미리보기: 허수아비를 1.2초마다 공격합니다 */
+function wpPreviewLoop(){
+  cancelAnimationFrame(wpRaf);const cv=$('wpPv');if(!cv)return;const ctx=cv.getContext('2d');
+  const tick=()=>{if($('wpField').hidden||$('gacha').hidden)return;
+    const role=picked||S.role||'sentinel',a=roll?roll.attr:(S.attrs||[])[0],t=performance.now()/1000,ph=t%1.2,atk=ph<.22?.22-ph:0;
+    const p=G;G=ctx;G.setTransform(8,0,0,8,0,0);G.imageSmoothingEnabled=false;
+    px(0,0,90,45,'#EAF1FC');px(0,38,90,7,'#D3DDF2');for(let x=0;x<90;x+=8)px(x,38,4,1,'#C2CEEA');
+    drawMon(3,'#000',dWp==='bow'||dWp==='staff'?78:58,39,{ph:atk>0?1:0,flash:atk>0&&atk<.12});
+    drawHero(role,S.look||LOOK_DEF[role],26,39,{s:1,still:false,tier:0,attrs:a!=null?[a]:[],wp:dWp,wa:a,atk,dx:1});
+    G=p;wpRaf=requestAnimationFrame(tick)};
+  tick();
+}
 const WP_DESC={sword:'균형 잡힌 근접 무기입니다.',spear:'긴 사거리로 찌릅니다.',bow:'멀리서 화살을 쏩니다.',staff:'파장을 모아 날립니다.',hammer:'느리지만 묵직하게 내려칩니다.',dagger:'두 자루로 빠르게 벱니다.'};
 function buildWp(){
-  const a=(S.attrs||[])[0];
-  $('wpChips').innerHTML=WTYPES.map(w=>`<button type="button" data-w="${w.id}" aria-pressed="${w.id===dWp}">${w.n}</button>`).join('');
-  $('wpDesc').textContent=`${WP_DESC[dWp]} 1레벨 일반 무기로 지급되며, ${a!=null?ATTRS[a].n+' 속성이 붙어 효과가 1.5배입니다':'무속성입니다'}.`;
+  const a=roll?roll.attr:(S.attrs||[])[0];
+  $('wpChips').innerHTML=WTYPES.map(w=>`<button type="button" class="wpb" data-w="${w.id}" aria-pressed="${w.id===dWp}">${itemIcon({kind:'gear',slot:'weapon',wt:w.id,tier:0,attr:a},26)}${w.n}</button>`).join('');
+  wpPreviewLoop();$('wpDesc').textContent=`${WP_DESC[dWp]} 1레벨 일반 무기로 지급되며, ${a!=null?ATTRS[a].n+' 속성이 붙어 효과가 1.5배입니다':'무속성입니다'}.`;
 }
 $('wpChips').addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;dWp=b.dataset.w;buildWp();beep(880,.04,'square',.025)});
 let dPers=0,dSp=0;
@@ -4448,7 +4516,7 @@ $('cSave').addEventListener('click',()=>{
   if(customMode!=='edit'&&!S.role)S.role=picked;
   S.look=normLook({...draft},S.role);S.lookSet=true;S.name=$('nameInput').value.trim().slice(0,10);S.pers=dPers;S.speech=dSp;
   if(customMode!=='edit'&&(roleChanged||!S.partner))newPartner();
-  if(!$('wpField').hidden&&!S.items.some(x=>x.kind==='gear'&&x.slot==='weapon')){
+  if(wpPicked&&customMode!=='edit'&&!S.items.some(x=>x.kind==='gear'&&x.slot==='weapon')){
     const g={id:'g'+Date.now().toString(36),kind:'gear',slot:'weapon',tier:0,lv:1,wt:dWp,name:gearName('weapon',0,dWp)};const a=(S.attrs||[])[0];if(a!=null)g.attr=a;
     S.items.push(g);S.equip=S.equip||{};S.equip.weapon=g.id}
   save();pushPresence();showGame();
