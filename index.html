@@ -996,6 +996,12 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .lenpick>span{font-size:.78rem;font-weight:700;color:var(--ink-soft);padding-right:4px;white-space:nowrap}
 .lenpick button{padding:7px 0;font:inherit;font-size:.8rem;font-weight:600;border:1px solid var(--line,#D9E0F2);border-radius:10px;background:var(--panel);color:var(--ink);cursor:pointer;white-space:nowrap;touch-action:manipulation}
 .lenpick button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.gmmark{display:inline-block;font-style:normal;font-size:.62rem;font-weight:800;letter-spacing:.02em;line-height:1;color:#fff;background:linear-gradient(135deg,#F2B233,#D98A00);border-radius:4px;padding:2px 4px;margin-right:4px;vertical-align:.12em;box-shadow:0 1px 0 rgba(120,70,0,.4)}
+/* v35.20 시간: 모든 화면에서 게임 화면 위쪽 가운데, 도트 글꼴로 표시합니다(아래쪽 캐릭터를 가리지 않게) */
+#timer,.timer,.hudgame .timer{top:6px!important;bottom:auto!important;line-height:0!important;padding:7px 11px 5px!important;display:flex;align-items:center;border-radius:6px!important;border:2px solid var(--ink)!important;box-shadow:0 3px 0 var(--ink)!important;-webkit-font-smoothing:none;font-smooth:never}
+@media (max-width:760px){#timer,.timer,.hudgame .timer{padding:5px 8px 3px!important;top:6px!important;left:auto!important;right:8px!important;transform:none!important}}
+#timer canvas{display:block;image-rendering:pixelated}
+@media (max-width:440px){#killTag{display:none!important}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1287,7 +1293,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
     <nav class="gbtoc" aria-label="가이드북 차례"><a href="#gb1">1. 클로즈 게이트는 어떤 게임인가요</a><a href="#gb2">2. 하루의 흐름</a><a href="#gb3">3. 게이트와 봉인</a><a href="#gb4">4. 전투 · HP · 치료</a><a href="#gb5">5. 속성과 상성</a><a href="#gb6">6. 폭주와 가이딩</a><a href="#gb7">7. 훈련 · 레벨 · 승급</a><a href="#gb8">8. 장비 · 각성석 · 강화</a><a href="#gb9">9. 친구 · 파티 · 페어</a><a href="#gb10">10. 상점 · 장터 · 우편</a><a href="#gb11">11. 화면과 계정</a></nav>
     <details id="gb1" open><summary><span class="gbno">1</span><span class="gbt">클로즈 게이트는 어떤 게임인가요</span></summary>
       <p>집중한 시간만큼 게이트가 닫히는 협력 게임입니다. 출동을 시작하면 정해진 시간 동안 집중하고, 그 시간이 게이트를 봉인하는 힘이 됩니다. 접속한 모든 요원이 쌓은 시간이 게이트의 봉인 목표에 닿으면 게이트가 닫히고 새 게이트가 열립니다.</p>
-      <p>탭을 닫거나 다른 일을 해도 출동은 계속됩니다. 돌아오면 보고서로 결과를 알려 드립니다. 다만 다른 탭에 오래 머물면 폭주 게이지가 조금 더 오릅니다.</p></details>
+      <p>탭을 닫거나 다른 일을 해도 출동은 계속됩니다. 돌아오면 보고서로 결과를 알려 드립니다. 다만 다른 탭에 오래 머물면 폭주 게이지가 조금 더 오릅니다. 탭을 닫아 두어도 다른 요원의 화면에서는 내가 그 게이트에서 계속 싸우는 모습으로 보이고, 봉인 진행도도 함께 차오릅니다.</p></details>
     <details id="gb2"><summary><span class="gbno">2</span><span class="gbt">하루의 흐름</span></summary>
       <p>하루는 <b>내 방</b>에서 시작합니다. <b>센터 출근</b>을 누르면 센터 로비로 가고, 로비에서 게이트 출동 · 훈련장 · 보고서 작성 · 가이딩실 · 상점 · 장터 · 파티로 이동합니다. 할 일을 마치면 퇴근해서 방을 꾸밀 수 있습니다.</p></details>
     <details id="gb3"><summary><span class="gbno">3</span><span class="gbt">게이트와 봉인</span></summary>
@@ -1306,7 +1312,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
       <p>센티넬은 출동할수록 <b>폭주 게이지</b>가 찹니다. 출동이 끝나면 가이드와 함께 가이딩을 받아 게이지를 낮춥니다.</p>
       <ul><li><b>직접 가이딩</b>: 고리가 가운데 원에 겹칠 때 눌러 호흡을 맞춥니다. 정확할수록 많이 내려갑니다.</li>
       <li><b>자동 가이딩</b>: 화면을 보지 않아도 시간이 지나면 내려갑니다. 게이지가 80 이상이면 자동 가이딩만 쓸 수 있습니다.</li>
-      <li><b>게이트 안 가이딩</b>: 가이드는 게이트 공략 중에 5초마다 가이딩을 할 수 있습니다. 화면이나 가이딩 단추를 누르면 함께 싸우는 센티넬의 폭주 게이지가 내려가고 HP가 조금 회복됩니다.</li>
+      <li><b>게이트 안 가이딩</b>: 가이드는 게이트 공략 중에 가이딩을 할 수 있습니다. 화면이나 가이딩 단추를 한 번 누르면 그 게이트가 끝날 때까지 5초마다 자동으로 가이딩하며, 함께 싸우는 센티넬의 폭주 게이지가 내려가고 HP가 조금 회복됩니다. 센티넬은 앞에서 싸우고 가이드는 뒤에서 돕습니다.</li>
       <li><b>가이딩 숙련</b>: 휴식 때 호흡 맞추기와 게이트 안 가이딩을 할수록 오릅니다. 단계마다 가이딩 효과가 5%씩(최대 50%) 커집니다.</li>
       <li><b>긴 가이딩</b>: 3분이 넘는 가이딩은 50번 맞추면 남은 시간 동안 자동으로 호흡을 맞춥니다.</li>
       <li><b>함께하는 가이딩</b>: 가이드 플레이어가 가이딩실에서 요청을 받아 도와줄 수 있습니다. 페어가 아닌 가이드에게도 언제든 받을 수 있습니다.</li></ul>
@@ -1858,6 +1864,142 @@ function chatterTick(){
     else{say('breakChat');setTimeout(()=>meSay('breakChat'),1500)}
   }else chatT=t+20000;
 }
+/* ── 대사 추가분(v35.18): 기존 대사 뒤에 이어 붙입니다. 한 줄 = "존댓말|반말|다나까" ── */
+const TALK3={
+kind:{
+  idle:['오늘은 어디부터 가 볼까요? 천천히 골라요.|오늘은 어디부터 가 볼까? 천천히 골라.|오늘은 어디부터 가 보시겠습니까? 천천히 고르십시오.',
+    '물 한 잔 마시고 시작해요. 몸이 먼저예요.|물 한 잔 마시고 시작하자. 몸이 먼저야.|물 한 잔 드시고 시작하십시오. 몸이 먼저입니다.'],
+  mid:['지금 속도 좋아요. 이대로만 가요.|지금 속도 좋아. 이대로만 가자.|지금 속도가 좋습니다. 이대로만 가십시오.',
+    '조금만 더 하면 끝이에요. 끝나면 같이 쉬어요.|조금만 더 하면 끝이야. 끝나면 같이 쉬자.|조금만 더 하면 끝납니다. 끝나면 함께 쉬겠습니다.'],
+  poke:['왜 불렀어요? 그냥 얼굴 보고 싶었던 거죠?|왜 불렀어? 그냥 얼굴 보고 싶었던 거지?|부르셨습니까? 그냥 얼굴이 보고 싶으셨던 겁니까?',
+    '오늘 무리하지 않았죠? 쉬는 것도 일이에요.|오늘 무리하지 않았지? 쉬는 것도 일이야.|오늘 무리하지 않으셨습니까? 쉬는 것도 일입니다.',
+    '여기 앉아요. 잠깐 이야기해요.|여기 앉아. 잠깐 이야기하자.|여기 앉으십시오. 잠시 이야기를 나누겠습니다.'],
+  battle:['다친 데 없죠? 조심해서 움직여요.|다친 데 없지? 조심해서 움직여.|다치신 곳은 없습니까? 조심해서 움직이십시오.',
+    '제가 뒤를 볼게요. 앞만 봐요.|내가 뒤를 볼게. 앞만 봐.|제가 뒤를 살피겠습니다. 앞만 보십시오.'],
+  coop:['함께 와 줘서 정말 고마워요.|같이 와 줘서 정말 고마워.|함께 와 주셔서 정말 감사합니다.',
+    '힘들면 바로 말해요. 서로 챙겨요.|힘들면 바로 말해. 서로 챙기자.|힘드시면 바로 말씀하십시오. 서로 챙기겠습니다.'],
+  breakChat:['어깨에 힘 빼요. 금방 편해질 거예요.|어깨에 힘 빼. 금방 편해질 거야.|어깨의 힘을 빼십시오. 곧 편해지실 겁니다.',
+    '오늘도 잘 버텼어요. 정말 대단해요.|오늘도 잘 버텼어. 정말 대단해.|오늘도 잘 버티셨습니다. 정말 대단하십니다.'],
+  focusStart:['손 한번 잡고 가요. 그럼 덜 무서울 거예요.|손 한번 잡고 가자. 그럼 덜 무서울 거야.|손을 한번 잡고 가겠습니다. 그러면 덜 두려우실 겁니다.'],
+  early:['돌아와 줘서 다행이에요. 다음에 다시 가요.|돌아와 줘서 다행이야. 다음에 다시 가자.|돌아와 주셔서 다행입니다. 다음에 다시 가겠습니다.'],
+  rankUp:['한 걸음 더 강해졌네요. 정말 자랑스러워요.|한 걸음 더 강해졌네. 정말 자랑스러워.|한 걸음 더 강해지셨습니다. 정말 자랑스럽습니다.'],
+  skill:['큰 공격이 와요! 제 쪽으로 붙어요!|큰 공격 온다! 내 쪽으로 붙어!|큰 공격이 옵니다! 제 쪽으로 붙으십시오!',
+    '괜찮아요, 금방 회복할 수 있어요.|괜찮아, 금방 회복할 수 있어.|괜찮습니다. 곧 회복할 수 있습니다.'],
+  ggIn:['파장 맞춰 둘게요. 마음 놓고 싸워요.|파장 맞춰 둘게. 마음 놓고 싸워.|파장을 맞춰 두겠습니다. 마음 놓고 싸우십시오.',
+    '숨소리가 안정됐어요. 이대로 가요.|숨소리가 안정됐어. 이대로 가자.|호흡이 안정되었습니다. 이대로 가겠습니다.']
+},
+bright:{
+  idle:['심심했죠? 저도요! 얼른 나가요!|심심했지? 나도! 얼른 나가자!|심심하셨습니까? 저도 그렇습니다! 얼른 나가겠습니다!',
+    '오늘 목표는 게이트 세 개! 어때요?|오늘 목표는 게이트 세 개! 어때?|오늘 목표는 게이트 세 개입니다! 어떻습니까?'],
+  mid:['좋아요, 좋아요! 이 흐름 놓치지 마요!|좋아, 좋아! 이 흐름 놓치지 마!|좋습니다! 이 흐름을 놓치지 마십시오!',
+    '벌써 이만큼이나! 우리 좀 멋진데요?|벌써 이만큼이나! 우리 좀 멋진데?|벌써 이만큼이나 왔습니다! 꽤 멋집니다!'],
+  poke:['짠! 불렀어요? 저 여기 있어요!|짠! 불렀어? 나 여기 있어!|부르셨습니까? 저 여기 있습니다!',
+    '오늘 간식은 뭐 먹을까요? 저는 떡볶이요!|오늘 간식은 뭐 먹을까? 나는 떡볶이!|오늘 간식은 무엇으로 하시겠습니까? 저는 떡볶이입니다!',
+    '방 꾸민 거 진짜 예뻐요! 저도 놀러 와도 돼요?|방 꾸민 거 진짜 예쁘다! 나도 놀러 와도 돼?|방을 정말 예쁘게 꾸미셨습니다! 저도 놀러 와도 되겠습니까?'],
+  battle:['한 마리 더! 오늘 손이 잘 풀리네요!|한 마리 더! 오늘 손이 잘 풀리네!|한 마리 더입니다! 오늘은 손이 잘 풀립니다!',
+    '하나, 둘, 셋! 같이 밀어붙여요!|하나, 둘, 셋! 같이 밀어붙이자!|하나, 둘, 셋! 함께 밀어붙이겠습니다!'],
+  coop:['우와, 사람이 늘었어요! 오늘 금방 닫겠는데요?|우와, 사람 늘었다! 오늘 금방 닫겠는데?|사람이 늘었습니다! 오늘은 금방 닫겠습니다!',
+    '하이파이브 한 번 해요! 짝!|하이파이브 한 번 하자! 짝!|하이파이브 한 번 하겠습니다! 짝!'],
+  breakChat:['다 끝나면 맛있는 거 먹으러 가요!|다 끝나면 맛있는 거 먹으러 가자!|끝나면 맛있는 것을 먹으러 가겠습니다!',
+    '호흡 맞추는 거, 점점 실력이 늘어요!|호흡 맞추는 거, 점점 실력이 늘어!|호흡 맞추기 실력이 점점 늘고 있습니다!'],
+  focusStart:['가자, 가자! 오늘도 최고 기록 노려요!|가자, 가자! 오늘도 최고 기록 노리자!|출발합니다! 오늘도 최고 기록을 노리겠습니다!'],
+  early:['괜찮아요! 다음 판에 두 배로 갚아 줘요!|괜찮아! 다음 판에 두 배로 갚아 주자!|괜찮습니다! 다음에 두 배로 갚아 주겠습니다!'],
+  rankUp:['레벨 업! 축하 파티 해야겠어요!|레벨 업! 축하 파티 해야겠다!|레벨 업입니다! 축하 파티를 해야겠습니다!'],
+  skill:['우와, 보스가 필살기를 썼어요! 피해요!|우와, 보스가 필살기 썼어! 피해!|보스가 필살기를 썼습니다! 피하십시오!',
+    '저 정도는 끄떡없어요! 다시 가요!|저 정도는 끄떡없어! 다시 가자!|저 정도는 끄떡없습니다! 다시 가겠습니다!'],
+  ggIn:['가이딩 들어가요! 기운 팍팍 넣어 줄게요!|가이딩 들어간다! 기운 팍팍 넣어 줄게!|가이딩 들어갑니다! 기운을 팍팍 넣어 드리겠습니다!',
+    '파장 최고! 이대로 쭉 가요!|파장 최고! 이대로 쭉 가자!|파장이 최고입니다! 이대로 쭉 가겠습니다!']
+},
+cool:{
+  idle:['……갈 거면 지금 가요.|……갈 거면 지금 가.|……가실 거면 지금 가십시오.',
+    '준비는 됐어요. 고르기만 해요.|준비는 됐어. 고르기만 해.|준비는 되었습니다. 고르기만 하십시오.'],
+  mid:['나쁘지 않아요. 그대로 가요.|나쁘지 않아. 그대로 가.|나쁘지 않습니다. 그대로 가십시오.',
+    '절반 지났어요. 집중 풀지 마요.|절반 지났어. 집중 풀지 마.|절반이 지났습니다. 집중을 풀지 마십시오.'],
+  poke:['……왜요.|……왜.|……무슨 일이십니까.',
+    '할 말 있으면 해요. 듣고 있어요.|할 말 있으면 해. 듣고 있어.|하실 말씀이 있으면 하십시오. 듣고 있습니다.',
+    '……이 방, 생각보다 괜찮네요.|……이 방, 생각보다 괜찮네.|……이 방, 생각보다 괜찮습니다.'],
+  battle:['정리 끝. 다음.|정리 끝. 다음.|정리 끝. 다음입니다.',
+    '움직임이 읽혀요. 어렵지 않아요.|움직임이 읽혀. 어렵지 않아.|움직임이 읽힙니다. 어렵지 않습니다.'],
+  coop:['……같이 하는 것도 나쁘지 않네요.|……같이 하는 것도 나쁘지 않네.|……함께하는 것도 나쁘지 않습니다.',
+    '발 맞춰요. 흩어지면 귀찮아져요.|발 맞춰. 흩어지면 귀찮아져.|발을 맞추십시오. 흩어지면 번거로워집니다.'],
+  breakChat:['……조금 나아졌어요.|……조금 나아졌어.|……조금 나아졌습니다.',
+    '말 안 해도 돼요. 숨만 쉬어요.|말 안 해도 돼. 숨만 쉬어.|말씀하지 않으셔도 됩니다. 숨만 쉬십시오.'],
+  focusStart:['간단히 끝내고 와요.|간단히 끝내고 오자.|간단히 끝내고 오겠습니다.'],
+  early:['……판단은 나쁘지 않았어요.|……판단은 나쁘지 않았어.|……판단은 나쁘지 않았습니다.'],
+  rankUp:['……강해졌네요. 인정해요.|……강해졌네. 인정할게.|……강해지셨습니다. 인정합니다.'],
+  skill:['……큰 거 와요. 버텨요.|……큰 거 온다. 버텨.|……큰 공격입니다. 버티십시오.',
+    '예상했던 범위예요.|예상했던 범위야.|예상했던 범위입니다.'],
+  ggIn:['파장 정리해 둘게요. 신경 쓰지 마요.|파장 정리해 둘게. 신경 쓰지 마.|파장을 정리해 두겠습니다. 신경 쓰지 마십시오.',
+    '……안정됐어요.|……안정됐어.|……안정되었습니다.']
+},
+shy:{
+  idle:['저, 저기… 오늘도 같이 가 줄 거죠?|저, 저기… 오늘도 같이 가 줄 거지?|저, 저기… 오늘도 함께 가 주실 겁니까?',
+    '어, 어디로 갈지 정했어요…?|어, 어디로 갈지 정했어…?|어, 어디로 가실지 정하셨습니까…?'],
+  mid:['반이나 왔어요…! 생각보다 할 만해요.|반이나 왔어…! 생각보다 할 만해.|절반이나 왔습니다…! 생각보다 할 만합니다.',
+    '저, 방해 안 되고 있죠…?|나, 방해 안 되고 있지…?|제가 방해가 되고 있지는 않습니까…?'],
+  poke:['히, 히익…! 갑자기 부르면 놀라요…|히, 히익…! 갑자기 부르면 놀라…|히, 히익…! 갑자기 부르시면 놀랍니다…',
+    '저, 저랑 이야기해 주는 거예요…? 기뻐요.|나, 나랑 이야기해 주는 거야…? 기뻐.|저, 저와 이야기해 주시는 겁니까…? 기쁩니다.',
+    '이 방, 조용해서 좋아요…|이 방, 조용해서 좋아…|이 방은 조용해서 좋습니다…'],
+  battle:['으, 으앗…! 그래도 맞혔어요!|으, 으앗…! 그래도 맞혔어!|으, 으앗…! 그래도 맞혔습니다!',
+    '하, 할 수 있어요… 할 수 있어요…|하, 할 수 있어… 할 수 있어…|하, 할 수 있습니다… 할 수 있습니다…'],
+  coop:['사, 사람이 많으니까 덜 무서워요…|사, 사람이 많으니까 덜 무서워…|사, 사람이 많으니 덜 두렵습니다…',
+    '저, 저도 열심히 할게요…!|나, 나도 열심히 할게…!|저, 저도 열심히 하겠습니다…!'],
+  breakChat:['이렇게 가까이 있으니까… 조금 떨려요.|이렇게 가까이 있으니까… 조금 떨려.|이렇게 가까이 있으니… 조금 떨립니다.',
+    '고, 고마워요… 정말로요.|고, 고마워… 정말로.|가, 감사합니다… 진심입니다.'],
+  focusStart:['조, 조심해서 다녀와요…!|조, 조심해서 다녀오자…!|조, 조심해서 다녀오겠습니다…!'],
+  early:['무, 무사해서 다행이에요… 정말로요.|무, 무사해서 다행이야… 정말로.|무, 무사하셔서 다행입니다… 정말입니다.'],
+  rankUp:['우와… 레벨 올랐어요…! 축하해요…!|우와… 레벨 올랐어…! 축하해…!|우와… 레벨이 올랐습니다…! 축하드립니다…!'],
+  skill:['히익, 큰 공격이에요…! 조, 조심해요!|히익, 큰 공격이야…! 조, 조심해!|히익, 큰 공격입니다…! 조, 조심하십시오!',
+    '저, 저는 괜찮아요… 아마도요…|나, 나는 괜찮아… 아마도…|저, 저는 괜찮습니다… 아마도 말입니다…'],
+  ggIn:['제, 제가 파장 맞춰 볼게요…!|내, 내가 파장 맞춰 볼게…!|제, 제가 파장을 맞춰 보겠습니다…!',
+    '조, 조금 편해졌어요…?|조, 조금 편해졌어…?|조, 조금 편해지셨습니까…?']
+},
+serious:{
+  idle:['오늘 일정부터 확인해요. 열린 게이트가 많아요.|오늘 일정부터 확인하자. 열린 게이트가 많아.|오늘 일정부터 확인하겠습니다. 열린 게이트가 많습니다.',
+    '장비 점검은 끝냈어요. 출동 가능해요.|장비 점검은 끝냈어. 출동 가능해.|장비 점검을 마쳤습니다. 출동 가능합니다.'],
+  mid:['진행률 절반. 계획대로예요.|진행률 절반. 계획대로야.|진행률 절반. 계획대로입니다.',
+    '체력 배분 좋아요. 이대로 유지해요.|체력 배분 좋아. 이대로 유지해.|체력 배분이 좋습니다. 이대로 유지하십시오.'],
+  poke:['보고할 일이 있어요? 들을게요.|보고할 일 있어? 들을게.|보고하실 사항이 있습니까? 듣겠습니다.',
+    '휴식도 훈련의 일부예요. 잘 쉬어요.|휴식도 훈련의 일부야. 잘 쉬어.|휴식도 훈련의 일부입니다. 잘 쉬십시오.',
+    '오늘 기록 정리해 뒀어요. 나중에 봐요.|오늘 기록 정리해 뒀어. 나중에 봐.|오늘 기록을 정리해 두었습니다. 나중에 확인하십시오.'],
+  battle:['좌측 개체 처리 완료. 다음으로 가요.|좌측 개체 처리 완료. 다음으로 가자.|좌측 개체 처리 완료. 다음으로 이동합니다.',
+    '공격 간격이 일정해요. 좋아요.|공격 간격이 일정해. 좋아.|공격 간격이 일정합니다. 좋습니다.'],
+  coop:['합류 확인. 역할을 나눠요.|합류 확인. 역할을 나누자.|합류를 확인했습니다. 역할을 나누겠습니다.',
+    '협동 효율이 올라가고 있어요.|협동 효율이 올라가고 있어.|협동 효율이 오르고 있습니다.'],
+  breakChat:['호흡 수치 정상 범위로 돌아오고 있어요.|호흡 수치 정상 범위로 돌아오고 있어.|호흡 수치가 정상 범위로 돌아오고 있습니다.',
+    '다음 출동 전까지 수분 보충해요.|다음 출동 전까지 수분 보충해.|다음 출동 전까지 수분을 보충하십시오.'],
+  focusStart:['작전 개시. 목표는 봉인이에요.|작전 개시. 목표는 봉인이야.|작전을 개시합니다. 목표는 봉인입니다.'],
+  early:['철수 판단, 존중해요. 다음 작전을 준비해요.|철수 판단, 존중해. 다음 작전을 준비하자.|철수 판단을 존중합니다. 다음 작전을 준비하겠습니다.'],
+  rankUp:['성장 확인했어요. 기록에 남겨 둘게요.|성장 확인했어. 기록에 남겨 둘게.|성장을 확인했습니다. 기록에 남겨 두겠습니다.'],
+  skill:['보스 스킬 감지. 방어 자세 취해요.|보스 스킬 감지. 방어 자세 취해.|보스 스킬을 감지했습니다. 방어 자세를 취하십시오.',
+    '피해 확인. 아직 작전 범위 안이에요.|피해 확인. 아직 작전 범위 안이야.|피해를 확인했습니다. 아직 작전 범위 안입니다.'],
+  ggIn:['게이트 내 가이딩 시작해요. 주기를 유지할게요.|게이트 안 가이딩 시작할게. 주기를 유지할게.|게이트 내 가이딩을 시작합니다. 주기를 유지하겠습니다.',
+    '폭주 수치 하강 확인했어요.|폭주 수치 하강 확인했어.|폭주 수치 하강을 확인했습니다.']
+},
+playful:{
+  idle:['오늘은 제가 리드해도 될까요? 농담이에요, 골라요.|오늘은 내가 리드해도 될까? 농담이야, 골라.|오늘은 제가 리드해도 되겠습니까? 농담입니다, 고르십시오.',
+    '게이트들이 우리 기다리다 지치겠어요.|게이트들이 우리 기다리다 지치겠다.|게이트들이 저희를 기다리다 지치겠습니다.'],
+  mid:['벌써 반? 저 아직 몸도 안 풀었는데요.|벌써 반? 나 아직 몸도 안 풀었는데.|벌써 절반입니까? 저는 아직 몸도 풀지 않았습니다.',
+    '이대로면 시간 남겠어요. 남으면 놀아 줄 거죠?|이대로면 시간 남겠다. 남으면 놀아 줄 거지?|이대로라면 시간이 남겠습니다. 남으면 놀아 주실 겁니까?'],
+  poke:['간지러워요! 거기 누르면 반칙이에요!|간지러워! 거기 누르면 반칙이야!|간지럽습니다! 거기를 누르시면 반칙입니다!',
+    '심심하면 저랑 끝말잇기 할래요?|심심하면 나랑 끝말잇기 할래?|심심하시면 저와 끝말잇기를 하시겠습니까?',
+    '이 방, 제 사진 하나 걸어 두면 완벽하겠는데요?|이 방, 내 사진 하나 걸어 두면 완벽하겠는데?|이 방에 제 사진 하나만 걸어 두면 완벽하겠습니다.'],
+  battle:['몬스터 씨, 줄 서세요. 차례대로 해 드릴게요.|몬스터들아, 줄 서. 차례대로 해 줄게.|몬스터 여러분, 줄을 서십시오. 차례대로 해 드리겠습니다.',
+    '방금 거 봤어요? 저 좀 멋있었죠?|방금 거 봤어? 나 좀 멋있었지?|방금 것 보셨습니까? 제가 좀 멋있었습니다.'],
+  coop:['관객이 늘었네요. 실력 좀 보여 줘야겠어요.|관객이 늘었네. 실력 좀 보여 줘야겠다.|관객이 늘었습니다. 실력을 좀 보여 드려야겠습니다.',
+    '오늘 MVP는 저예요. 이의 없죠?|오늘 MVP는 나야. 이의 없지?|오늘의 MVP는 저입니다. 이의 없으십니까?'],
+  breakChat:['가만히 있어 봐요. 지금 파장이 웃기게 생겼어요.|가만히 있어 봐. 지금 파장이 웃기게 생겼어.|가만히 계십시오. 지금 파장이 재미있게 생겼습니다.',
+    '이번 가이딩 값은 나중에 밥으로 받을게요.|이번 가이딩 값은 나중에 밥으로 받을게.|이번 가이딩 값은 나중에 식사로 받겠습니다.'],
+  focusStart:['다녀올게요~ 기념품은 보스 왕관으로 할게요.|다녀올게~ 기념품은 보스 왕관으로.|다녀오겠습니다. 기념품은 보스 왕관으로 하겠습니다.'],
+  early:['작전상 후퇴죠? 다 알아요.|작전상 후퇴지? 다 알아.|작전상 후퇴입니까? 다 알고 있습니다.'],
+  rankUp:['레벨 업! 이제 저랑 비슷해졌네요?|레벨 업! 이제 나랑 비슷해졌네?|레벨 업입니다! 이제 저와 비슷해지셨습니다.'],
+  skill:['어이쿠, 보스가 화났네요. 제가 너무 놀렸나?|어이쿠, 보스가 화났네. 내가 너무 놀렸나?|어이쿠, 보스가 화났습니다. 제가 너무 놀렸습니까?',
+    '그 정도 스킬은 저도 쓸 줄 알아요.|그 정도 스킬은 나도 쓸 줄 알아.|그 정도 스킬은 저도 쓸 줄 압니다.'],
+  ggIn:['가이딩 서비스 들어갑니다~ 별점 다섯 개 부탁해요.|가이딩 서비스 들어간다~ 별점 다섯 개 부탁해.|가이딩 서비스 들어갑니다. 별점 다섯 개 부탁드립니다.',
+    '자, 숨 쉬고~ 내쉬고~ 잘했어요!|자, 숨 쉬고~ 내쉬고~ 잘했어!|자, 들이쉬고 내쉬십시오. 잘하셨습니다!']
+}
+};
+for(const p in TALK3)for(const k in TALK3[p]){const cur=TALK[p][k];TALK[p][k]=Array.isArray(cur)?[...cur,...TALK3[p][k]]:cur&&typeof cur==='object'?{g:[...cur.g,...TALK3[p][k]],s:[...cur.s,...TALK3[p][k]]}:[...TALK3[p][k]]}
 /* ═════════ 캐릭터: 작은 도트 (12×16 지도 → 외곽선 → 2배 = 28×36) ═════════ */
 const DW=32,DH=36,dollCache=new Map();
 const clampI=(v,n)=>Number.isInteger(v)&&v>=0&&v<n?v:0;
@@ -2031,7 +2173,7 @@ const drawDoll=(L,x,fy,frame,dx)=>G.drawImage(buildDoll(L,frame,dx),Math.round(x
 const monCache=new Map();
 const MON_SZ=[[18,14],[20,15],[16,17],[14,20],[20,14],[18,18],[16,16],[20,13],[14,16],[18,12],[18,13],[16,16]],MON_BASE=[12,12,15,18,13,17,14,12,14,10,12,14];
 /* 떠다니는 몬스터: 박쥐 · 유령 · 불꽃 정령 · 드론 · 눈알 */
-const MON_FLY=new Set([1,6,8,9,11]);
+const MON_FLY=new Set([1,6,8,9,11]),MON_FLIP=new Set([4]);
 const MON_N=['슬라임','박쥐','버섯','허수아비','늑대','바위 골렘','유령','집게 게','불꽃 정령','감시 드론','통통 개구리','균열의 눈'];
 function buildMon(type,c,f){
   const key=type+c+f;if(monCache.has(key))return monCache.get(key);
@@ -2100,7 +2242,9 @@ function drawMon(type,c,x,fy,o={}){
   const f=Math.floor(T*3+(o.ph||0))%2,m=buildMon(type,c,f),sc=o.scale||1;
   const img=o.flash?m.w:m.n,w=img.width*sc,h=img.height*sc,hover=MON_FLY.has(type)?(10*sc+Math.round(Math.sin(T*3+(o.ph||0))*2)):0;
   G.globalAlpha=.18;px(x-6*sc,fy,12*sc,1,INK);G.globalAlpha=1;
-  G.drawImage(img,Math.round(x-w/2),Math.round(fy-(MON_BASE[type]*sc)-hover),w,h);
+  /* 늑대 도트는 오른쪽을 보고 그려져 있어, 왼쪽(요원 쪽)을 보도록 좌우를 뒤집어 그립니다 */
+  if(MON_FLIP.has(type)){G.save();G.translate(Math.round(x),0);G.scale(-1,1);G.drawImage(img,Math.round(-w/2),Math.round(fy-(MON_BASE[type]*sc)-hover),w,h);G.restore()}
+  else G.drawImage(img,Math.round(x-w/2),Math.round(fy-(MON_BASE[type]*sc)-hover),w,h);
   return fy-(MON_BASE[type]*sc)-hover;
 }
 /* ═════════ 협력: 공유 게이트 · 접속 요원 ═════════ */
@@ -2124,7 +2268,9 @@ function cleanGate(id,d){
   sum=Math.max(0,sum+(Number.isFinite(+d.adj)?+d.adj:0));  // GM이 조정한 봉인 진행
   return {id,slot,gen:+d.gen||1,d:slot,g,x,y,boss:String(d.boss||'').slice(0,20)||DIST[slot].boss[0],hp:Math.max(1,+d.hp||HP_ONLINE[g]),contrib,sum,n,status:d.status==='closed'?'closed':'open'};
 }
-const allGates=()=>NET.mode==='online'?NET.gates:S.localGates.map(x=>cleanGate(x.id,x)).filter(Boolean);
+/* 온라인 게이트의 봉인 진행에는 아직 끝나지 않은 출동(탭을 닫은 요원 포함)이 지금까지 쌓았을 몫을 더해 보여 줍니다 */
+const withProj=g=>{if(typeof projOf!=='function')return g;const p=projOf(g.id);return p.m>0?{...g,sum:g.sum+p.m,proj:p.m}:g};
+const allGates=()=>NET.mode==='online'?NET.gates.map(withProj):S.localGates.map(x=>cleanGate(x.id,x)).filter(Boolean);
 function gateById(id){if(id==='raid')return curRaid();const rp=REPORTS.find(r=>r.id===id);if(rp)return rp;const tr=TRAININGS.find(t=>t.id===id);if(tr)return tr.id==='trall'?{...tr,mins:(S.trHours||1)*60}:tr;if(id==='exam')return EXAM;return allGates().find(g=>g.id===id)||null}
 function ensureLocalGates(){
   for(let s=0;s<6;s++){if(!S.localGates.some(g=>g.slot===s&&g.status==='open')){const gen=(S.localGates.filter(g=>g.slot===s).reduce((m,g)=>Math.max(m,g.gen||0),0))+1;
@@ -2190,7 +2336,7 @@ function peerInfo(p){
     lv:Math.max(1,Math.min(100,Math.round(+pr.lv||1))),gr:clampI(pr.gr,7),uid:typeof pr.uid==='string'?pr.uid.slice(0,64):(typeof p.peer==='string'?p.peer:''),ptn:pr.ptn&&typeof pr.ptn==='object'?{role:pr.ptn.role==='sentinel'?'sentinel':'guide',look:normLook(pr.ptn.look,pr.ptn.role==='sentinel'?'sentinel':'guide'),gr:clampI(pr.ptn.gr,7),attrs:Array.isArray(pr.ptn.attrs)?pr.ptn.attrs.filter(x=>Number.isInteger(x)&&x>=0&&x<ATTRS.length).slice(0,3):[],nick:String(pr.ptn.nick||'').slice(0,10)}:null,attrs:Array.isArray(pr.attrs)?pr.attrs.filter(a=>Number.isInteger(a)&&a>=0&&a<ATTRS.length).slice(0,3):[],
     phase:['idle','focus','break','auto'].includes(pr.phase)?pr.phase:'idle',pers:persIdx(pr.pers),sp:spIdx(pr.sp),wp:typeof pr.wp==='string'&&WTYPES.some(w=>w.id===pr.wp)?pr.wp:null,wa:Number.isInteger(pr.wa)&&pr.wa>=0&&pr.wa<ATTRS.length?pr.wa:null,party:typeof pr.party==='string'?pr.party.slice(0,8):null,title:typeof pr.title==='string'?achTitle(pr.title):'',gate:typeof pr.gate==='string'?pr.gate.slice(0,40):null,peer:p.peer};
 }
-const peersOn=id=>NET.peers.map(peerInfo).filter(p=>p.phase==='focus'&&p.gate===id);
+const peersOn=id=>[...NET.peers.map(peerInfo),...(typeof awayPeers==='function'?awayPeers():[]).map(x=>({...peerInfo(x),away:true}))].filter(p=>p.phase==='focus'&&p.gate===id);
 
 /* 기여 · 봉인 */
 async function contribute(gate,mins){
@@ -3474,7 +3620,7 @@ function drawCenter(dt){
   ps.forEach((p,i)=>{
     const base=20+((i*41)%150),x=base+Math.sin(T*.4+i*1.7)*12,y=88+(i%3)*6;
     drawHero(p.role,p.look,x,y,{s:.5,tier:VTIER[p.gr],attrs:p.attrs,dx:Math.cos(T*.4+i*1.7)>0?1:-1,ph:i*.7});
-    G.save();G.font='3.4px sans-serif';G.textAlign='center';G.fillStyle='rgba(28,36,64,.75)';const nm=p.nick||'요원';const w=G.measureText(nm).width+3;G.fillRect(x-w/2,y-23,w,5);G.fillStyle='#FFFFFF';G.fillText(nm,x,y-19.6);G.restore();
+    G.save();G.font='3.4px sans-serif';G.textAlign='center';G.fillStyle=isGMuid(p.uid)?'rgba(200,140,0,.9)':'rgba(28,36,64,.75)';const nm=(isGMuid(p.uid)?'GM ':'')+(p.nick||'요원');const w=G.measureText(nm).width+3;G.fillRect(x-w/2,y-23,w,5);G.fillStyle='#FFFFFF';G.fillText(nm,x,y-19.6);G.restore();
     if(p.phase==='break'||p.phase==='auto'){G.globalAlpha=.6+.4*Math.sin(T*4+i);px(x-1,y-30,3,3,'#FF8FA3');G.globalAlpha=1}
   });
   drawHero(S.role||'sentinel',S.look,96,96,{s:.75,tier:visTier(),attrs:S.attrs||[],dx:0});
@@ -3600,7 +3746,7 @@ function renderChat(keepInput){
   else if(!ms.length)body='<p class="muted chatempty">아직 대화가 없습니다. 먼저 인사를 건네 보세요.</p>';
   else{let prev=null;body='<ul class="chat">'+ms.map((m,i)=>{const me=m.uid===NET.uid,nx=ms[i+1];
       const cont=prev&&prev.uid===m.uid&&(m.t-prev.t)<180000,last=!nx||nx.uid!==m.uid||(nx.t-m.t)>=180000;prev=m;
-      return `<li class="${me?'me':'them'}${cont?' cont':''}">${!me&&!cont?`<b>${esc(String(m.nick||'요원'))}</b>`:''}<div class="bub"><span>${esc(m.text)}</span>${last?`<time>${chatTime(m.t)}</time>`:''}</div></li>`}).join('')+'</ul>'}
+      return `<li class="${me?'me':'them'}${cont?' cont':''}">${!me&&!cont?`<b>${gmTag(m.uid)}${esc(String(m.nick||'요원'))}</b>`:''}<div class="bub"><span>${esc(m.text)}</span>${last?`<time>${chatTime(m.t)}</time>`:''}</div></li>`}).join('')+'</ul>'}
   /* 입력칸은 다시 만들지 않습니다. 새 메시지가 와도 쓰던 글과 커서, 한글 조합이 그대로 남아 연달아 보낼 수 있습니다 */
   if(!$('chatList')||!$('chatForm')){box.innerHTML=`<div id="chatHead"></div><div id="chatList" class="chatlist"></div><button type="button" class="chatnew" id="chatNew" hidden>새 메시지 ↓</button><form class="chatform" id="chatForm"><input id="chatIn" maxlength="120" autocomplete="off" enterkeyhint="send"><button type="submit" class="sbtn">보내기</button></form>`;
     $('chatList').addEventListener('scroll',()=>{const l=$('chatList');if(l.scrollHeight-l.scrollTop-l.clientHeight<24)$('chatNew').hidden=true})}
@@ -4237,17 +4383,21 @@ const gMastLv=()=>Math.floor((S.bond||0)/20)+1;
 const gMastMul=()=>1+Math.min(.5,(gMastLv()-1)*.05);
 /* 게이트 안 가이딩(가이드): 5초마다 한 번, 함께 싸우는 센티넬의 폭주를 낮추고 HP를 조금 회복합니다 */
 const GG_CD=5000;
-function gateGuide(){
+function gateGuide(auto){
   if(S.phase!=='focus'||S.role!=='guide'||!S.curGate||S.curGate.train||S.curGate.report||cine)return;
-  const c=S.curGate,t=now();if((c.ggAt||0)>t){pop(`다음 가이딩까지 ${Math.ceil((c.ggAt-t)/1000)}초`,'miss');return}
-  const hs=hpNow();if(hs&&hs.down){pop('쓰러져 있어 가이딩할 수 없습니다','miss');return}
+  const c=S.curGate,t=now();if(!auto&&!c.ggAuto){c.ggAuto=true;toast('이 게이트에서는 이제 가이딩이 자동으로 이어집니다.');meSay('ggIn',true)}
+  if((c.ggAt||0)>t){if(!auto)pop(`다음 가이딩까지 ${Math.ceil((c.ggAt-t)/1000)}초`,'miss');return}
+  const hs=hpNow();if(hs&&hs.down){if(!auto)pop('쓰러져 있어 가이딩할 수 없습니다','miss');return}
   ac();c.ggAt=t+GG_CD;const mul=gMastMul()*(matchN()>0?1.2:1);
   const cut=Math.round(2.5*mul*10)/10;c.gCut=Math.round(((c.gCut||0)+cut)*10)/10;
   if(hs&&c.hpNet!=null){const heal=Math.round(hs.max*.04*mul);newSeg(t,{});c.seg.hp0=Math.min(hs.max,hs.hp+heal);floats.push({x:76,y:60,n:'+'+heal,c:'#6CE38A',t:.9})}
   S.bond=(S.bond||0)+1;c.ggN=(c.ggN||0)+1;
   ggFx=1;beep(880,.08,'triangle',.04);beep(1175,.12,'triangle',.035,.08);
-  pop(`가이딩! 폭주 -${cut}`,'good');save();updateUI();
+  if(!auto||!document.hidden)pop(`가이딩! 폭주 -${cut}`,'good');save();updateUI();
 }
+/* 한 번 누르면 그 게이트가 끝날 때까지 5초마다 자동으로 가이딩합니다. 탭을 닫아 두었다가 돌아오면 밀린 만큼 한꺼번에 계산합니다 */
+function ggCatchUp(){const c=S.curGate;if(S.phase!=='focus'||S.role!=='guide'||!c||!c.ggAuto)return;const end=Math.min(now(),S.phaseEnd);let n=0;while((c.ggAt||0)<=end&&n<800){const s0=hpSeg(),at=Math.max(c.ggAt||end,s0?s0.t0:0);const hs=hpNow(at);c.ggAt=at+GG_CD;n++;if(hs&&hs.down)continue;const mul=gMastMul()*(matchN()>0?1.2:1);c.gCut=Math.round(((c.gCut||0)+Math.round(2.5*mul*10)/10)*10)/10;if(hs&&c.hpNet!=null){newSeg(at,{});c.seg.hp0=Math.min(hs.max,hs.hp+Math.round(hs.max*.04*mul))}S.bond=(S.bond||0)+1;c.ggN=(c.ggN||0)+1}if(n){if(!document.hidden&&!cine){ggFx=1;beep(880,.06,'triangle',.03)}save()}}
+setInterval(()=>{if(!cine)ggCatchUp()},1000);
 let ggFx=0;
 function say(key){
   const p=S.partner;
@@ -4417,7 +4567,7 @@ const SK_COL={rain:'#7FD6FF',slam:'#FF8FA3',summon:'#B48CFF',wave:'#9FD6FF',dive
 function bossCast(gate,bx,i){
   const sk=skillAt(gate,i),n=sk.n,k=sk.k;
   boss.cast={n,k,t:Math.max(.1,(skHitAt(i)-now())/1000),c:SK_COL[k]||'#FF8FA3',shield:sk.shield,dmg:skillDmg(gate,sk)};skBanner={n:(gate.boss?gate.boss+' · ':'')+n,t:2.4,c:boss.cast.c};
-  floats.push({x:boss.x,y:40,n:'!',c:'#FF5A6E',t:1});beep(220,.12,'sawtooth',.03);
+  floats.push({x:boss.x,y:40,n:'!',c:'#FF5A6E',t:1});beep(220,.12,'sawtooth',.03);if(Math.random()<.3)setTimeout(()=>{if(S.phase==='focus'){say('skill');if(Math.random()<.5)setTimeout(()=>meSay('skill',true),1400)}},900);
 }
 function bossFire(gate,bx){
   const c=boss.cast;boss.cast=null;const k=c.k,col=c.c;boss.atk=.35;hpAdvance();
@@ -4477,10 +4627,10 @@ function drawFx(bx){
     G.globalAlpha=.5;circle(boss.x,top+10,8+Math.sin(T*12)*2,c.c);G.globalAlpha=1}
   if(boss&&boss.shield){G.globalAlpha=.35+.15*Math.sin(T*6);circle(boss.x,76,18,'#FFE27A');circle(boss.x,76,17,'#FFFFFF');G.globalAlpha=1}
   if(skBanner){const a=Math.min(1,skBanner.t*2,(2.4-skBanner.t)*6);G.save();G.globalAlpha=a;G.font='bold 5px "IBM Plex Sans KR",sans-serif';G.textAlign='center';const w=G.measureText(skBanner.n).width+12;
-    G.fillStyle='rgba(28,20,48,.82)';G.fillRect(96-w/2,8,w,9);G.fillStyle=skBanner.c;G.fillRect(96-w/2,8,2,9);G.fillRect(96+w/2-2,8,2,9);G.fillStyle='#FFFFFF';G.fillText(skBanner.n,96,14.4);G.restore()}
+    G.fillStyle='rgba(28,20,48,.82)';G.fillRect(96-w/2,20,w,9);G.fillStyle=skBanner.c;G.fillRect(96-w/2,20,2,9);G.fillRect(96+w/2-2,20,2,9);G.fillStyle='#FFFFFF';G.fillText(skBanner.n,96,26.4);G.restore()}
   if(heroHit>.2&&!reduce){G.globalAlpha=(heroHit-.2)*.6;px(0,0,W,H,'#FF3B3B');G.globalAlpha=1}
 }
-function battleUpdate(dt,bx,berserk,gate,gx){
+function battleUpdate(dt,bx,berserk,gate,gx,frontS){
   const frac=fracNow(),dist=DIST[gate.d],col=gate.raid?'#9B7BF2':gate.train?'#C98E66':gate.exam?'#8E95AE':dist.mc;
   const si=sentInfo(),gi=guideInfo(),n=matchN(),m=matchMult(n);
   if(frac>=.6&&!boss){boss={x:184,type:gate.train?3:gate.exam?5:bossTypeOf(gate,dist.mon[0]),flash:0,vi:0};if(!S.bossSaid){S.bossSaid=true;say('boss')}}
@@ -4500,7 +4650,7 @@ function battleUpdate(dt,bx,berserk,gate,gx){
   };
   const f=mons[0],target=f&&f.x<=bx+12.5?f:(!f&&boss&&boss.x<=bx+23.5?boss:null);
   const hs=hpNow(),dn=hs&&hs.down,dm=(1+((gate.dmg||0)/100))*(gate.aff||1),cr=()=>Math.random()*100<(gate.crit||5);
-  if(target&&atkCD<=0&&S.role!=='guide'&&!dn){atkCD=berserk?.32:.6;atkT=.22;const c=cr();
+  if(target&&atkCD<=0&&(frontS??S.role!=='guide')&&!(S.role==='sentinel'&&dn&&gx===bx)){atkCD=berserk?.32:.6;atkT=.22;const c=cr();
     hit(target,Math.round((3+powerOf(si.lv,si.gr)*.9+Math.random()*3)*(1+.1*n)*(berserk?2:1)*(S.role==='sentinel'?myMast():1)*dm*(c?2:1)),c?'#FFB627':berserk?'#F0544F':'#FFFFFF',true);if(c)floats.push({x:target.x,y:(target===boss?48:62),n:'치명!',c:'#FFB627',t:.8})}
   const gt=mons.find(mm=>mm.x<168)||(boss&&boss.x<176?boss:null);
   if(gt&&gCD<=0&&S.role==='guide'&&!dn){gCD=.55;gAtk=.25;const c=cr();shots.push({x:gx+6,y:82,t:gt,dmg:Math.max(1,Math.round((3+powerOf(gi.lv,gi.gr)*.9+Math.random()*3)*.5*m*(S.role==='guide'?myMast():1)*dm*(c?2:1)))});beep(1318,.03,'triangle',.012)}
@@ -4530,7 +4680,7 @@ const GATE_MAX=4,ALLY_POS=[[56,92],[40,88],[24,92]];
 const myPtnCard=()=>S.partner?{role:S.partner.role||'guide',look:S.partner.look,tier:VTIER[S.partner.grade]||0,attrs:S.partner.attrs||[],nick:S.partner.name,npc:true}:null;
 function allySlots(gate){
   const others=peersOn(gate.id).slice(0,GATE_MAX-1);
-  const pl=others.map(p=>({uid:p.uid,role:p.role,look:p.look,tier:VTIER[p.gr],attrs:p.attrs,nick:p.nick||'요원',wp:p.wp,wa:p.wa,npc:false,ptn:p.ptn}));
+  const pl=others.map(p=>({uid:p.uid,away:!!p.away,role:p.role,look:p.look,tier:VTIER[p.gr],attrs:p.attrs,nick:p.nick||'요원',wp:p.wp,wa:p.wa,npc:false,ptn:p.ptn}));
   const ptnOf=p=>p.ptn?{role:p.ptn.role,look:p.ptn.look,tier:VTIER[p.ptn.gr]||0,attrs:p.ptn.attrs,nick:p.ptn.nick,npc:true}:null;
   const free=GATE_MAX-1-pl.length,npcs=[];
   if(pl.length===0){const m=myPtnCard();if(m)npcs.push(m)}
@@ -4540,11 +4690,22 @@ function allySlots(gate){
     const c=all.me?myPtnCard():ptnOf(all);if(c)npcs.push(c)}
   return [...pl,...npcs.slice(0,free)];
 }
-function drawAllies(dt,gate){
-  allySlots(gate).forEach((a,i)=>{const [x,fy]=ALLY_POS[i];
-    drawHero(a.role,a.look,x,fy,{s:.5,wp:a.wp,wa:a.wa,tier:a.tier,attrs:a.attrs,dx:1,ph:i+.3,atk:Math.sin(T*2+i*1.3)>.85?.2:0});
+/* 줄 세우기: 센티넬이 앞에서 싸우고 가이드는 뒤에서 돕습니다. 같은 역할끼리는 플레이어 → NPC, 그다음 UID 순서라
+   같은 게이트의 모든 플레이어가 같은 순서로 봅니다. 맨 앞(76) 자리가 몬스터와 맞붙는 자리입니다. */
+const LINE_POS=[[76,92],[56,92],[40,88],[24,92]];
+function lineup(gate){
+  const meE={me:true,role:S.role||'sentinel',uid:NET.uid||'~me',npc:false};
+  const al=(!cine&&S.curGate&&!gate.train&&!gate.report)?allySlots(gate):[];
+  const all=[meE,...al.map((a,i)=>({...a,uid:a.uid||('~npc'+i)}))];
+  all.sort((x,y)=>(x.role==='sentinel'?0:1)-(y.role==='sentinel'?0:1)||(x.npc?1:0)-(y.npc?1:0)||String(x.uid).localeCompare(String(y.uid)));
+  return all.slice(0,LINE_POS.length).map((e,i)=>({...e,x:LINE_POS[i][0],fy:LINE_POS[i][1],front:i===0}));
+}
+function drawAllies(dt,gate,line){
+  line.forEach((a,i)=>{if(a.me)return;const x=a.x,fy=a.fy;
+    const atk=a.front?(a.role==='sentinel'?atkT:0):(Math.sin(T*2+i*1.3)>.85?.2:0);
+    drawHero(a.role,a.look,x-(a.front&&heroHit>0?2:0),fy,{s:.5,wp:a.wp,wa:a.wa,tier:a.tier,attrs:a.attrs,dx:1,ph:i+.3,atk});
     if(!reduce&&Math.random()<dt*.6)burst(x+10,fy-12,['#FFFFFF',ATTRS[(a.attrs||[])[0]??0].col],3,18,0);
-    if(!a.npc){G.save();G.font='600 3.4px "IBM Plex Sans KR",sans-serif';G.textAlign='center';const nm=String(a.nick).slice(0,8),w=G.measureText(nm).width+4;G.fillStyle='rgba(47,91,234,.85)';G.fillRect(x-w/2,fy-24,w,4.6);G.fillStyle='#fff';G.fillText(nm,x,fy-20.6);G.restore()}});
+    if(!a.npc){G.save();G.font='600 3.4px "IBM Plex Sans KR",sans-serif';G.textAlign='center';const nm=(isGMuid(a.uid)?'GM ':'')+String(a.nick).slice(0,8),w=G.measureText(nm).width+4;G.fillStyle=isGMuid(a.uid)?'rgba(200,140,0,.92)':a.away?'rgba(120,128,150,.85)':'rgba(47,91,234,.85)';G.fillRect(x-w/2,fy-24,w,4.6);G.fillStyle='#fff';G.fillText(nm,x,fy-20.6);G.restore()}});
 }
 function drawBattle(dt){
   const gate=cine?cine.gate:S.curGate;if(!gate)return;
@@ -4564,20 +4725,20 @@ function drawBattle(dt){
   if(cine&&cine.seal&&cine.t>1.5&&cine.t<1.9){G.globalAlpha=1-(cine.t-1.5)/.4;px(0,0,W,H,'#FFFFFF');G.globalAlpha=1}
   // 함께 공략 중인 다른 요원
   /* 전투는 혼자 나갑니다. 같은 게이트에 들어온 다른 요원만 함께 보인다 */
-  const bx=76,me=S.role||'sentinel';
-  /* 함께 싸우는 동료: 기본은 NPC 3명, 같은 게이트에 플레이어가 들어오면 NPC 자리를 차례로 차지합니다(최대 8명) */
-  if(!cine&&S.curGate&&!gate.train&&!gate.report)drawAllies(dt,gate);
-  if(!cine)battleUpdate(dt,bx,rw>=100,gate,bx);
+  const bx=76,me=S.role||'sentinel',line=lineup(gate),mine=line.find(e=>e.me)||{x:bx,fy:92,front:true},mx=mine.x,my=mine.fy;
+  if(!cine)drawAllies(dt,gate,line);
+  if(!cine)battleUpdate(dt,bx,rw>=100,gate,mx,line[0]&&line[0].role==='sentinel');
   const hs=!cine&&!gate.train?hpNow():null;
-  if(hs&&hs.down){G.globalAlpha=.45;drawHero(me,S.look,bx,92,{s:.5,tier:visTier(),attrs:S.attrs||[],still:true,dx:1});G.globalAlpha=1;
-    px(bx-9,93,18,2,'rgba(28,36,64,.25)');G.save();G.font='bold 4.5px sans-serif';G.textAlign='center';G.fillStyle='#FFFFFF';G.strokeStyle='rgba(28,36,64,.8)';G.lineWidth=1.4;const t='부활까지 '+mmss(hs.left);G.strokeText(t,bx,62);G.fillText(t,bx,62);G.restore();
-    if(Math.random()<dt*2)parts.push({x:bx-4+Math.random()*8,y:80,vx:0,vy:-6,life:1,c:'#7DD181',g:0})}
-  else drawHero(me,S.look,bx-(heroHit>0?2:0),92,{s:.5,wp:myWeapon(),wa:myWeaponAttr(),tier:visTier(),attrs:S.attrs||[],atk:cine?0:(me==='guide'?gAtk:atkT),rw:me==='sentinel'?rw:0,berserk:me==='sentinel'&&rw>=100,dx:1});
-  if(hs){const w=20,f=hs.hp/hs.max;px(bx-w/2-1,64,w+2,4,'rgba(28,36,64,.7)');px(bx-w/2,65,Math.round(w*f),2,f>.5?'#6CE38A':f>.25?'#FFC23D':'#F0544F');
-    if(!hs.down){G.save();G.font='bold 3.4px sans-serif';G.textAlign='center';G.fillStyle='#FFFFFF';G.fillText(`HP ${hs.hp}`,bx,63);G.restore()}}
+  if(hs&&hs.down){G.globalAlpha=.45;drawHero(me,S.look,mx,my,{s:.5,tier:visTier(),attrs:S.attrs||[],still:true,dx:1});G.globalAlpha=1;
+    px(mx-9,my+1,18,2,'rgba(28,36,64,.25)');G.save();G.font='bold 4.5px sans-serif';G.textAlign='center';G.fillStyle='#FFFFFF';G.strokeStyle='rgba(28,36,64,.8)';G.lineWidth=1.4;const t='부활까지 '+mmss(hs.left);G.strokeText(t,mx,my-30);G.fillText(t,mx,my-30);G.restore();
+    if(Math.random()<dt*2)parts.push({x:mx-4+Math.random()*8,y:my-12,vx:0,vy:-6,life:1,c:'#7DD181',g:0})}
+  else drawHero(me,S.look,mx-(mine.front&&heroHit>0?2:0),my,{s:.5,wp:myWeapon(),wa:myWeaponAttr(),tier:visTier(),attrs:S.attrs||[],atk:cine?0:(me==='guide'?gAtk:mine.front?atkT:0),rw:me==='sentinel'?rw:0,berserk:me==='sentinel'&&rw>=100,dx:1});
+  /* 내 HP: 내 캐릭터 머리 위에 크게 표시합니다 */
+  if(hs){const w=26,f=hs.hp/hs.max,y0=my-34;px(mx-w/2-1,y0,w+2,5,'rgba(28,36,64,.85)');px(mx-w/2,y0+1,w,3,'#3A2A3A');px(mx-w/2,y0+1,Math.round(w*f),3,f>.5?'#6CE38A':f>.25?'#FFC23D':'#F0544F');px(mx-w/2,y0+1,Math.round(w*f),1,'rgba(255,255,255,.45)');
+    if(!hs.down){G.save();G.font='bold 4.2px "IBM Plex Sans KR",sans-serif';G.textAlign='center';G.lineWidth=1.3;G.strokeStyle='rgba(28,36,64,.9)';const t=`HP ${hs.hp}/${hs.max}`;G.strokeText(t,mx,y0-1.2);G.fillStyle='#FFFFFF';G.fillText(t,mx,y0-1.2);G.restore()}}
   if(!cine){drawShots();drawFx(bx);
-    if(ggFx>0){ggFx=Math.max(0,ggFx-dt*1.2);const tx=ALLY_POS[0][0],r=(1-ggFx)*26;G.globalAlpha=ggFx;circle(bx,80,4+r*.6,'#6CE38A');for(let i=0;i<6;i++){const k=((1-ggFx)+i/6)%1;px(bx+(tx-bx)*k,74-Math.sin(k*Math.PI)*10,2,2,i%2?'#FFFFFF':'#9FF0B5')}G.globalAlpha=1}
-    if(S.role==='guide'&&S.phase==='focus'&&S.curGate&&!S.curGate.train&&(S.curGate.ggAt||0)<=now()&&Math.floor(T*2)%2){G.save();G.font='bold 4px sans-serif';G.textAlign='center';G.fillStyle='#21A574';G.fillText('가이딩 준비',bx,57);G.restore()}}
+    if(ggFx>0){ggFx=Math.max(0,ggFx-dt*1.2);const tx=bx,r=(1-ggFx)*26;G.globalAlpha=ggFx;circle(mx,my-12,4+r*.6,'#6CE38A');for(let i=0;i<6;i++){const k=((1-ggFx)+i/6)%1;px(mx+(tx-mx)*k,74-Math.sin(k*Math.PI)*10,2,2,i%2?'#FFFFFF':'#9FF0B5')}G.globalAlpha=1}
+    if(S.role==='guide'&&S.phase==='focus'&&S.curGate&&!S.curGate.train&&(S.curGate.ggAt||0)<=now()&&Math.floor(T*2)%2){G.save();G.font='bold 4px sans-serif';G.textAlign='center';G.fillStyle='#21A574';G.fillText(S.curGate.ggAuto?'자동 가이딩':'가이딩 준비',mx,my-41);G.restore()}}
   G.restore();
 }
 const RING_P=1800,RING_TARGET=10;
@@ -4648,10 +4809,12 @@ function startFocus(){
   Object.assign(S,{phase:'focus',phaseStart:now(),phaseEnd:now()+focusMsOf(g),awayMs:0,awayPen:0,hiddenAt:null,
     runawayStart:S.runaway,gain:gainOf(g),brkMs:brkMsOf(g),curGate:{id:g.id,party:!!(S.party&&partySize()>1&&!g.train&&!g.exam),report:!!g.report,mins:g.mins||0,dual:!!(S.dualTrain&&!g.train&&!g.exam),d:g.d,g:g.g,raid:!!g.raid,len:lenOf(g),gen:g.gen||1,day:g.day||'',train:!!g.train,exam:!!g.exam,boss:g.boss,name:g.name||'',ap:g.ap||0},kills:0,midSaid:false,hotSaid:false,bossSaid:false});
   {const nb=(g.train||g.report)?{}:(S.nextBuff||{});const hp=hpPlan(g,nb.def||0),cs=combatStats();S.curGate.hpMax=hp.max;S.curGate.hpNet=hp.net;S.curGate.defBuf=nb.def||0;S.curGate.atkBuf=nb.atk||0;if(!g.train&&!g.report&&(nb.def||nb.atk)){S.nextBuff=null;toast('준비해 둔 물약 효과가 이번 출동에 적용됩니다.')}S.curGate.dmg=cs.dmg+(S.curGate.atkBuf||0);S.curGate.crit=cs.crit;S.curGate.aff=affMul(g).m}
-  resetBattle();if(typeof closeDrawer==='function')closeDrawer();reqWake();say(matchN()>0?'match':'focusStart');beep(392,.1);beep(523,.14,'square',.045,.1);save();pushPresence();updateUI(true);
+  resetBattle();try{sortieStart()}catch(e){}if(typeof closeDrawer==='function')closeDrawer();reqWake();say(matchN()>0?'match':'focusStart');beep(392,.1);beep(523,.14,'square',.045,.1);save();pushPresence();updateUI(true);
 }
 async function completeFocus(early){
   if(S.phase!=='focus')return;
+  /* 탭을 닫아 둔 동안 밀린 자동 가이딩 · 보스 스킬 · 물약을 먼저 모두 계산한 뒤 결과를 냅니다 */
+  try{ggCatchUp()}catch(e){}
   hpAdvance();
   const gate=S.curGate,eff=effMs(),hs=hpNow(),downMin=hs?Math.min(eff/60000,hs.downMin):0,effMin=Math.max(0,eff/60000-downMin),rw=liveRunaway(),bg=document.hidden;
   /* 대미지 · 치명타는 봉인 기여를 최대 30%까지만 올립니다. 장비가 아무리 좋아도 혼자 게이트를 순식간에 닫을 수는 없다 */
@@ -4679,7 +4842,9 @@ async function completeFocus(early){
   let item=null,gear=null;
   relWake();if(S.runaway>=SEVERE){beginAuto();toastLater('센티넬 상태가 심각해 자동 가이딩으로만 안정시킬 수 있습니다.')}else startBreak(directMinFor(S.runaway)*60e3);
   S.curGate=null;save();pushPresence();updateUI(true);
-  const res=early?{skip:true}:gate.raid?await contributeRaid(effMin*powMul,gate.day):await contribute(gate,effMin*powMul);
+  const was=await sortieFinish();/* 탭을 닫아 둔 사이 다른 요원이 이미 정산했다면 봉인에는 다시 넣지 않습니다 */
+  const res=early?{skip:true}:gate.raid?await contributeRaid(effMin*powMul,gate.day):await contribute(gate,was==='settled'||was==='expired'?0:effMin*powMul);
+  if(was==='settled'&&!early)toastLater('자리를 비운 사이 다른 요원이 이번 출동의 봉인 기여를 대신 정산해 두었습니다.');
   checkAch();
   if(res&&res.closed)S.closedByMe++;
   if(!early&&!gate.report&&(res.closed||examResult||Math.random()<(gate.train?.1:.25+(gate.g>=3?.15:0)))){item={id:'i'+Date.now().toString(36),attr:pick(STONE_ATTRS)};S.items.push(item)}
@@ -4825,12 +4990,90 @@ function drawTraining(id,dt){
     sceneLabel(`집중도 ${Math.round(fr*100)}%`,96,28);
   }
 }
+/* ═════════ 출동 기록(sorties) · GM 표시 ═════════
+   탭을 닫아도 다른 요원에게 보이도록, 출동할 때 시작 · 끝 시각과 분당 기여량을 sorties/{uid}에 적어 둡니다.
+   - 다른 요원 화면은 이 기록으로 "지금까지 쌓였을 봉인"을 직접 계산해 보여 주고, 그 요원을 게이트 안에 함께 그립니다.
+   - 끝난 지 90초가 지나도 주인이 돌아오지 않으면, 그 게이트를 보고 있던 요원 화면이 잠금을 걸고 대신 봉인에 넣습니다(정산).
+   - 주인이 나중에 돌아오면 이미 정산된 기록은 봉인에 다시 넣지 않고, 개인 보상만 받습니다. */
+const SORTIE={list:[],sub:null,busy:false};
+const sealMulOf=c=>{const aff=affMul(c);return (c.withPair?1.5:1)*aff.m*(1+.3*(1-Math.exp(-((c.dmg||0)+Math.max(0,(c.crit||5)-5))/150)))};
+function sortieStart(){
+  if(!online()||!S.curGate)return;const c=S.curGate;
+  if(c.train||c.report||c.exam||c.raid)return;
+  const pr={uid:NET.uid,ptn:S.partner?{role:S.partner.role||'guide',look:S.partner.look,gr:clampI(S.partner.grade,7),attrs:(S.partner.attrs||[]).slice(0,3),nick:String(S.partner.name||'').slice(0,10)}:null,
+    title:S.title||null,role:S.role,nick:(S.name||'').slice(0,10),look:S.look,lv:myLevel(),gr:myGrade(),attrs:S.attrs||[],pers:persIdx(S.pers),sp:spIdx(S.speech),wp:myWeapon(),wa:myWeaponAttr(),phase:'focus',gate:c.id};
+  const mpm=Math.round(sealMulOf(c)*1000)/1000;
+  NET.db.doc('sorties/'+NET.uid).set({uid:NET.uid,gate:c.id,startAt:S.phaseStart,endAt:S.phaseEnd,mpm,status:'active',pr,t:now()}).catch(()=>{});
+}
+/* 출동을 마칠 때: 이미 다른 요원이 정산했는지 알려 주고, 기록을 끝남으로 바꿉니다 */
+async function sortieFinish(){
+  if(!online())return null;
+  try{const r=NET.db.doc('sorties/'+NET.uid),s=await r.get();const d=s.exists?s.data():null;
+    if(!d)return null;const was=d.status;
+    if(was==='active')await r.update({status:'done',t:now()});
+    return was}catch(e){return null}
+}
+function watchSorties(){
+  if(SORTIE.sub||!online())return;
+  try{SORTIE.sub=NET.db.collection('sorties').where('status','==','active').onSnapshot(s=>{
+    SORTIE.list=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x&&typeof x.gate==='string'&&+x.startAt>0&&+x.endAt>+x.startAt&&+x.endAt-+x.startAt<=12*3600e3);
+    try{onWorldChange()}catch(e){}
+  },()=>{})}catch(e){}
+}
+/* 접속은 끊겼지만 아직 공략 중인 요원(탭을 닫아 둔 요원) */
+function awayPeers(){
+  const on=new Set(NET.peers.map(p=>peerInfo(p).uid));const t=now();
+  return SORTIE.list.filter(x=>x.uid!==NET.uid&&!on.has(x.uid)&&+x.endAt>t&&x.pr&&x.pr.role).map(x=>({peer:x.uid,presence:{...x.pr,uid:x.uid,phase:'focus',gate:x.gate},away:true}));
+}
+/* 지금까지 쌓였을 봉인(분): 아직 끝나지 않았거나 정산 전인 출동 기록 */
+function projOf(gateId){
+  const t=now();let m=0,n=0;
+  for(const x of SORTIE.list){if(x.gate!==gateId)continue;const el=Math.max(0,Math.min(t,+x.endAt)-+x.startAt)/60000;m+=el*(+x.mpm||1);n++}
+  if(S.phase==='focus'&&S.curGate&&S.curGate.id===gateId&&!SORTIE.list.some(x=>x.uid===NET.uid))m+=Math.max(0,Math.min(t,S.phaseEnd)-S.phaseStart)/60000*sealMulOf(S.curGate);
+  return {m,n};
+}
+/* 끝났는데 주인이 돌아오지 않은 출동을 대신 정산합니다 */
+async function settleSorties(){
+  if(SORTIE.busy||!online())return;SORTIE.busy=true;
+  try{
+    const t=now();
+    for(const x of SORTIE.list.filter(x=>x.uid!==NET.uid&&+x.endAt<t-90e3).slice(0,3)){
+      const ref=NET.db.doc('sorties/'+x.id);
+      try{const l=await ref.acquire({holder:NET.uid,ttlMs:8000});if(l&&!l.acquired)continue}catch(e){}
+      const fresh=await ref.get();const d=fresh.exists?fresh.data():null;if(!d||d.status!=='active')continue;
+      const gref=NET.db.doc('gates/'+d.gate),gs=await gref.get();const g=gs.exists?cleanGate(d.gate,gs.data()):null;
+      if(!g||g.status!=='open'){await ref.update({status:'expired',settledBy:NET.uid,settledAt:t});continue}
+      const mins=Math.round((+d.endAt-+d.startAt)/60000*(+d.mpm||1)*100)/100;
+      const mine=Math.min(600,Math.round(((g.contrib[d.uid]||0)+mins)*100)/100);
+      await gref.update({contrib:{[d.uid]:mine},lastAt:t});
+      await ref.update({status:'settled',settledBy:NET.uid,settledAt:t,settledMins:mins});
+      const sum=g.sum-(g.contrib[d.uid]||0)+mine;
+      if(sum>=g.hp){const n=g.n+(g.contrib[d.uid]?0:1);await closeOnline(gref,g,n)}
+    }
+  }catch(e){}
+  SORTIE.busy=false;
+}
+setInterval(()=>{try{watchSorties();settleSorties()}catch(e){}},30e3);
+setTimeout(()=>{try{watchSorties()}catch(e){}},2500);
+
+/* ── GM 표시: gms 컬렉션에 있는 계정 이름 앞에 GM 마크를 붙입니다 ── */
+const GMSET={ids:new Set(),sub:null};
+function watchGMs(){
+  if(GMSET.sub||!online())return;
+  try{GMSET.sub=NET.db.collection('gms').onSnapshot(s=>{GMSET.ids=new Set(s.docs.map(d=>d.id));try{updateUI(true)}catch(e){}},()=>{})}catch(e){}
+}
+setInterval(()=>{try{watchGMs()}catch(e){}},5000);
+const isGMuid=uid=>!!uid&&GMSET.ids.has(uid);
+const gmTag=uid=>isGMuid(uid)?'<i class="gmmark" title="운영자">GM</i>':'';
 /* ═════════ 계정 · 클라우드 저장 (Firebase 판) ═════════
    계정으로 로그인해야만 게임을 할 수 있습니다. 아이디와 비밀번호로 계정을 만듭니다.
    (Firebase에는 아이디@closegate.game 형태의 가짜 이메일로 저장합니다. 메일은 보내지 않습니다.)
    기록은 본인만 읽고 쓸 수 있는 data/users/<uid>/save 문서에 둡니다. */
 const BOOT_SAVED_AT=S.savedAt||0;
-const ACC={busy:false,dirty:false,lastPush:0,pushing:false,netDone:false};
+const ACC={busy:false,dirty:false,lastPush:0,pushing:false,netDone:false,synced:false};
+/* 이 화면의 기록과 클라우드 기록을 비교하기 전에는 절대 클라우드에 올리지 않습니다.
+   예전에 쓰던 기기를 열었을 때 오래된 기록이 최신 클라우드 기록을 덮어쓰는 것을 막습니다. */
+const cloudReady=()=>cloudOK()&&ACC.synced;
 const AUTH=()=>window.closeGateAuth||null;
 const authReady=()=>!!(NET.db&&AUTH());
 const cloudOK=()=>!!(authReady()&&NET.authed&&NET.uid&&AUTH().isMember());
@@ -4858,7 +5101,8 @@ async function cloudCommit(){
   for(let i=0;i<50&&ACC.pushing;i++)await new Promise(r=>setTimeout(r,100));
   return await cloudPut();
 }
-async function cloudPut(){
+async function cloudPut(force){
+  if(!force&&!ACC.synced)return false;
   if(!cloudOK()||ACC.pushing||ACC.kicked)return false;ACC.pushing=true;
   try{await cloudRef().set({json:JSON.stringify(S),at:Date.now(),name:(S.name||'').slice(0,10),lv:myLevel()});ACC.dirty=false;ACC.lastPush=Date.now();renderAcc();return true}
   catch(e){return false}finally{ACC.pushing=false}
@@ -4881,7 +5125,7 @@ function syncAccScreen(){
 }
 function showAccount(){showScreen('account');$('accGuest').hidden=true;syncAccScreen()}
 /* 로그인한 계정이 확인되기 전에는 게임 화면으로 넘어가지 않는다 */
-function afterAccount(){if(!cloudOK()){showAccount();return}enterGame()}
+function afterAccount(){if(!cloudReady()){showAccount();return}enterGame()}
 function enterGame(){
   if(!S.role)showOnboard();
   /* 등급은 있는데 속성만 비어 있으면(예전 오류로 지워진 경우) 검사를 다시 하지 않고 속성 하나만 채워 둡니다 */
@@ -4943,7 +5187,7 @@ $('accForm').addEventListener('submit',async e=>{
       accMsg('계정을 만드는 중입니다.');
       NET.uid=await AUTH().createAccount(id,pw);NET.authed=true;
       if(inv){try{await NET.db.doc('invites/'+inv.c).update({used:(+inv.d.used||0)+1,usedBy:{[NET.uid]:Date.now()}});S.inviteCode=fmtCode(inv.c)}catch(e){}}
-      S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut();
+      S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut(true);
     }else{
       accMsg('로그인하는 중입니다.');
       NET.uid=await AUTH().signIn(id,pw);NET.authed=true;
@@ -4951,7 +5195,7 @@ $('accForm').addEventListener('submit',async e=>{
       if(ex&&typeof ex.json==='string'){
         const data=JSON.parse(ex.json);data.acct={mode:'cloud',since:(data.acct&&data.acct.since)||Date.now(),id};data.savedAt=+ex.at||Date.now();
         try{localStorage.setItem(KEY,JSON.stringify(data))}catch(err){}
-      }else{S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut()}
+      }else{S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut(true)}
     }
     accMsg('접속 정보를 불러오는 중입니다.');
     location.reload(); /* 로그인한 상태로 서버 연결을 새로 연다 */
@@ -5003,8 +5247,12 @@ async function accOnNet(){
       location.reload();return;
     }
     if(!S.acct||S.acct.mode!=='cloud'){S.acct={mode:'cloud',since:Date.now(),id:AUTH().name()};save()}
-    if(!ex)cloudPut();
-  }catch(e){}
+    ACC.synced=true;if(!ex)cloudPut(true);
+  }catch(e){
+    /* 클라우드 기록을 확인하지 못하면 게임에 들어가지 않고 잠시 뒤 다시 확인합니다 */
+    accMsg('클라우드 기록을 확인하지 못했습니다. 잠시 뒤에 다시 확인합니다.',true);showAccount();setTimeout(accOnNet,5000);return;
+  }
+  try{syncCont()}catch(e){}
   if(!$('account').hidden)enterGame();
 }
 /* ═════════ UI ═════════ */
@@ -5067,14 +5315,14 @@ function renderGateInfo(){
   ${lk&&!g.raid?`<p class="warnline">레벨이 부족합니다. Lv.${REC_LV[g.g]-3} 이상이 되면 도전할 수 있습니다.</p>`:''}`;
 }
 function renderCrew(){
-  const ul=$('crewList'),ps=NET.peers.map(peerInfo);
+  const ul=$('crewList'),onl=NET.peers.map(peerInfo),aw=(typeof awayPeers==='function'?awayPeers():[]).map(x=>({...peerInfo(x),away:true})),ps=[...onl,...aw];
   $('crewEmpty').hidden=ps.length>0;
   ul.innerHTML=ps.slice(0,12).map((p,i)=>{const g=p.gate?gateById(p.gate):null;
-    const st=p.phase==='focus'?(g?esc(gateName(g))+' 공략 중':'게이트 공략 중'):p.phase==='break'?'가이딩 중':p.phase==='auto'?'자동 가이딩 중':'센터 대기';
+    const st=p.away?(g?esc(gateName(g))+' 공략 중 · 자리 비움':'게이트 공략 중 · 자리 비움'):p.phase==='focus'?(g?esc(gateName(g))+' 공략 중':'게이트 공략 중'):p.phase==='break'?'가이딩 중':p.phase==='auto'?'자동 가이딩 중':'센터 대기';
     return `<li><canvas width="48" height="48" data-i="${i}"></canvas><span class="who"><b></b>${p.title?`<em>${esc(p.title)}</em>`:''}<span>${p.role==='guide'?'가이드':'센티넬'} · Lv.${p.lv} · ${st}</span></span><span class="rkb" style="background:${GCOL[p.gr]}">${GRADES[p.gr]}</span>${p.uid&&online()&&!isFriend(p.uid)?`<button type="button" class="sbtn" data-fadd="${esc(p.uid)}" data-fnick="${esc(p.nick||'')}" data-frole="${p.role}">친구 신청</button>`:''}</li>`}).join('');
-  ul.querySelectorAll('li').forEach((li,i)=>{const p=ps[i];li.querySelector('b').textContent=p.nick||'이름 없는 요원';const c=li.querySelector('canvas'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(buildDoll(p.look,'a',0),4,0,24,24,0,0,48,48)});
+  ul.querySelectorAll('li').forEach((li,i)=>{const p=ps[i];li.querySelector('b').textContent=p.nick||'이름 없는 요원';if(isGMuid(p.uid))li.querySelector('b').insertAdjacentHTML('afterbegin',gmTag(p.uid));const c=li.querySelector('canvas'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(buildDoll(p.look,'a',0),4,0,24,24,0,0,48,48)});
   const np=$('netPill');np.classList.toggle('solo',NET.mode!=='online');
-  $('netText').textContent=NET.mode==='online'?(matchMedia('(max-width:760px)').matches?`접속 ${ps.length+1}명`:`온라인 · ${ps.length+1}명 접속`):'혼자';
+  $('netText').textContent=NET.mode==='online'?(matchMedia('(max-width:760px)').matches?`접속 ${onl.length+1}명`:`온라인 · ${onl.length+1}명 접속`):'혼자';
 }
 function renderLog(){
   const items=NET.mode==='online'?NET.log:(S.log||[]);
@@ -5126,6 +5374,18 @@ function renderPartner(){
 let armedEarly=0,armedReset=0;
 const ptCtx=$('ptCv').getContext('2d'),meCtx=$('meCv').getContext('2d');
 function drawSmall(ctx,kind,L,tier,attrs){const p=G;use2x(ctx);px(0,0,48,48,'#EEF3FF');px(0,40,48,8,'#DCE5F7');for(let x=0;x<48;x+=8)px(x+((x/8)%2)*4,40,4,8,'#CFDAF1');drawHero(kind,L,24,44,{tier,attrs,dx:0});G=p}
+/* 시간: 직접 그린 5×7 도트 숫자로 표시합니다. 숫자 폭이 일정해 흔들리지 않고, 작은 화면에서도 또렷합니다 */
+const DIGF={'0':['01110','10001','10011','10101','11001','10001','01110'],'1':['00100','01100','00100','00100','00100','00100','01110'],'2':['01110','10001','00001','00110','01000','10000','11111'],'3':['11110','00001','00001','01110','00001','00001','11110'],'4':['00010','00110','01010','10010','11111','00010','00010'],'5':['11111','10000','11110','00001','00001','10001','01110'],'6':['00110','01000','10000','11110','10001','10001','01110'],'7':['11111','00001','00010','00100','01000','01000','01000'],'8':['01110','10001','10001','01110','10001','10001','01110'],'9':['01110','10001','10001','01111','00001','00010','01100'],':':['0','1','1','0','1','1','0'],'-':['00000','00000','00000','11111','00000','00000','00000']};
+let timerLast='';
+function setTimer(t){
+  const el=$('timer');if(!el)return;t=String(t);if(t===timerLast&&el.firstChild&&el.firstChild.tagName==='CANVAS')return;timerLast=t;el.setAttribute('aria-label','남은 시간 '+t);
+  const sc=matchMedia('(max-width:760px)').matches?3:4,gw=[...t].reduce((w,ch)=>w+((DIGF[ch]||DIGF['0'])[0].length)+1,-1);
+  let c=el.querySelector('canvas');if(!c){el.textContent='';c=document.createElement('canvas');c.setAttribute('aria-hidden','true');el.appendChild(c)}
+  const dpr=Math.max(1,Math.round(devicePixelRatio||1)),u=sc*dpr;c.width=gw*u;c.height=7*u+dpr;c.style.width=gw*sc+'px';c.style.height=(7*sc+1)+'px';
+  const g=c.getContext('2d'),ink=getComputedStyle(el).color||'#1C2440';let x=0;
+  for(const ch of t){const f=DIGF[ch]||DIGF['0'];for(let yy=0;yy<7;yy++)for(let xx=0;xx<f[yy].length;xx++)if(f[yy][xx]==='1'){g.fillStyle='rgba(28,36,64,.22)';g.fillRect((x+xx)*u,yy*u+dpr,u,u);g.fillStyle=ink;g.fillRect((x+xx)*u,yy*u,u,u)}x+=f[0].length+1}
+}
+addEventListener('resize',()=>{timerLast=''});
 function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
   const role=S.role,t=now(),lvI=levelOf(S.xp),rw=liveRunaway();
   document.body.dataset.role=role||'sentinel';
@@ -5137,7 +5397,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
   else if(S.phase==='auto'){label='자동 가이딩 중';timer=mmss(S.phaseEnd-t)}
   else{label=S.assist?'가이딩 지원 중':S.view==='map'?'관제 지도':S.view==='gym'?'훈련장':S.view==='center'?'센터 로비':S.view==='office'?'보고서실':'내 방';timer=sel?mmss(focusMsOf(sel)):'--:--'}
   if(S.phase==='idle'&&!cine&&healLeft()>0)label=`치료 중 · ${mmss(healLeft())}`;
-  $('phaseTag').textContent=label;$('timer').textContent=timer;
+  $('phaseTag').textContent=label;setTimer(timer);
   const idle=S.phase==='idle'&&!cine,onMap=idle&&S.view==='map';$('phaseTag').hidden=onMap;$('timer').hidden=idle&&(!(S.view==='gym'||S.view==='office')||!sel||!sel.train);
   $('homeMenu').hidden=true;$('homePick').hidden=!(idle&&S.view==='home');$('centerPick').hidden=!(idle&&S.view==='center');$('mainBtn').hidden=idle&&(S.view==='home'||S.view==='center');$('backBtn').hidden=!(idle&&['map','gym','office'].includes(S.view));$('officeSub').textContent=`1분에 ${reportRate()} 크레딧`;$('partySub').textContent=S.party?`파티 ${S.party} · ${partySize()}명`:'함께 출동합니다';$('guideSub').textContent=S.role==='guide'?'센티넬을 가이딩합니다':'가이딩 요청 확인';$('homeAp').textContent=Math.floor(S.ap||0);
   $('killTag').hidden=S.phase!=='focus';$('killTag').textContent='KO '+S.kills;
@@ -5156,7 +5416,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
     const sev=S.runaway>=SEVERE;sb.hidden=!(S.runaway>0)||sev;sb.textContent=`직접 가이딩 ${directMinFor(S.runaway)}분`;
     s2.hidden=!(S.runaway>0);s2.textContent=sev?`자동 가이딩 ${autoMinFor(S.runaway)}분 (심각)`:`자동 가이딩 ${autoMinFor(S.runaway)}분`;
   }else if(S.phase==='focus'){mb.classList.add(armedEarly>t?'armed':'ghost');mb.textContent=armedEarly>t?'한 번 더 누르면 귀환합니다':'긴급 귀환';
-    const gg=S.role==='guide'&&S.curGate&&!S.curGate.train&&!S.curGate.report;sb.hidden=!gg;if(gg){const l=Math.max(0,(S.curGate.ggAt||0)-t);sb.textContent=l>0?`가이딩 준비 중 ${Math.ceil(l/1000)}초`:'가이딩하기 (화면을 눌러도 됩니다)';sb.disabled=l>0}}
+    const gg=S.role==='guide'&&S.curGate&&!S.curGate.train&&!S.curGate.report;sb.hidden=!gg;if(gg){const l=Math.max(0,(S.curGate.ggAt||0)-t);sb.textContent=S.curGate.ggAuto?`자동 가이딩 중 · ${S.curGate.ggN||0}번`:l>0?`가이딩 준비 중 ${Math.ceil(l/1000)}초`:'가이딩 시작 (이후 자동으로 이어집니다)';sb.disabled=!!S.curGate.ggAuto||l>0}}
   else if(S.phase==='break'){mb.textContent='호흡 맞추기';sb.hidden=false;sb.textContent=`자동 가이딩 ${autoMinFor(S.runaway)}분`;s2.hidden=false;s2.textContent='휴식 건너뛰기'}
   else{mb.textContent='자동 가이딩 중';mb.disabled=true;sb.hidden=false;sb.textContent='자동 가이딩 멈추기'}
   // 내 상태
@@ -5175,7 +5435,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
   $('stTotal').textContent=fmtMin(S.totalMin);$('stSess').textContent=S.sessions+'회';
   $('stToday').textContent=(S.todayDate===today()?S.todayCount:0)+'회';$('stClose').textContent=S.closedByMe+'개';
   renderPartner();
-  {const hn=$('hudName'),tt=S.title?achTitle(S.title):'';hn.textContent=S.name||'이름 없음';if(tt){const em=document.createElement('em');em.className='htitle';em.textContent=tt;hn.appendChild(em)}}$('hudLv').textContent=`Lv.${lvI.lv} · ${GRADES[gr]}급 ${role==='guide'?'가이드':'센티넬'}`;
+  {const hn=$('hudName'),tt=S.title?achTitle(S.title):'';hn.textContent=S.name||'이름 없음';if(isGMuid(NET.uid))hn.insertAdjacentHTML('afterbegin',gmTag(NET.uid));if(tt){const em=document.createElement('em');em.className='htitle';em.textContent=tt;hn.appendChild(em)}}$('hudLv').textContent=`Lv.${lvI.lv} · ${GRADES[gr]}급 ${role==='guide'?'가이드':'센티넬'}`;
   $('hudXp').style.width=Math.min(100,lvI.into/lvI.need*100)+'%';
   const dg=$('dockGate'),cg=S.phase==='focus'&&S.curGate?(gateById(S.curGate.id)||S.curGate):sel;
   if(S.assist)dg.innerHTML=`<b>${esc(S.assist.snick)}</b> 센티넬 가이딩 지원 중 · 맞춘 호흡 ${S.assist.taps}${gAutoNote()}`;else if(S.phase==='break'||S.phase==='auto')dg.innerHTML=`<b>${esc(S.realGuide?S.realGuide.nick:S.partner?S.partner.name:'')}</b> ${S.realGuide?'가이드(플레이어)':'요원'}와 가이딩 중 · 폭주 ${Math.round(rw)}${S.phase==='break'?gAutoNote():''}`;
@@ -5575,7 +5835,7 @@ function renderLenPick(force){const el=$('lenPick');if(!el)return;const sel=gate
 
 /* 타이틀 화면으로 돌아가기 · 이어서 하기 */
 function goTitle(){$('settings').hidden=true;if(typeof closeDrawer==='function')closeDrawer();showAccount();syncCont()}
-function syncCont(){const reg=!S.role&&!!S.pendingRole&&!!S.pendingRoll;const ok=!!((S.role&&S.grade!=null||reg)&&(S.acct&&(S.acct.mode==='guest'||cloudOK())));$('accCont').hidden=!ok;if(ok&&S.acct.mode==='guest')$('accGuest').hidden=true;
+function syncCont(){const reg=!S.role&&!!S.pendingRole&&!!S.pendingRoll;const ok=!!((S.role&&S.grade!=null||reg)&&(S.acct&&(S.acct.mode==='guest'||cloudReady())));$('accCont').hidden=!ok;if(ok&&S.acct.mode==='guest')$('accGuest').hidden=true;
   const inAcc=ok&&S.acct.mode!=='guest'&&cloudOK();
   $('accNew').hidden=$('accLogin').hidden=inAcc;$('accSwitchRow').hidden=!inAcc;$('accNote').hidden=inAcc;
   const grid=$('accCont').parentElement;if(grid)grid.classList.toggle('single',inAcc);
@@ -5583,7 +5843,7 @@ function syncCont(){const reg=!S.role&&!!S.pendingRole&&!!S.pendingRoll;const ok
   if(ok)$('accContD').textContent=reg?`등록 중인 ${GRADES[S.pendingRoll.grade]}급 ${S.pendingRole==='guide'?'가이드':'센티넬'} · 측정 결과가 그대로 남아 있습니다.`:`${S.name||'이름 없는 요원'} · Lv.${myLevel()} ${GRADES[myGrade()]}급 ${S.role==='guide'?'가이드':'센티넬'}로 이어서 합니다.`}
 $('toTitle').addEventListener('click',goTitle);
 $('accSwitch').addEventListener('click',()=>$('accOut').click());
-$('accCont').addEventListener('click',()=>{if(S.acct&&S.acct.mode==='cloud'&&!cloudOK()){toast('계정 확인이 끝난 뒤에 이어서 할 수 있습니다.');return}if(!S.role){showOnboard();return}showGame()});
+$('accCont').addEventListener('click',()=>{if(S.acct&&S.acct.mode==='cloud'&&!cloudReady()){toast('클라우드 기록을 확인하는 중입니다. 잠시 뒤에 이어서 할 수 있습니다.');return}if(!S.role){showOnboard();return}showGame()});
 setInterval(()=>{if(!$('account').hidden)syncCont()},1500);
 
 

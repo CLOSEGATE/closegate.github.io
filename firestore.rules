@@ -11,6 +11,17 @@ service cloud.firestore {
     function muteDoc() { return /databases/$(database)/documents/mutes/$(request.auth.uid); }
     function notMuted() { return !exists(muteDoc()) || get(muteDoc()).data.until < request.time.toMillis(); }
 
+    // 출동 기록: 본인만 만들고 고칩니다. 다른 요원은 끝난 기록을 정산(settled/expired)으로만 바꿀 수 있습니다.
+    match /sorties/{uid} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.auth.uid == uid && notBanned() && request.resource.data.size() < 20;
+      allow update: if signedIn() && (
+        (request.auth.uid == uid && request.resource.data.size() < 20)
+        || (resource.data.status == 'active'
+            && request.resource.data.status in ['settled','expired']
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','settledBy','settledAt','settledMins'])
+            && request.resource.data.endAt < request.time.toMillis()));
+    }
     // 함께 닫는 게이트
     match /gates/{gateId} {
       allow read: if signedIn();
@@ -71,7 +82,8 @@ service cloud.firestore {
     }
     // 운영자(GM): gms/{uid} 문서가 있는 계정만 GM입니다. 콘솔에서 직접 추가합니다.
     match /gms/{uid} {
-      allow read: if signedIn() && request.auth.uid == uid;
+      // 로그인한 누구나 GM 목록을 읽어 이름 앞에 GM 마크를 붙입니다(쓰기는 콘솔에서만)
+      allow read: if signedIn();
       allow write: if false;
     }
     // 우편: GM만 보낼 수 있고, 받는 사람(또는 전체 'all')만 읽습니다. 받는 사람은 '받음' 표시만 바꿀 수 있습니다.
