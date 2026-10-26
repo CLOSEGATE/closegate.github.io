@@ -815,6 +815,12 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
 #wpPv{width:100%;height:auto;border-radius:12px;image-rendering:pixelated;background:#EAF1FC}
 #wpChips{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 @media (max-width:560px){.wpgrid{grid-template-columns:1fr}}
+#hdr .brand{cursor:pointer}#hdr .brand:hover h1{opacity:.75}
+.roomth{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.roomth button{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:6px;border:1px solid var(--line2,#C7D2EF);border-radius:10px;background:var(--panel);cursor:pointer;font:inherit;color:var(--ink)}
+.roomth button i{height:14px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.roomth button span{grid-column:1/-1;font-size:.72rem;text-align:center;margin-top:2px}
+.roomth button[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -2076,13 +2082,27 @@ function themeAnim(t,dt){
   if(t==='lab'&&Math.floor(T*2)%2)px(104,18,1,1,'#F0544F');
 }
 const roomCache={};
+/* 방 테마 10종: 벽 · 벽 무늬 · 포인트(커튼 · 이불 · 러그) · 바닥 */
+const ROOM_TH=[
+  {n:'하늘',w:'#EAF1FC',w2:'#D9E4F7',a:'#6F95F2',a2:'#D3E2FF',f:'#E8C691'},
+  {n:'벚꽃',w:'#FCEFE7',w2:'#F6DFD3',a:'#F49AB3',a2:'#FFDDE5',f:'#E8C691'},
+  {n:'민트',w:'#E9F8F2',w2:'#D2EFE3',a:'#3FBF94',a2:'#CFF3E5',f:'#E3CFA6'},
+  {n:'라벤더',w:'#F2EDFC',w2:'#E2D9F7',a:'#9C7CF0',a2:'#E6DCFF',f:'#DCC8A8'},
+  {n:'레몬',w:'#FFF9E3',w2:'#F7EBC0',a:'#F2B92E',a2:'#FFF0B8',f:'#E8C691'},
+  {n:'피치',w:'#FFF0E8',w2:'#F9DCCD',a:'#F28C6B',a2:'#FFE0D2',f:'#E1BE93'},
+  {n:'숲',w:'#EEF4E6',w2:'#DCE8CF',a:'#5E9E57',a2:'#D6EBC9',f:'#B98A62'},
+  {n:'밤하늘',w:'#2E3656',w2:'#3A4468',a:'#7C8CF2',a2:'#46508A',f:'#6A5A4A'},
+  {n:'모카',w:'#F3EAE0',w2:'#E6D6C4',a:'#A0704C',a2:'#EAD8C4',f:'#C49A6C'},
+  {n:'모노',w:'#F4F5F7',w2:'#E3E6EC',a:'#5A607A',a2:'#DADDE5',f:'#D8D2C8'}
+];
+const roomTheme=role=>Number.isInteger(S.roomTh)&&ROOM_TH[S.roomTh]?S.roomTh:(role==='guide'?1:0);
 function roomBg(role){
-  const N=isNight(),rk=role+(N?'N':'D');if(roomCache[rk])return roomCache[rk];
+  const N=isNight(),th=roomTheme(role),rk=role+th+(N?'N':'D');if(roomCache[rk])return roomCache[rk];
   return roomCache[rk]=withCanvas(W,H,()=>{
-    const g=role==='guide',wall=g?'#FCEFE7':'#EAF1FC',wall2=g?'#F6DFD3':'#D9E4F7',acc=g?'#F49AB3':'#6F95F2',acc2=g?'#FFDDE5':'#D3E2FF';
+    const g=role==='guide',R=ROOM_TH[th],wall=R.w,wall2=R.w2,acc=R.a,acc2=R.a2,FL=R.f,FL2=shade(R.f,-.1);
     px(0,0,W,84,wall);for(let y=6;y<66;y+=8)for(let x=(y/8%2)*8;x<W;x+=16)px(x,y,2,2,wall2);
     px(0,66,W,18,wall2);px(0,66,W,2,shade(wall2,-.12));
-    px(0,84,W,24,'#E8C691');for(let y=88;y<108;y+=5){px(0,y,W,1,'#D6AF7A');for(let x=(y%10)*4;x<W;x+=28)px(x,y,1,5,'#D6AF7A')}
+    px(0,84,W,24,FL);for(let y=88;y<108;y+=5){px(0,y,W,1,FL2);for(let x=(y%10)*4;x<W;x+=28)px(x,y,1,5,FL2)}
     // 창문
     px(140,12,46,34,'#CDB68E');skyWin(142,14,42,30,N,51);
     px(162,14,2,30,'#CDB68E');px(142,28,42,2,'#CDB68E');px(134,9,8,40,acc);px(184,9,6,40,acc);px(132,7,60,3,shade(acc,-.25));
@@ -2160,9 +2180,21 @@ function drawWeapon(w,hx,hy,a,at,bob,berserk){
       G.globalAlpha=Math.min(1,a*5);for(let t=-1.1;t<=1.1;t+=.12)px(hx+3+Math.cos(t)*15,hy-4+Math.sin(t)*12,2,1,ac);G.globalAlpha=1}
     else{px(hx,y-14,2,12,W_);px(hx+1,y-14,1,12,W2);px(hx,y-15,1,1,W_);px(hx-2,y-2,6,1,GL);px(hx-2,y-3,1,1,GL);px(hx+3,y-3,1,1,GL);px(hx,y-1,2,3,BR);px(hx,y+2,2,1,GL)}}
   else if(w==='spear'){
-    if(a>0){const r=Math.round(6+k*10);px(hx-8,hy-3,r+10,1,BR);px(hx+r+2,hy-5,4,5,W_);px(hx+r+6,hy-4,2,3,W_);px(hx+r+8,hy-3,1,1,W_);px(hx+r,hy-4,2,3,'#F0544F');
-      G.globalAlpha=.6;for(let i=0;i<3;i++)px(hx-12+i*3,hy-6+i*3,6,1,ac);G.globalAlpha=1}
-    else{px(hx,y-18,1,26,BR);px(hx-1,y-23,3,5,W_);px(hx,y-25,1,2,W_);px(hx+1,y-22,1,3,W2);px(hx-1,y-18,3,1,GL);px(hx-1,y-17,1,3,'#F0544F');px(hx+1,y-17,1,2,'#F0544F')}}
+    /* 창: 2칸 굵기 자루 + 잎 모양 창날 + 빨간 술. 공격은 뒤로 당겼다가 길게 찌르고 되돌아옵니다 */
+    const DK='#5A3A26',RD='#F0544F',RD2='#B83A36';
+    const tassel=(tx,ty)=>{px(tx,ty,3,1,GL);px(tx,ty+1,1,3,RD);px(tx+1,ty+1,1,4,RD2);px(tx+2,ty+1,1,3,RD)};
+    if(a>0){
+      const off=k<.25?-Math.round(k/.25*4):k<.6?Math.round(-4+(k-.25)/.35*16):Math.round(12-(k-.6)/.4*12);
+      const yy=hy-1,x0=hx-5+off,L=20;
+      px(x0,yy,L,1,BR);px(x0,yy+1,L,1,DK);px(x0-1,yy,1,2,GL);
+      const h=x0+L;px(h,yy-2,2,1,W2);px(h,yy-1,4,1,W_);px(h,yy,6,1,W_);px(h,yy+1,5,1,W2);px(h,yy+2,2,1,W2);px(h+6,yy,1,1,'#FFFFFF');
+      tassel(h-3,yy+2);
+      if(k>.25&&k<.7){G.globalAlpha=.65;for(let n=0;n<3;n++)px(h-14-n*3,yy-3+n*3,8,1,ac);px(h+7,yy,4,1,ac2);G.globalAlpha=1}
+    }else{
+      const top=y-24;px(hx,top+6,1,26,BR);px(hx+1,top+6,1,26,DK);
+      px(hx,top,2,1,W_);px(hx-1,top+1,4,1,W_);px(hx-1,top+2,4,1,W_);px(hx-1,top+3,4,1,W2);px(hx,top+4,2,1,W2);px(hx,top+5,2,1,GL);px(hx,top-1,1,1,'#FFFFFF');
+      tassel(hx-1,top+6);
+    }}
   else if(w==='bow'){
     const pull=a>0?3:0;
     for(let d=-8;d<=8;d++){const bx=hx+3+Math.round((1-(d/8)**2)*4);px(bx,hy-5+d,2,1,BR)}
@@ -3218,7 +3250,7 @@ function chatBadge(){const b=$('chatCount');if(!b)return;const n=['center','part
 async function sendChat(){
   const inp=$('chatIn'),text=inp.value.trim().slice(0,120);if(!text)return;
   const k=chKey(CHAT.ch);if(!online()||!k){toast(CHAT.ch==='party'?'파티에 들어가야 파티 채팅을 쓸 수 있습니다.':'채팅은 온라인에서만 쓸 수 있습니다.');return}
-  inp.value='';
+  inp.value='';inp.focus();
   try{await NET.db.doc('chat/'+NET.uid.slice(0,10)+'_'+Date.now().toString(36)).set({ch:k,uid:NET.uid,nick:(S.name||'요원').slice(0,10),role:S.role,text,t:now()})}catch(e){toast('메시지를 보내지 못했습니다.')}
 }
 function renderChat(keepInput){
@@ -3227,9 +3259,10 @@ function renderChat(keepInput){
   const head=`<div class="vnav two"><button type="button" data-ch="center" aria-pressed="${c==='center'}">센터</button><button type="button" data-ch="party" aria-pressed="${c==='party'}">파티${S.party?' '+esc(S.party):''}</button></div>`;
   const body=!online()?'<p class="muted">채팅은 서버에 연결되어 있을 때만 쓸 수 있습니다.</p>':c==='party'&&!S.party?'<p class="muted">파티에 들어가면 파티원끼리만 보는 채팅을 쓸 수 있습니다.</p>':
     (ms.length?`<ul class="chat">${ms.map(m=>`<li class="${m.uid===NET.uid?'me':''}"><b>${esc(String(m.nick||'요원'))}</b><span>${esc(m.text)}</span><time>${new Date(m.t||0).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</time></li>`).join('')}</ul>`:'<p class="muted">아직 대화가 없습니다. 먼저 인사를 건넵니다.</p>');
-  const val=keepInput&&$('chatIn')?$('chatIn').value:'';
-  box.innerHTML=head+body+`<form class="chatform" id="chatForm"><input id="chatIn" maxlength="120" placeholder="${c==='party'?'파티원에게':'센터의 요원들에게'} 보낼 메시지" autocomplete="off"><button type="submit" class="sbtn">보내기</button></form>`;
-  $('chatIn').value=val;const ul=box.querySelector('.chat');if(ul)ul.scrollTop=ul.scrollHeight;
+  /* 입력칸은 다시 만들지 않습니다. 새 메시지가 와도 쓰던 글과 커서, 한글 조합이 그대로 남아 연달아 보낼 수 있습니다 */
+  if(!$('chatList')||!$('chatForm')){box.innerHTML=`<div id="chatHead"></div><div id="chatList"></div><form class="chatform" id="chatForm"><input id="chatIn" maxlength="120" autocomplete="off" enterkeyhint="send"><button type="submit" class="sbtn">보내기</button></form>`}
+  $('chatHead').innerHTML=head;$('chatList').innerHTML=body;$('chatIn').placeholder=`${c==='party'?'파티원에게':'센터의 요원들에게'} 보낼 메시지`;
+  const ul=box.querySelector('.chat');if(ul)ul.scrollTop=ul.scrollHeight;
 }
 $('chatBox').addEventListener('click',e=>{const b=e.target.closest('[data-ch]');if(b){CHAT.ch=b.dataset.ch;renderChat()}});
 $('chatBox').addEventListener('submit',e=>{e.preventDefault();sendChat()});
@@ -3443,7 +3476,8 @@ setInterval(()=>{if(inBattle())renderPotBar()},1000);
 const ICO={
   sword:["..............WW", ".............WWl", "............WWl.", "...........WWl..", "..........WWl...", ".........WWl....", "........WWl.....", ".......WWl......", "..G...WWl.......", "...G.WWl........", "....GWl.........", "....GG..........", "...bGGG.........", "..bb..G.........", ".bb.............", "GG.............."],
 
-  spear:["............WW..", "...........WWWW.", "............WWW.", "...........WWW..", "..........RlR...", ".........bRR....", "........bb......", ".......bb.......", "......bb........", ".....bb.........", "....bb..........", "...bb...........", "..bb............", ".bb.............", "bb..............", "b..............."],
+  spear:["..............W.", ".............WWW", "............WWWl", "...........WWWl.", "............Wl..", ".........GbR....", "........bbRR....", ".......bb.RR....", "......bb..R.....", ".....bb.........", "....bb..........", "...bb...........", "..bb............", ".bb.............", "bb..............", "G..............."],
+
 
   bow:[".....bbb........", "....bG..s.......", "...bb....s......", "..bb......s.....", "..b........s....", ".bb.........s...", ".b...........s..", ".bWWWWWWWWWWWWWW", ".b...........s..", ".bb.........s...", "..b........s....", "..bb......s.....", "...bb....s......", "....bG..s.......", ".....bbb........", "................"],
 
@@ -4321,7 +4355,7 @@ function renderCtl(){
   if(v==='home'||v==='center'||v==='office')$('homeBox').innerHTML=`${crBar()}
     <p class="muted">아침에는 내 방에서 출발해 <b>센터</b>로 출근합니다. 센터에서 <b>게이트 출동</b>, <b>훈련</b>, <b>보고서 작성</b>을 하고, <b>상점</b>과 <b>장터</b>에서 물건을 사고팝니다.</p>
     <div class="stats"><div class="stat"><span>오늘 출동</span><b>${S.todayDate===today()?S.todayCount:0}회</b></div><div class="stat"><span>열린 게이트</span><b>${allGates().length}개</b></div></div>
-    <span class="eyebrow" id="decorHead">Room decor</span><ul class="decor">${DECOR2.filter(d=>(S.decor||[]).includes(d.id)).map(d=>{const on=(S.decorOn||{})[d.id]!==false;return `<li><span class="tx"><b>${d.n}</b><span>${d.d}</span></span><button type="button" class="sbtn" data-dt="${d.id}">${on?'치우기':'놓기'}</button></li>`}).join('')}${DECOR.map(d=>{const own=(S.decor||[]).includes(d.id),on=own&&(S.decorOn||{})[d.id]!==false;
+    ${v==='home'?`<span class="eyebrow">Room theme</span><div class="roomth">${ROOM_TH.map((t,i)=>`<button type="button" data-rth="${i}" aria-pressed="${roomTheme(S.role)===i}" title="${t.n}"><i style="background:${t.w}"></i><i style="background:${t.a}"></i><i style="background:${t.f}"></i><span>${t.n}</span></button>`).join('')}</div>`:''}<span class="eyebrow" id="decorHead">Room decor</span><ul class="decor">${DECOR2.filter(d=>(S.decor||[]).includes(d.id)).map(d=>{const on=(S.decorOn||{})[d.id]!==false;return `<li><span class="tx"><b>${d.n}</b><span>${d.d}</span></span><button type="button" class="sbtn" data-dt="${d.id}">${on?'치우기':'놓기'}</button></li>`}).join('')}${DECOR.map(d=>{const own=(S.decor||[]).includes(d.id),on=own&&(S.decorOn||{})[d.id]!==false;
       return `<li><span class="tx"><b>${d.n}</b><span>${d.d}</span></span>${own?'':`<button type="button" class="sbtn" data-pv="${d.id}">미리보기</button>`}${own?`<button type="button" class="sbtn" data-dt="${d.id}">${on?'치우기':'놓기'}</button>`:d.src?`<span class="muted">${d.src==='raid'?'레이드 보상':'업적 보상'}</span>`:`<button type="button" class="sbtn" data-db="${d.id}" ${(S.ap||0)<d.ap?'disabled':''}>${d.ap} AP</button>`}</li>`}).join('')}</ul><p class="muted">더 많은 가구는 센터 상점에서 크레딧으로 살 수 있습니다.</p>`;
   if(v==='gym'||(S.phase==='focus'&&S.curGate&&S.curGate.train))renderGym();
 }
@@ -4386,7 +4420,7 @@ $('themes').addEventListener('click',e=>{const b=e.target.closest('button');if(!
   ach:[[2,0,8,5,'f'],[0,1,2,3,'o'],[10,1,2,3,'o'],[5,5,2,3,'f'],[3,8,6,2,'f'],[2,10,8,2,'f']]};
   document.querySelectorAll('canvas[data-icon]').forEach(c=>{const g=c.getContext('2d');(IC[c.dataset.icon]||[]).forEach(([x,y,w,h,k])=>{g.fillStyle=k==='w'?'#FFFFFF':'#1C2440';if(k==='o'){g.fillRect(x,y,w,1);g.fillRect(x,y+h-1,w,1);g.fillRect(x,y,1,h);g.fillRect(x+w-1,y,1,h)}else g.fillRect(x,y,w,h)})});
 })();
-function showOnboard(){showScreen('onboard');picked=S.role;syncPick()}
+function showOnboard(){if(!S.role&&S.pendingRole&&S.pendingRoll){picked=S.pendingRole;showGacha('new');return}showScreen('onboard');picked=S.role;syncPick()}
 /* 한 번 등록한 역할은 바꿀 수 없다 */
 const roleLocked=()=>!!S.role;
 function syncPick(){
@@ -4420,6 +4454,18 @@ function showGacha(mode){
   $('gcGradeL').textContent='?';$('gcGradeL').style.background='';$('gcGradeName').textContent='측정 전';$('gcGradeOdds').textContent='';
   $('gOdds').innerHTML='<span>등장 확률</span>'+GRADES.map((g,i)=>`<span>${g} ${GRADE_W[i]}%</span>`).join('');
   $('gRoll').hidden=false;$('gReroll').hidden=true;$('gNext').hidden=true;drawAttrIcon(null);$('wpField').hidden=true;wpPicked=false;
+  if(S.pendingRoll&&S.pendingRole===role){roll={...S.pendingRoll};rerollLeft=Math.max(0,Math.min(3,+S.pendingReroll||0));showRollResult(roll,role,false)}
+}
+function showRollResult(res,role,fresh){
+  ['gcAttr','gcGrade'].forEach(id=>{$(id).classList.remove('rolling');$(id).classList.add('reveal')});
+  drawAttrIcon(res.attr);$('gcAttrName').textContent=ATTRS[res.attr].n;$('gcAttrSkill').textContent=`${ATTRS[res.attr].cat} · `+(role==='guide'?`가이딩 파장: ${ATTRS[res.attr].gskill}`:`능력: ${ATTRS[res.attr].skill}`);
+  $('gcGradeL').textContent=GRADES[res.grade];$('gcGradeL').style.background=GCOL[res.grade];$('gcGradeName').textContent=`${GRADES[res.grade]}급 ${role==='guide'?'가이드':'센티넬'}`;
+  $('gcGradeOdds').textContent=`이 등급이 나올 확률 ${GRADE_W[res.grade]}%`;
+  if(fresh){if(res.grade>=5){fanfare();burst(96,54,['#FFE27A'],1)}else chime()}
+  {const need=!S.items.some(x=>x.kind==='gear'&&x.slot==='weapon');$('wpField').hidden=!need;wpPicked=need;if(need)buildWp()}
+  $('gRoll').hidden=true;$('gReroll').hidden=rerollLeft<=0;$('gReroll').textContent=`다시 측정하기 (남은 횟수 ${rerollLeft})`;$('gNext').hidden=false;
+  /* 측정 결과는 바로 저장해 두어, 타이틀로 나갔다 와도 그대로 남습니다 */
+  S.pendingRole=role;S.pendingRoll={grade:res.grade,attr:res.attr};S.pendingReroll=rerollLeft;save();
 }
 function doRoll(){
   const role=picked||S.role;
@@ -4429,21 +4475,14 @@ function doRoll(){
   const res={grade:rollGrade(),attr:rollAttr(role)};
   const iv=setInterval(()=>{
     i++;const pool=role==='guide'?G_ATTRS:S_ATTRS,a=pool[i%pool.length],g=i%GRADES.length;drawAttrIcon(a);$('gcAttrName').textContent=ATTRS[a].n;$('gcGradeL').textContent=GRADES[g];$('gcGradeL').style.background=GCOL[g];beep(400+g*80,.03,'square',.02);
-    if(now()-t0>1300){clearInterval(iv);roll=res;
-      ['gcAttr','gcGrade'].forEach(id=>{$(id).classList.remove('rolling');$(id).classList.add('reveal')});
-      drawAttrIcon(res.attr);$('gcAttrName').textContent=ATTRS[res.attr].n;$('gcAttrSkill').textContent=`${ATTRS[res.attr].cat} · `+(role==='guide'?`가이딩 파장: ${ATTRS[res.attr].gskill}`:`능력: ${ATTRS[res.attr].skill}`);
-      $('gcGradeL').textContent=GRADES[res.grade];$('gcGradeL').style.background=GCOL[res.grade];$('gcGradeName').textContent=`${GRADES[res.grade]}급 ${role==='guide'?'가이드':'센티넬'}`;
-      $('gcGradeOdds').textContent=`이 등급이 나올 확률 ${GRADE_W[res.grade]}%`;
-      if(res.grade>=5){fanfare();burst(96,54,['#FFE27A'],1)}else chime();
-      {const need=!S.items.some(x=>x.kind==='gear'&&x.slot==='weapon');$('wpField').hidden=!need;wpPicked=need;if(need)buildWp()}
-      $('gReroll').hidden=rerollLeft<=0;$('gReroll').textContent=`다시 측정하기 (남은 횟수 ${rerollLeft})`;$('gNext').hidden=false;
+    if(now()-t0>1300){clearInterval(iv);roll=res;showRollResult(res,role,true);
     }
   },70);
 }
 $('gRoll').addEventListener('click',doRoll);
 $('gReroll').addEventListener('click',()=>{if(rerollLeft<=0)return;rerollLeft--;doRoll()});
 $('gNext').addEventListener('click',()=>{
-  if(!roll)return;S.grade=roll.grade;S.attrs=[roll.attr];S.rerolled=3-rerollLeft;
+  if(!roll)return;S.grade=roll.grade;S.attrs=[roll.attr];S.rerolled=3-rerollLeft;S.pendingRoll=null;
   picked=picked||S.role;save();showCustom(S.role?'role':'new');
 });
 function showCustom(mode){
@@ -4586,7 +4625,7 @@ requestAnimationFrame(frame);
 $('gymPick').addEventListener('click',e=>{const h=e.target.closest('[data-h]');if(h){if(S.phase!=='idle')return;S.trHours=+h.dataset.h;save();updateUI(true);return}const b=e.target.closest('[data-tr]');if(!b||S.phase!=='idle')return;S.selGate=b.dataset.tr;ensurePartner();save();updateUI(true)});
 
 document.querySelectorAll('#homePick .hp').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.view==='decor'){setView('home');openTab('ctl');setTimeout(()=>{const h=$('decorHead');if(h)h.scrollIntoView({block:'start',behavior:'smooth'})},60)}else setView(b.dataset.view)}));
-$('homeBox').addEventListener('click',e=>{const b=e.target.closest('[data-db]');if(b&&!b.disabled){buyDecor(b.dataset.db);return}const t=e.target.closest('[data-dt]');if(t)toggleDecor(t.dataset.dt)});
+$('homeBox').addEventListener('click',e=>{const rt=e.target.closest('[data-rth]');if(rt){S.roomTh=+rt.dataset.rth;save();toast(`방 테마를 ${ROOM_TH[S.roomTh].n}${roJosa(ROOM_TH[S.roomTh].n)} 바꿨습니다.`);updateUI(true);return}const b=e.target.closest('[data-db]');if(b&&!b.disabled){buyDecor(b.dataset.db);return}const t=e.target.closest('[data-dt]');if(t)toggleDecor(t.dataset.dt)});
 function renderAch(){
   S.ach=S.ach||{};const n=Object.keys(S.ach).length;$('achSum').textContent=`업적 ${n} / ${ACH.length}`;$('achAp').textContent=Math.floor(S.ap||0)+' AP';
   const owned=ACH.filter(a=>S.ach[a.id]);
@@ -4612,15 +4651,15 @@ $('gateInfo').addEventListener('click',e=>{if(e.target.id==='dualBtn'){S.dualTra
 
 /* 타이틀 화면으로 돌아가기 · 이어서 하기 */
 function goTitle(){$('settings').hidden=true;if(typeof closeDrawer==='function')closeDrawer();showAccount();syncCont()}
-function syncCont(){const ok=!!(S.role&&S.grade!=null&&(S.acct&&(S.acct.mode==='guest'||cloudOK())));$('accCont').hidden=!ok;if(ok&&S.acct.mode==='guest')$('accGuest').hidden=true;
+function syncCont(){const reg=!S.role&&!!S.pendingRole&&!!S.pendingRoll;const ok=!!((S.role&&S.grade!=null||reg)&&(S.acct&&(S.acct.mode==='guest'||cloudOK())));$('accCont').hidden=!ok;if(ok&&S.acct.mode==='guest')$('accGuest').hidden=true;
   const inAcc=ok&&S.acct.mode!=='guest'&&cloudOK();
   $('accNew').hidden=$('accLogin').hidden=inAcc;$('accSwitchRow').hidden=!inAcc;$('accNote').hidden=inAcc;
   const grid=$('accCont').parentElement;if(grid)grid.classList.toggle('single',inAcc);
   if(inAcc){const nm=(window.closeGateAuth&&closeGateAuth.name&&closeGateAuth.name())||'';$('accWho').textContent=nm?`${nm} 계정으로 로그인되어 있습니다.`:'계정으로 로그인되어 있습니다.'}
-  if(ok)$('accContD').textContent=`${S.name||'이름 없는 요원'} · Lv.${myLevel()} ${GRADES[myGrade()]}급 ${S.role==='guide'?'가이드':'센티넬'}로 이어서 합니다.`}
+  if(ok)$('accContD').textContent=reg?`등록 중인 ${GRADES[S.pendingRoll.grade]}급 ${S.pendingRole==='guide'?'가이드':'센티넬'} · 측정 결과가 그대로 남아 있습니다.`:`${S.name||'이름 없는 요원'} · Lv.${myLevel()} ${GRADES[myGrade()]}급 ${S.role==='guide'?'가이드':'센티넬'}로 이어서 합니다.`}
 $('toTitle').addEventListener('click',goTitle);
 $('accSwitch').addEventListener('click',()=>$('accOut').click());
-$('accCont').addEventListener('click',()=>{if(S.acct&&S.acct.mode==='cloud'&&!cloudOK()){toast('계정 확인이 끝난 뒤에 이어서 할 수 있습니다.');return}showGame()});
+$('accCont').addEventListener('click',()=>{if(S.acct&&S.acct.mode==='cloud'&&!cloudOK()){toast('계정 확인이 끝난 뒤에 이어서 할 수 있습니다.');return}if(!S.role){showOnboard();return}showGame()});
 setInterval(()=>{if(!$('account').hidden)syncCont()},1500);
 
 /* 캐릭터 삭제: '삭제'를 입력해야 버튼이 켜집니다. 계정 · 화면 설정 · 친구는 남깁니다. */
@@ -4638,6 +4677,13 @@ $('delBtn').addEventListener('click',async()=>{
   $('delInput').value='';$('delBtn').disabled=true;$('settings').hidden=true;
   toast('캐릭터를 삭제했습니다. 새 캐릭터를 만들어 주세요.');showOnboard();
 });
+
+/* 등록 화면(역할 · 측정 · 외형) 왼쪽 위 로고를 누르면 타이틀로 돌아갑니다. 측정 결과는 남습니다 */
+document.querySelector('#hdr .brand').addEventListener('click',()=>{if($('game').hidden===false||!$('account').hidden)return;
+  if(!$('gacha').hidden&&roll){S.pendingRole=picked;S.pendingRoll={grade:roll.grade,attr:roll.attr};S.pendingReroll=rerollLeft;save()}
+  goTitle()});
+
+function roJosa(w){const c=w.charCodeAt(w.length-1)-0xAC00;if(c<0||c>11171)return '(으)로';const f=c%28;return f===0||f===8?'로':'으로'}
 })();
 </script>
 </body></html>
