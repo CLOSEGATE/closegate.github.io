@@ -793,6 +793,14 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
 .potauto{display:flex;align-items:center;gap:4px;font-size:.78rem;color:var(--ink-soft);margin-left:auto}
 .pvsheet{max-width:min(720px,94vw)}
 #pvCv{width:100%;height:auto;border-radius:12px;image-rendering:pixelated}
+/* 탭 줄: 스크롤 막대 없이 7개가 한 줄에 다 들어가게 한다. 좁으면 아이콘 위 · 글자 아래로 바꾼다 */
+.tabs{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));overflow:visible!important;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{min-width:0;padding:7px 4px!important;white-space:nowrap}
+.tab span{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:1100px){.tab{flex-direction:column;gap:2px!important;font-size:.78rem!important;padding:5px 2px!important}}
+.acc-card.cont{order:-1;border-color:transparent!important;background:linear-gradient(135deg,var(--accent),var(--accent-deep))!important;color:var(--on-accent)!important}
+.acc-card.cont span{color:inherit!important;opacity:.85}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -819,6 +827,7 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
     <div class="acc-cards">
       <button class="acc-card main" type="button" id="accNew"><b id="accNewT">계정 만들기</b><span id="accNewD">새 요원으로 등록하고 기록을 클라우드에 저장합니다.</span></button>
       <button class="acc-card" type="button" id="accLogin"><b>로그인</b><span id="accLoginD">이 계정에 저장된 요원 기록을 불러옵니다.</span></button>
+      <button class="acc-card cont" type="button" id="accCont" hidden><b>이어서 하기</b><span id="accContD">지금 요원으로 게임을 이어 갑니다.</span></button>
       <button class="acc-card ghost" type="button" id="accGuest"><b id="accGuestT">게스트로 시작</b><span>계정 없이 이 기기에만 기록을 남깁니다. 나중에 설정에서 계정을 만들 수 있습니다.</span></button>
     </div>
     <form class="acc-form card" id="accForm" hidden autocomplete="on">
@@ -1126,6 +1135,7 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
     <div class="mhead"><h2 id="setTitle">설정</h2><button class="xbtn" type="button" id="setClose" aria-label="설정 닫기">X</button></div>
     <section class="sgroup">
       <h3>도움말</h3>
+      <div class="srow"><div class="sl"><b>타이틀 화면</b><span>처음 화면으로 돌아갑니다. 진행 중인 출동과 가이딩은 그대로 이어집니다.</span></div><button class="sbtn big" type="button" id="toTitle">타이틀로 가기</button></div>
       <div class="srow"><div class="sl"><b>가이드북</b><span>게임 방법과 모든 기능을 장별로 정리했습니다.</span></div><button class="sbtn big" type="button" id="guideBookBtn">가이드북 열기</button></div>
     </section>
     <section class="sgroup">
@@ -4523,6 +4533,14 @@ setInterval(()=>{if(curTab==='guiding')renderGuiding();if(S.role==='guide')watch
 $('gateInfo').addEventListener('click',e=>{if(e.target.id==='dualBtn'){S.dualTrain=!S.dualTrain;save();renderGateInfo()}});
 
 (()=>{const box=$('cGrades');GRADES.forEach((g,i)=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=g;b.setAttribute('aria-pressed','false');b.addEventListener('click',()=>{cPrevG=cPrevG===i?null:i;box.querySelectorAll('button').forEach((x,j)=>x.setAttribute('aria-pressed',String(j===cPrevG)));$('cGradeDesc').textContent=cPrevG==null?'등급을 누르면 그 등급이 되었을 때의 모습을 미리 봅니다.':`${g}급: ${VIS_DESC[document.body.dataset.role==='guide'?'guide':'sentinel'][VTIER[i]]||'기본 모습입니다.'}`});box.appendChild(b)})})();
+
+/* 타이틀 화면으로 돌아가기 · 이어서 하기 */
+function goTitle(){$('settings').hidden=true;if(typeof closeDrawer==='function')closeDrawer();showAccount();syncCont()}
+function syncCont(){const ok=!!(S.role&&S.grade!=null&&(S.acct&&(S.acct.mode==='guest'||cloudOK())));$('accCont').hidden=!ok;if(ok&&S.acct.mode==='guest')$('accGuest').hidden=true;
+  if(ok)$('accContD').textContent=`${S.name||'이름 없는 요원'} · Lv.${myLevel()} ${GRADES[myGrade()]}급 ${S.role==='guide'?'가이드':'센티넬'}로 이어서 합니다.`}
+$('toTitle').addEventListener('click',goTitle);
+$('accCont').addEventListener('click',()=>{if(S.acct&&S.acct.mode==='cloud'&&!cloudOK()){toast('계정 확인이 끝난 뒤에 이어서 할 수 있습니다.');return}showGame()});
+setInterval(()=>{if(!$('account').hidden)syncCont()},1500);
 })();
 </script>
 </body></html>
