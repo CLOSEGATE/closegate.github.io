@@ -7,7 +7,7 @@
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut}
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import {getFirestore,doc,getDoc,setDoc,deleteDoc,onSnapshot,collection,query,where,runTransaction}
+import {getFirestore,initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,getDoc,setDoc,deleteDoc,onSnapshot,collection,query,where,runTransaction}
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const done=v=>{if(window.__fbResolve){window.__fbResolve(v);window.__fbResolve=null}};
@@ -19,7 +19,12 @@ if(!cfg||!cfg.apiKey||/여기|YOUR_/i.test(cfg.apiKey)){
 }
 
 function boot(){
-  const app=initializeApp(cfg),auth=getAuth(app),fs=getFirestore(app);
+  const app=initializeApp(cfg),auth=getAuth(app);
+  /* 오프라인 저장소: 쓰기를 기기 안 데이터베이스(IndexedDB)에 먼저 기록하고 서버 전송은 뒤에서 이어 갑니다.
+     여러 탭을 열어도 함께 쓸 수 있게 합니다. 사생활 보호 모드처럼 기기 저장소를 못 쓰면 예전 방식으로 돌아갑니다. */
+  let fs;
+  try{fs=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})})}
+  catch(e){console.warn('[클로즈 게이트] 오프라인 저장소를 쓸 수 없어 기본 방식으로 연결합니다.',e);fs=getFirestore(app)}
   const MAIL='@closegate.game',toMail=id=>String(id).toLowerCase()+MAIL;
   const uid=()=>auth.currentUser?auth.currentUser.uid:null;
 
