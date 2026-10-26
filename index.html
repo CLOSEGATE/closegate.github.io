@@ -3562,6 +3562,9 @@ $('partyBox').addEventListener('click',e=>{const id=e.target.id;if(id==='pCreate
 
 /* ── 채팅 (센터 / 파티 채널을 따로 씁니다) ── */
 const CHAT={ch:'center',subs:{},msgs:{center:[],party:[]},seen:{center:0,party:0}};
+/* 읽은 시각은 저장해 두어, 새로고침하거나 다른 기기에서 열어도 읽은 채팅이 다시 알림으로 뜨지 않습니다 */
+CHAT.seen={center:+((S.chatSeen||{}).center)||0,party:+((S.chatSeen||{}).party)||0};
+function markSeen(c){const ms=CHAT.msgs[c]||[],last=ms.length?Math.max(...ms.map(m=>+m.t||0)):0,v=Math.max(CHAT.seen[c]||0,last,now());if(v-(CHAT.seen[c]||0)<1000&&S.chatSeen)return;CHAT.seen[c]=v;S.chatSeen={...(S.chatSeen||{}),[c]:v};save()}
 const chKey=c=>c==='party'?(S.party?'party:'+S.party:null):'center';
 function watchChat(){
   if(!online())return;
@@ -3570,12 +3573,12 @@ function watchChat(){
     try{CHAT.subs[c]&&CHAT.subs[c].off&&CHAT.subs[c].off()}catch(e){}
     const off=NET.db.collection('chat').where('ch','==',k).onSnapshot(s=>{
       CHAT.msgs[c]=s.docs.map(d=>({id:d.id,...d.data()})).filter(m=>typeof m.text==='string'&&!m.hidden).sort((a,b)=>(a.t||0)-(b.t||0)).slice(-60);
-      if(curTab==='chat'&&CHAT.ch===c){CHAT.seen[c]=now();renderChat(true)}chatBadge();
+      if(curTab==='chat'&&!$('drawer').hidden&&CHAT.ch===c){markSeen(c);renderChat(true)}chatBadge();
     },()=>{});
     CHAT.subs[c]={k,off};
   });
 }
-function chatBadge(){const b=$('chatCount');if(!b)return;const n=['center','party'].reduce((a,c)=>a+CHAT.msgs[c].filter(m=>(m.t||0)>CHAT.seen[c]&&m.uid!==NET.uid).length,0);b.hidden=!n||curTab==='chat';b.textContent=n>9?'9+':n}
+function chatBadge(){const b=$('chatCount');if(!b)return;const n=['center','party'].reduce((a,c)=>a+CHAT.msgs[c].filter(m=>(m.t||0)>CHAT.seen[c]&&m.uid!==NET.uid).length,0);b.hidden=!n||(curTab==='chat'&&!$('drawer').hidden);b.textContent=n>9?'9+':n}
 async function sendChat(){
   const inp=$('chatIn'),text=inp.value.trim().slice(0,120);if(!text)return;
   if(typeof muted==='function'&&muted()){toast('운영 정책에 따라 지금은 채팅을 보낼 수 없습니다.');return}
@@ -3589,7 +3592,7 @@ const chatTime=t=>new Date(t||0).toLocaleTimeString('ko-KR',{hour:'2-digit',minu
 let chatLast={ch:null,n:0};
 function renderChat(keepInput){
   const box=$('chatBox');if(!box)return;watchChat();
-  const c=CHAT.ch,ms=CHAT.msgs[c];CHAT.seen[c]=now();chatBadge();
+  const c=CHAT.ch,ms=CHAT.msgs[c];markSeen(c);chatBadge();
   const head=`<div class="chtabs" role="tablist"><button type="button" data-ch="center" aria-pressed="${c==='center'}">센터</button><button type="button" data-ch="party" aria-pressed="${c==='party'}">파티${S.party?' · '+esc(S.party):''}</button></div>`;
   let body;
   if(!online())body='<p class="muted chatempty">채팅은 서버에 연결되어 있을 때만 쓸 수 있습니다.</p>';
