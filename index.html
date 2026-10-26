@@ -2360,7 +2360,9 @@ function heroBody(kind,L,WX,WY,o){
   const frame=o.atk>0?'k':(o.still?'a':(Math.floor(T*2.2+(o.ph||0))%2?'b':'a'));
   const bob=frame==='b'?1:0,blink=!o.atk&&!o.still&&T>1&&((T+(o.ph||0)*1.7)%3.7)<.13;
   G.globalAlpha=.16;px(x-8,fy,16,1,INK);px(x-6,fy+1,12,1,INK);G.globalAlpha=1;
-  if(tier>=5&&Math.random()<.06&&!reduce)parts.push({x:WX-16+Math.random()*32,y:WY-38+Math.random()*34,vx:0,vy:-6,life:.8,c:'#FFE27A',g:0});
+  /* S급 반짝임: 캐릭터 기준 좌표로 그려서 캐릭터가 움직이면 같이 따라갑니다 */
+  if(tier>=5&&!reduce)for(let i=0;i<5;i++){const ph=(T*.7+i*.21+(o.ph||0)*.13)%1,sx=x+Math.sin(i*2.3+(o.ph||0))*14,sy=fy-8-ph*28;
+    G.globalAlpha=Math.sin(ph*Math.PI);px(sx,sy,1,1,'#FFE27A');if(ph>.3&&ph<.7){px(sx-1,sy,3,1,'#FFF3B8');px(sx,sy-1,1,3,'#FFF3B8')}}G.globalAlpha=1;
   const aura=front=>{for(let i=0;i<10;i++){const a=T*1.5+i*Math.PI/5,s=Math.sin(a);if((s>=0)!==front)continue;G.globalAlpha=.9;px(x+Math.cos(a)*15,fy-15+s*7,1,1,i%2?acc:'#FFFFFF')}G.globalAlpha=1};
   if(tier>=4){for(let i=0;i<3;i++){const h=3+Math.floor((T*8+i*3)%8);G.globalAlpha=.45;px(x-13+i*13,fy-3-h-(i===1?12:0),1,h,acc)}G.globalAlpha=1}
   if(tier>=3)aura(false);
