@@ -1009,6 +1009,9 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 @keyframes brkw{50%{outline:2px solid #F0544F;outline-offset:1px}}
 .brkline{margin:6px 0;font-size:.85rem;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,#B0203A 12%,var(--panel));border:1px solid #B0203A}
 .brkline b{color:#B0203A}
+#titleEmblem{width:clamp(56px,9vw,88px)!important;height:clamp(56px,9vw,88px)!important;aspect-ratio:1/1;image-rendering:pixelated;filter:drop-shadow(0 4px 0 rgba(28,20,60,.55));margin-bottom:4px;animation:emb 3s ease-in-out infinite}
+@keyframes emb{50%{transform:translateY(-4px)}}
+#logo{image-rendering:pixelated}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -6241,6 +6244,33 @@ addEventListener('resize',()=>{dockMax=(()=>{try{return +localStorage.getItem(do
 setInterval(fitStage,800);
 
 document.addEventListener('click',e=>{if(e.target.closest('[data-awk],#wallet .wap'))openAwaken()});
+
+/* ── 게이트 로고: 금빛 테두리 안에 소용돌이치는 균열과 봉인 별을 그린 32×32 도트 엠블럼.
+   브라우저 탭 아이콘(파비콘) · 머리글 · 타이틀 화면에 씁니다 ── */
+function gateEmblem(n){
+  const c=document.createElement('canvas');c.width=c.height=32;const g=c.getContext('2d');
+  const P=(x,y,col)=>{g.fillStyle=col;g.fillRect(x,y,1,1)};
+  const inE=(x,y,rx,ry)=>((x-15.5)/rx)**2+((y-15.5)/ry)**2<=1;
+  for(let y=0;y<32;y++)for(let x=0;x<32;x++){
+    if(inE(x,y,15.5,15.5)&&!inE(x,y,13.6,13.6))P(x,y,'#1C2440');            // 바깥 외곽선
+    else if(inE(x,y,13.6,13.6)&&!inE(x,y,11.2,11.2))P(x,y,y<15?'#FFD86A':'#E3A21A'); // 금빛 테
+    else if(inE(x,y,11.2,11.2)&&!inE(x,y,10.2,10.2))P(x,y,'#1C2440');       // 안쪽 외곽선
+    else if(inE(x,y,10.2,10.2)){                                          // 균열(소용돌이)
+      const a=Math.atan2(y-15.5,x-15.5),r=Math.hypot(x-15.5,y-15.5),sw=Math.sin(a*2+r*.9+(n||0));
+      P(x,y,r<3.5?'#FFFFFF':sw>.45?'#9FD6FF':sw>-.2?'#6C7BFF':'#3D2A8A');
+    }
+  }
+  [[15,4],[16,4],[15,27],[16,27],[4,15],[4,16],[27,15],[27,16]].forEach(([x,y])=>P(x,y,'#FFF3B8'));   // 테의 빛나는 점
+  // 가운데 봉인 별
+  [[15,11],[16,11],[15,12],[16,12],[15,19],[16,19],[15,20],[16,20],[11,15],[11,16],[12,15],[12,16],[19,15],[19,16],[20,15],[20,16]].forEach(([x,y])=>P(x,y,'#FFFFFF'));
+  [[14,14],[17,14],[14,17],[17,17]].forEach(([x,y])=>P(x,y,'#FFE27A'));
+  return c;
+}
+(()=>{try{
+  const em=gateEmblem(0);
+  let l=document.querySelector('link[rel~="icon"]');if(!l){l=document.createElement('link');l.rel='icon';document.head.appendChild(l)}
+  l.type='image/png';l.href=em.toDataURL('image/png');
+}catch(e){}})();
 })();
 </script>
 </body></html>
