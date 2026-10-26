@@ -929,6 +929,12 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
   body.refined{padding-bottom:70px!important}
   .toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
 }
+/* 채팅 입력칸: 테두리와 포커스 표시가 잘리지 않게 안쪽 여백과 안쪽 포커스 */
+.chatform{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;padding:4px 3px 6px;margin:0}
+.chatform input{min-width:0;font:inherit;font-size:.92rem;border:1px solid var(--line2,#C7D2EF);border-radius:12px;padding:10px 12px;background:var(--panel);color:var(--ink);outline:none}
+.chatform input:focus{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.chatform .sbtn{border-radius:12px;padding:0 14px}
+.drawer .pane input,.drawer .pane select,.drawer .pane textarea{outline-offset:-2px}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
