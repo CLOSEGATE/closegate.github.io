@@ -992,6 +992,10 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .drawer.chatmode .dr-head{padding:6px 10px}.drawer.chatmode .dr-head h2{font-size:1.05rem}.drawer.chatmode .dr-head .xbtn{width:30px;height:30px}
 .drawer.chatmode .chtabs button{padding:3px 8px}
 .drawer.chatmode .chatform input{padding:8px 12px}
+.lenpick{display:grid;grid-template-columns:auto repeat(4,minmax(0,1fr));gap:4px;align-items:center}
+.lenpick>span{font-size:.78rem;font-weight:700;color:var(--ink-soft);padding-right:4px;white-space:nowrap}
+.lenpick button{padding:7px 0;font:inherit;font-size:.8rem;font-weight:600;border:1px solid var(--line,#D9E0F2);border-radius:10px;background:var(--panel);color:var(--ink);cursor:pointer;white-space:nowrap;touch-action:manipulation}
+.lenpick button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1258,6 +1262,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <button class="btn ghost back" type="button" id="backBtn" hidden>센터로 돌아가기</button>
         <div class="gympick" id="gymPick" hidden></div>
         <div class="potbar" id="potBar" hidden></div>
+        <div class="lenpick" id="lenPick" hidden role="group" aria-label="공략 시간"></div>
         <button class="btn" type="button" id="mainBtn">게이트 선택</button>
       </div>
       <nav class="tabs" aria-label="패널">
@@ -1301,6 +1306,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
       <p>센티넬은 출동할수록 <b>폭주 게이지</b>가 찹니다. 출동이 끝나면 가이드와 함께 가이딩을 받아 게이지를 낮춥니다.</p>
       <ul><li><b>직접 가이딩</b>: 고리가 가운데 원에 겹칠 때 눌러 호흡을 맞춥니다. 정확할수록 많이 내려갑니다.</li>
       <li><b>자동 가이딩</b>: 화면을 보지 않아도 시간이 지나면 내려갑니다. 게이지가 80 이상이면 자동 가이딩만 쓸 수 있습니다.</li>
+      <li><b>게이트 안 가이딩</b>: 가이드는 게이트 공략 중에 5초마다 가이딩을 할 수 있습니다. 화면이나 가이딩 단추를 누르면 함께 싸우는 센티넬의 폭주 게이지가 내려가고 HP가 조금 회복됩니다.</li>
+      <li><b>가이딩 숙련</b>: 휴식 때 호흡 맞추기와 게이트 안 가이딩을 할수록 오릅니다. 단계마다 가이딩 효과가 5%씩(최대 50%) 커집니다.</li>
       <li><b>긴 가이딩</b>: 3분이 넘는 가이딩은 50번 맞추면 남은 시간 동안 자동으로 호흡을 맞춥니다.</li>
       <li><b>함께하는 가이딩</b>: 가이드 플레이어가 가이딩실에서 요청을 받아 도와줄 수 있습니다. 페어가 아닌 가이드에게도 언제든 받을 수 있습니다.</li></ul>
       <p>폭주 게이지가 0이 되면 가이딩은 바로 끝납니다. 함께한 가이드 플레이어는 그때 보상을 받고, 0까지 안정시켰다면 1.5배를 받습니다.</p>
@@ -1495,7 +1502,7 @@ const rollAttr=role=>pick(role==='guide'?G_ATTRS:S_ATTRS);
 const OLD_ATTR=[1,0,4,10,6,5];
 
 const GRADES=['F','E','D','C','B','A','S'];
-const GRADE_W=[31.5,26,18,13,7,3.5,1];
+const GRADE_W=[45,25,15,9,4.5,1.2,0.3];
 const GCOL=['#C9CEDB','#B9C1DA','#7DD181','#7FA5FF','#B39BFF','#FF8A86','#FFC94A'];
 const VTIER=[0,0,1,2,3,4,5];
 const EXAM_LV=[5,10,15,20,25,30];
@@ -1834,7 +1841,7 @@ playful:{battle:['이 정도는 눈 감고도 하죠.|이 정도는 눈 감고�
 for(const k in TALK2)Object.assign(TALK[k],TALK2[k]);
 /* 다른 사람이 말하는 것처럼 대화창에 띄운다 */
 function sayAs(name,line,look){
-  $('talkName').textContent=name;const el=$('talkLine');el.textContent=line;el.classList.remove('fresh');void el.offsetWidth;el.classList.add('fresh');
+  talkLook=look||null;$('talkName').textContent=name;const el=$('talkLine');el.textContent=line;el.classList.remove('fresh');void el.offsetWidth;el.classList.add('fresh');
   if(look){const c=$('talkFace'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,24,24);g.drawImage(buildDoll(look,'a',0),4,0,24,24,0,0,24,24)}
 }
 let chatT=0;
@@ -4221,10 +4228,29 @@ const sentInfo=()=>S.role==='sentinel'?{lv:myLevel(),gr:myGrade(),attrs:S.attrs|
 const guideInfo=()=>S.role==='guide'?{lv:myLevel(),gr:myGrade(),attrs:S.attrs||[]}:{lv:S.partner.level,gr:S.partner.grade,attrs:S.partner.attrs};
 const matchN=()=>matchCount(sentInfo().attrs,guideInfo().attrs);
 const ME_REPLY={focusStart:1,boss:1,focusEnd:1,rankUp:1,early:1,stable:1,breakEnd:1,match:1,select:1,idle:1};
+let talkLook=null;
+/* 가이딩 숙련: 휴식 때 호흡 맞추기와 게이트 안 가이딩으로 오릅니다(S.bond). 20마다 1단계, 단계마다 가이딩 효과 +5% (최대 +50%) */
+const gMastLv=()=>Math.floor((S.bond||0)/20)+1;
+const gMastMul=()=>1+Math.min(.5,(gMastLv()-1)*.05);
+/* 게이트 안 가이딩(가이드): 5초마다 한 번, 함께 싸우는 센티넬의 폭주를 낮추고 HP를 조금 회복합니다 */
+const GG_CD=5000;
+function gateGuide(){
+  if(S.phase!=='focus'||S.role!=='guide'||!S.curGate||S.curGate.train||S.curGate.report||cine)return;
+  const c=S.curGate,t=now();if((c.ggAt||0)>t){pop(`다음 가이딩까지 ${Math.ceil((c.ggAt-t)/1000)}초`,'miss');return}
+  const hs=hpNow();if(hs&&hs.down){pop('쓰러져 있어 가이딩할 수 없습니다','miss');return}
+  ac();c.ggAt=t+GG_CD;const mul=gMastMul()*(matchN()>0?1.2:1);
+  const cut=Math.round(2.5*mul*10)/10;c.gCut=Math.round(((c.gCut||0)+cut)*10)/10;
+  if(hs&&c.hpNet!=null){const heal=Math.round(hs.max*.04*mul);newSeg(t,{});c.seg.hp0=Math.min(hs.max,hs.hp+heal);floats.push({x:76,y:60,n:'+'+heal,c:'#6CE38A',t:.9})}
+  S.bond=(S.bond||0)+1;c.ggN=(c.ggN||0)+1;
+  ggFx=1;beep(880,.08,'triangle',.04);beep(1175,.12,'triangle',.035,.08);
+  pop(`가이딩! 폭주 -${cut}`,'good');save();updateUI();
+}
+let ggFx=0;
 function say(key){
   const p=S.partner;
   if(p&&!Number.isInteger(p.pers)){p.pers=Math.floor(Math.random()*PERS.length);p.sp=rollSpeech()}
   const line=p?lineOf(p.pers,p.sp,p.role,key):'';partnerRaw=p?lastRaw:'';
+  talkLook=null;if(typeof drawFace==='function')drawFace();
   $('talkName').textContent=S.realGuide&&S.role==='sentinel'&&(S.phase==='break'||S.phase==='auto')?`${S.realGuide.nick} · 가이드 (플레이어)`:S.assist?`${S.assist.snick} · 센티넬 (플레이어)`:p?`${p.name} · ${p.role==='guide'?'가이드':'센티넬'} ${GRADES[p.grade]}급 · ${PERS[persIdx(p.pers)].n}`:'';
   const el=$('talkLine');el.textContent=line;el.classList.remove('fresh');void el.offsetWidth;el.classList.add('fresh');
   if(ME_REPLY[key])setTimeout(()=>meSay(key),1500);
@@ -4237,7 +4263,7 @@ const awayNow=()=>S.hiddenAt?Math.max(0,Math.min(now(),S.phaseEnd)-S.hiddenAt):0
 const effMs=()=>Math.max(0,Math.min(now(),S.phaseEnd)-S.phaseStart-S.awayMs-awayNow());
 const fracNow=()=>Math.min(1,Math.max(0,(now()-S.phaseStart)/dur()));
 function liveRunaway(){
-  if(S.phase==='focus')return Math.min(100,S.runawayStart+fracNow()*S.gain+S.awayPen);
+  if(S.phase==='focus')return Math.max(0,Math.min(100,S.runawayStart+fracNow()*S.gain+S.awayPen-((S.curGate&&S.curGate.gCut)||0)));
   if(S.phase==='auto')return Math.max(0,S.autoFrom-S.autoCut*fracNow());
   return S.runaway;
 }
@@ -4269,7 +4295,7 @@ function hpPlan(g,defBuf){
   if(g.train||g.report)return {max:cs.hp,net:0};
   const gr=g.raid?5:g.exam?myGrade():g.g,rec=REC_LV[gr]||1,def=cs.def*(1+(defBuf||0));
   const dmg=(3+gr*4)*(1+Math.max(0,rec-lv)*.15)*(g.raid?1.6:g.exam?1.2:1)*100/(100+def*2);
-  const heal=(S.role==='guide'?5:4)*(1+cs.amp/100)*(matchN()>0?1.2:1);
+  const heal=(S.role==='guide'?5*gMastMul():4)*(1+cs.amp/100)*(matchN()>0?1.2:1);
   const am=affMul(g).m,dm=am>1?.85:am<1?1.15:1;
   return {max:cs.hp,net:Math.round((dmg*dm-heal)*100)/100,dmg:dmg*dm};
 }
@@ -4546,7 +4572,9 @@ function drawBattle(dt){
   else drawHero(me,S.look,bx-(heroHit>0?2:0),92,{s:.5,wp:myWeapon(),wa:myWeaponAttr(),tier:visTier(),attrs:S.attrs||[],atk:cine?0:(me==='guide'?gAtk:atkT),rw:me==='sentinel'?rw:0,berserk:me==='sentinel'&&rw>=100,dx:1});
   if(hs){const w=20,f=hs.hp/hs.max;px(bx-w/2-1,64,w+2,4,'rgba(28,36,64,.7)');px(bx-w/2,65,Math.round(w*f),2,f>.5?'#6CE38A':f>.25?'#FFC23D':'#F0544F');
     if(!hs.down){G.save();G.font='bold 3.4px sans-serif';G.textAlign='center';G.fillStyle='#FFFFFF';G.fillText(`HP ${hs.hp}`,bx,63);G.restore()}}
-  if(!cine){drawShots();drawFx(bx)}
+  if(!cine){drawShots();drawFx(bx);
+    if(ggFx>0){ggFx=Math.max(0,ggFx-dt*1.2);const tx=ALLY_POS[0][0],r=(1-ggFx)*26;G.globalAlpha=ggFx;circle(bx,80,4+r*.6,'#6CE38A');for(let i=0;i<6;i++){const k=((1-ggFx)+i/6)%1;px(bx+(tx-bx)*k,74-Math.sin(k*Math.PI)*10,2,2,i%2?'#FFFFFF':'#9FF0B5')}G.globalAlpha=1}
+    if(S.role==='guide'&&S.phase==='focus'&&S.curGate&&!S.curGate.train&&(S.curGate.ggAt||0)<=now()&&Math.floor(T*2)%2){G.save();G.font='bold 4px sans-serif';G.textAlign='center';G.fillStyle='#21A574';G.fillText('가이딩 준비',bx,57);G.restore()}}
   G.restore();
 }
 const RING_P=1800,RING_TARGET=10;
@@ -4853,7 +4881,9 @@ function showAccount(){showScreen('account');$('accGuest').hidden=true;syncAccSc
 function afterAccount(){if(!cloudOK()){showAccount();return}enterGame()}
 function enterGame(){
   if(!S.role)showOnboard();
-  else if(S.grade==null||!(S.attrs&&S.attrs.length)){S.grade=null;picked=S.role;showGacha('existing')}
+  /* 등급은 있는데 속성만 비어 있으면(예전 오류로 지워진 경우) 검사를 다시 하지 않고 속성 하나만 채워 둡니다 */
+  else if(S.grade!=null&&!(S.attrs&&S.attrs.length)){S.attrs=[rollAttr(S.role)];save();toastLater(`속성 정보가 비어 있어 ${ATTRS[S.attrs[0]].n} 속성을 다시 채웠습니다. 가방의 각성석으로 바꿀 수 있습니다.`);showGame()}
+  else if(S.grade==null){picked=S.role;showGacha('existing')}
   else showGame();
 }
 function authErr(e){
@@ -5115,14 +5145,15 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
   $('bossBar').hidden=!showBoss;
   if(showBoss){$('bossName').textContent='BOSS · '+S.curGate.boss;$('bossHp').style.width=Math.max(0,(1-(fracNow()-.75)/.25)*100)+'%'}
   // 버튼
-  const mb=$('mainBtn'),sb=$('subBtn'),s2=$('sub2Btn');mb.classList.remove('armed','ghost');mb.disabled=false;s2.hidden=true;
+  const mb=$('mainBtn'),sb=$('subBtn'),s2=$('sub2Btn');mb.classList.remove('armed','ghost');mb.disabled=false;sb.disabled=false;s2.hidden=true;
   if(S.phase==='idle'){
     if(!sel){mb.textContent=S.view==='office'?'보고서를 고릅니다':S.view==='gym'?'훈련을 고릅니다':S.view==='home'?'갈 곳을 고릅니다':'게이트를 고릅니다';mb.disabled=true}
     else if(gateLocked(sel)){mb.textContent=sel.raid?'레이드는 저녁 7시~11시에 열립니다':'레벨 부족';mb.disabled=true}
     else mb.textContent=sel.exam?'승급 시험 시작':sel.report?'보고서 작성 시작':sel.train?'훈련 시작':S.party&&PARTY.data&&isLeader()?`파티 출동 (${partySize()}명)`:'게이트 출동';
     const sev=S.runaway>=SEVERE;sb.hidden=!(S.runaway>0)||sev;sb.textContent=`직접 가이딩 ${directMinFor(S.runaway)}분`;
     s2.hidden=!(S.runaway>0);s2.textContent=sev?`자동 가이딩 ${autoMinFor(S.runaway)}분 (심각)`:`자동 가이딩 ${autoMinFor(S.runaway)}분`;
-  }else if(S.phase==='focus'){mb.classList.add(armedEarly>t?'armed':'ghost');mb.textContent=armedEarly>t?'한 번 더 누르면 귀환합니다':'긴급 귀환';sb.hidden=true}
+  }else if(S.phase==='focus'){mb.classList.add(armedEarly>t?'armed':'ghost');mb.textContent=armedEarly>t?'한 번 더 누르면 귀환합니다':'긴급 귀환';
+    const gg=S.role==='guide'&&S.curGate&&!S.curGate.train&&!S.curGate.report;sb.hidden=!gg;if(gg){const l=Math.max(0,(S.curGate.ggAt||0)-t);sb.textContent=l>0?`가이딩 준비 중 ${Math.ceil(l/1000)}초`:'가이딩하기 (화면을 눌러도 됩니다)';sb.disabled=l>0}}
   else if(S.phase==='break'){mb.textContent='호흡 맞추기';sb.hidden=false;sb.textContent=`자동 가이딩 ${autoMinFor(S.runaway)}분`;s2.hidden=false;s2.textContent='휴식 건너뛰기'}
   else{mb.textContent='자동 가이딩 중';mb.disabled=true;sb.hidden=false;sb.textContent='자동 가이딩 멈추기'}
   // 내 상태
@@ -5136,7 +5167,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
   const g=$('gRun');g.firstElementChild.style.width=rw+'%';g.classList.toggle('warn',rw>=40&&rw<70);g.classList.toggle('hot',rw>=70);
   $('runVal').textContent=`${Math.round(rw)} / 100`;
   $('runDesc').textContent=rw>=100?'폭주 상태입니다. 이번 집중 기록이 30% 줄어듭니다.':rw>=70?'위험합니다. 휴식 시간에 반드시 가이딩을 받아야 합니다.':rw>=40?'조금 거칩니다.':'안정적입니다.';
-  {const bl=Math.floor(S.bond/20)+1,bonus=Math.min(50,(bl-1)*5);$('bondName').textContent=`${role==='guide'?'가이딩 숙련':'호흡 동조'} Lv.${bl}`;$('bondDesc').textContent=role==='guide'?`휴식 시간에 호흡 맞추기를 할수록 오릅니다. 가이딩으로 폭주 게이지를 내리는 양 +${bonus}%`:`휴식 시간에 가이드와 호흡을 맞출수록 오릅니다. 가이딩을 받을 때 폭주 게이지가 내려가는 양 +${bonus}%`}$('bondVal').textContent=`${S.bond%20} / 20`;$('gBond').firstElementChild.style.width=(S.bond%20)/20*100+'%';
+  {const bl=Math.floor(S.bond/20)+1,bonus=Math.min(50,(bl-1)*5);$('bondName').textContent=`${role==='guide'?'가이딩 숙련':'호흡 동조'} Lv.${bl}`;$('bondDesc').textContent=role==='guide'?`휴식 시간의 호흡 맞추기와 게이트 안 가이딩으로 오릅니다. 가이딩 효과(폭주 감소 · 회복) +${bonus}%`:`휴식 시간에 가이드와 호흡을 맞출수록 오릅니다. 가이딩을 받을 때 폭주 게이지가 내려가는 양 +${bonus}%`}$('bondVal').textContent=`${S.bond%20} / 20`;$('gBond').firstElementChild.style.width=(S.bond%20)/20*100+'%';
   {const cs=combatStats();$('stHp').textContent=cs.hp;$('stDef').textContent=cs.def;$('stDmg').textContent='+'+cs.dmg+'%';$('stCrit').textContent=cs.crit+'%';$('stSub').textContent=S.role==='guide'?'가이딩 증폭 +'+cs.amp+'%':'폭주 억제 +'+cs.calm+'%';$('stHeal').textContent=healLeft()>0?mmss(healLeft()):'양호'}
   $('stTotal').textContent=fmtMin(S.totalMin);$('stSess').textContent=S.sessions+'회';
   $('stToday').textContent=(S.todayDate===today()?S.todayCount:0)+'회';$('stClose').textContent=S.closedByMe+'개';
@@ -5148,6 +5179,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
   else if(cg)dg.innerHTML=`<b>${esc(gateName(cg))}</b>${cg.hp?` · 봉인 ${Math.floor(cg.sum||0)}/${cg.hp}분`:''}`;
   else dg.innerHTML=S.view==='gym'?'훈련장 · 훈련을 고릅니다':S.view==='office'?'보고서실 · 보고서를 고릅니다':S.view==='home'||S.view==='center'?`${S.view==='home'?'내 방':'센터 로비'} · 접속 ${NET.peers.length+1}명`:'지도에서 게이트를 고릅니다';
   if(cg&&cg.train&&S.phase==='idle')dg.innerHTML=`<b>${esc(cg.name)}</b> · ${esc(cg.desc)}`;
+  renderLenPick();
   const gp=$('gymPick');gp.hidden=!(S.phase==='idle'&&S.view==='gym'&&!cine);
   const gk=S.selGate+'|'+S.trHours;
   if(!gp.hidden&&gp.dataset.sel!==gk){gp.dataset.sel=gk;gp.innerHTML=TRAININGS.map(t=>`<button type="button" class="${t.id==='trall'?'wide':''}" data-tr="${t.id}" aria-pressed="${S.selGate===t.id}"><b>${t.name}</b><span>${t.id==='trall'?`${S.trHours||1}시간 · 1~8시간 중 선택`:t.mins+'분'} · AP ×${t.ap}</span></button>`).join('')+(S.selGate==='trall'?`<div class="hours" role="group" aria-label="종합 훈련 시간">${[1,2,3,4,5,6,7,8].map(h=>`<button type="button" data-h="${h}" aria-pressed="${(S.trHours||1)===h}">${h}시간</button>`).join('')}</div>`:'')}
@@ -5175,7 +5207,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
   if(!$('talkLine').textContent&&S.partner)say('idle');
   if(armedReset<t&&$('resetBtn').classList.contains('armed')){$('resetBtn').classList.remove('armed');$('resetBtn').textContent='초기화'}
 }
-function drawFace(){if(!S.partner)return;const L=S.assist?S.assist.slook:S.realGuide&&S.role==='sentinel'&&(S.phase==='break'||S.phase==='auto')?S.realGuide.look:S.partner.look;const c=$('talkFace'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,24,24);g.drawImage(buildDoll(L,'a',0),4,0,24,24,0,0,24,24)}
+function drawFace(){if(!S.partner)return;const L=talkLook?talkLook:S.assist?S.assist.slook:S.realGuide&&S.role==='sentinel'&&(S.phase==='break'||S.phase==='auto')?S.realGuide.look:S.partner.look;const c=$('talkFace'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,24,24);g.drawImage(buildDoll(L,'a',0),4,0,24,24,0,0,24,24)}
 
 /* ═════════ 이벤트 ═════════ */
 $('mainBtn').addEventListener('click',()=>{
@@ -5183,10 +5215,10 @@ $('mainBtn').addEventListener('click',()=>{
   else if(S.phase==='focus'){if(armedEarly>now()){armedEarly=0;completeFocus(true)}else{armedEarly=now()+3000;updateUI();setTimeout(()=>updateUI(),3050)}}
   else if(S.phase==='break')tapGuide();
 });
-$('subBtn').addEventListener('click',()=>{if(S.phase==='idle')startGuideOnly();else if(S.phase==='break')startAuto();else if(S.phase==='auto')endAuto(true)});
+$('subBtn').addEventListener('click',()=>{if(S.phase==='focus'){gateGuide();return}if(S.phase==='idle')startGuideOnly();else if(S.phase==='break')startAuto();else if(S.phase==='auto')endAuto(true)});
 $('sub2Btn').addEventListener('click',()=>{if(S.phase==='idle')startAuto();else if(S.phase==='break')endBreak(true)});
 $('repClose').addEventListener('click',()=>{$('report').hidden=true;$('mainBtn').focus()});
-$('stage').addEventListener('pointerdown',e=>{if(e.target.closest('button,.drawer,input'))return;if(S.phase==='break'&&!cine){e.preventDefault();tapGuide();return}
+$('stage').addEventListener('pointerdown',e=>{if(e.target.closest('button,.drawer,input'))return;if(S.phase==='break'&&!cine){e.preventDefault();tapGuide();return}if(S.phase==='focus'&&S.role==='guide'&&!cine&&S.curGate&&!S.curGate.train&&!S.curGate.report){e.preventDefault();gateGuide();return}
   if(S.phase==='idle'&&mePos){const r=$('cv').getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;if(Math.abs(x-mePos.x)<12&&y>mePos.y-38&&y<mePos.y+2){meSay('poke',true);beep(1175,.05,'triangle',.03)}}});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(!$('report').hidden){$('report').hidden=true;return}if(!$('settings').hidden){$('settings').hidden=true;return}if(curTab){closeDrawer();return}}
@@ -5285,7 +5317,10 @@ $('themes').addEventListener('click',e=>{const b=e.target.closest('button');if(!
   ach:[[2,0,8,5,'f'],[0,1,2,3,'o'],[10,1,2,3,'o'],[5,5,2,3,'f'],[3,8,6,2,'f'],[2,10,8,2,'f']]};
   document.querySelectorAll('canvas[data-icon]').forEach(c=>{const g=c.getContext('2d');(IC[c.dataset.icon]||[]).forEach(([x,y,w,h,k])=>{g.fillStyle=k==='w'?'#FFFFFF':'#1C2440';if(k==='o'){g.fillRect(x,y,w,1);g.fillRect(x,y+h-1,w,1);g.fillRect(x,y,1,h);g.fillRect(x+w-1,y,1,h)}else g.fillRect(x,y,w,h)})});
 })();
-function showOnboard(){if(!S.role&&S.pendingRole&&S.pendingRoll){picked=S.pendingRole;showGacha('new');return}showScreen('onboard');picked=S.role;syncPick()}
+/* 각성 검사를 마치면 역할 · 등급 · 속성을 그 자리에서 확정합니다. 외형을 정하기 전에 새로고침해도 검사부터 다시 하지 않고 외형 화면으로 돌아옵니다 */
+function showOnboard(){
+  if(!S.role&&S.grade!=null&&S.attrs&&S.attrs.length&&S.pendingRole){S.role=S.pendingRole;S.regPending=true;save();showGame();return}
+  if(!S.role&&S.pendingRole&&S.pendingRoll){picked=S.pendingRole;showGacha('new');return}showScreen('onboard');picked=S.role;syncPick()}
 /* 한 번 등록한 역할은 바꿀 수 없다 */
 const roleLocked=()=>!!S.role;
 function syncPick(){
@@ -5358,8 +5393,10 @@ async function doRoll(isRe){
 $('gRoll').addEventListener('click',()=>doRoll(false));
 $('gReroll').addEventListener('click',()=>doRoll(true));
 $('gNext').addEventListener('click',()=>{
-  if(!roll||rolling)return;S.grade=roll.grade;S.attrs=[roll.attr];S.rerolled=3-rerollLeft;S.pendingRoll=null;S.pendingRolls=null;S.pendingReroll=null;
-  picked=picked||S.role;cloudCommit();showCustom(S.role?'role':'new');
+  if(!roll||rolling)return;picked=picked||S.role;
+  if(!S.role){S.role=picked;S.regPending=true;S.regWp=wpPicked?dWp:null}
+  S.grade=roll.grade;S.attrs=[roll.attr];S.rerolled=3-rerollLeft;S.pendingRoll=null;S.pendingRolls=null;S.pendingReroll=null;
+  cloudCommit();showCustom(S.role?'role':'new');
 });
 function showCustom(mode){
   customMode=mode;
@@ -5425,10 +5462,10 @@ $('cOpts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b
   if(b.dataset.c)setOpt(k,b.dataset.c);else{const n=c.names.length;setOpt(k,(draft[k]+(+b.dataset.d)+n)%n)}beep(880,.04,'square',.025)});
 $('cOpts').addEventListener('input',e=>{const t=e.target;if(t.type==='color'&&isHex(t.value))setOpt(t.dataset.k,t.value)});
 $('cRandom').addEventListener('click',()=>{const L=randomLook(document.body.dataset.role);CATS.forEach(c=>setOpt(c.k,L[c.k]));beep(988,.06,'square',.03)});
-$('cBack').addEventListener('click',()=>{if(customMode==='edit')showGame();else showOnboard()});
+$('cBack').addEventListener('click',()=>{if(customMode==='edit')showGame();else if(S.regPending)toast('각성 검사는 이미 끝났습니다. 외형을 정하면 센터 등록이 마무리됩니다.');else showOnboard()});
 $('cSave').addEventListener('click',()=>{
   const roleChanged=false;
-  if(customMode!=='edit'&&!S.role)S.role=picked;
+  if(customMode!=='edit'&&!S.role)S.role=picked;S.regPending=false;S.regWp=null;
   S.look=normLook({...draft},S.role);S.lookSet=true;S.name=$('nameInput').value.trim().slice(0,10);S.pers=dPers;S.speech=dSp;
   if(customMode!=='edit'&&(roleChanged||!S.partner))newPartner();
   if(wpPicked&&customMode!=='edit'&&!S.items.some(x=>x.kind==='gear'&&x.slot==='weapon')){
@@ -5438,6 +5475,7 @@ $('cSave').addEventListener('click',()=>{
   toast(customMode==='edit'?'외형과 성격을 저장했습니다.':'센터 등록을 마쳤습니다. 이제 게이트 지도나 훈련장으로 이동할 수 있습니다.');
 });
 function showGame(){
+  if(S.role&&S.regPending){picked=S.role;if(S.regWp&&!S.items.some(x=>x.kind==='gear'&&x.slot==='weapon')){wpPicked=true;dWp=S.regWp}showCustom('new');return}
   showScreen('game');ensurePartner();if(NET.mode==='solo')ensureLocalGates();
   $('talkLine').textContent='';say(S.phase==='focus'?'focusStart':S.phase==='break'?'focusEnd':'idle');updateUI(true);
 }
@@ -5457,7 +5495,8 @@ function drawCustomPreview(){
 /* ═════════ 시작 ═════════ */
 applyTheme();drawRolePreview('pvSentinel','sentinel');drawRolePreview('pvGuide','guide');
 if(S.role)S.look=normLook(S.look,S.role);
-if(S.role&&S.attrs)S.attrs=S.attrs.filter(a=>Number.isInteger(a)&&a>=0&&a<6).slice(0,3);
+/* 속성 번호는 12종(물리계 · 정신계 포함)까지 있습니다. 예전에는 0~5만 남겨서 물리계 · 정신계 속성이 새로고침 때 지워졌습니다 */
+if(S.role&&S.attrs)S.attrs=S.attrs.filter(a=>Number.isInteger(a)&&a>=0&&a<ATTRS.length).slice(0,3);
 ensureLocalGates();
 if(S.phase==='focus'&&!S.curGate)S.phase='idle';
 let netReady=false;
@@ -5523,7 +5562,11 @@ $('bagList').addEventListener('click',e=>{const rt=e.target.closest('[data-rolet
 $('bagList').addEventListener('click',e=>{const q=e.target.closest('[data-eq]');if(q){toggleEquip(q.dataset.eq);return}const s=e.target.closest('[data-tomarket]');if(s){openTab('market');setTimeout(()=>{const m=$('mItem');if(m)m.value=s.dataset.tomarket},50)}});
 setInterval(()=>{if(curTab==='guiding')renderGuiding();if(S.role==='guide')watchRequests();updateBadges()},5000);
 
-$('gateInfo').addEventListener('click',e=>{if(e.target.id==='dualBtn'){S.dualTrain=!S.dualTrain;save();renderGateInfo()}const l=e.target.closest('[data-glen]');if(l&&!l.disabled&&S.phase==='idle'){S.gLen=+l.dataset.glen;save();renderGateInfo();updateUI(true)}});
+$('gateInfo').addEventListener('click',e=>{if(e.target.id==='dualBtn'){S.dualTrain=!S.dualTrain;save();renderGateInfo()}});
+/* 공략 시간 단추: 화면이 자주 다시 그려져도 눌림이 사라지지 않도록 누르는 순간(pointerdown)에 처리합니다 */
+document.addEventListener('pointerdown',e=>{const l=e.target.closest('[data-glen]');if(!l||l.disabled||S.phase!=='idle')return;e.preventDefault();S.gLen=+l.dataset.glen;save();renderGateInfo();renderLenPick(true);updateUI(true);toast(`공략 시간을 ${l.textContent.trim()}으로 정했습니다.`)});
+function renderLenPick(force){const el=$('lenPick');if(!el)return;const sel=gateById(S.selGate),show=S.phase==='idle'&&S.view==='map'&&isNormalGate(sel)&&!gateLocked(sel)&&!cine;el.hidden=!show;if(!show)return;
+  const k=sel.id+'|'+lenOf(sel);if(!force&&el.dataset.k===k)return;el.dataset.k=k;el.innerHTML=`<span>공략 시간</span>${LEN_OPT.map(n=>`<button type="button" data-glen="${n}" aria-pressed="${lenOf(sel)===n}">${fmtMin(FOCUS_MIN[sel.g]*n)}</button>`).join('')}`}
 
 (()=>{const box=$('cGrades');GRADES.forEach((g,i)=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=g;b.setAttribute('aria-pressed','false');b.addEventListener('click',()=>{cPrevG=cPrevG===i?null:i;box.querySelectorAll('button').forEach((x,j)=>x.setAttribute('aria-pressed',String(j===cPrevG)));$('cGradeDesc').textContent=cPrevG==null?'등급을 누르면 그 등급이 되었을 때의 모습을 미리 봅니다.':`${g}급: ${VIS_DESC[document.body.dataset.role==='guide'?'guide':'sentinel'][VTIER[i]]||'기본 모습입니다.'}`});box.appendChild(b)})})();
 
