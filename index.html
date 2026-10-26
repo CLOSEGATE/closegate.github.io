@@ -798,7 +798,7 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
 .tabs::-webkit-scrollbar{display:none}
 .tab{min-width:0;padding:7px 4px!important;white-space:nowrap}
 .tab span{overflow:hidden;text-overflow:ellipsis}
-@media (max-width:1100px){.tab{flex-direction:column;gap:2px!important;font-size:.78rem!important;padding:5px 2px!important}}
+.tab{flex-direction:column;gap:2px!important;font-size:.8rem!important;padding:6px 2px!important}
 .acc-card.cont{order:-1;border-color:transparent!important;background:linear-gradient(135deg,var(--accent),var(--accent-deep))!important;color:var(--on-accent)!important}
 .acc-card.cont span{color:inherit!important;opacity:.85}
 .acc-switch{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:.86rem;color:var(--ink-soft);margin:0}
@@ -842,6 +842,48 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
 body.hasNotice{padding-top:calc(14px + 36px)!important}
 .pmood{display:grid;gap:6px;border:1px dashed color-mix(in srgb,var(--pink) 60%,transparent);border-radius:12px;padding:10px 12px}
 .gmlist b.code{font-family:var(--f-pixel,monospace);letter-spacing:.06em}
+/* PC: 게임 화면을 조금 줄여 아래 대화 · 메뉴 · 탭이 스크롤 없이 한 화면에 들어오게 한다 */
+@media (min-width:761px){body.refined{padding-bottom:12px}.hudgame{--dockH:300px;--sw:min(100%,1120px,calc((100dvh - var(--dockH) - 40px) * 16 / 9))}
+  .hudgame .stage,.hudgame .dock{min-width:min(100%,520px)!important}}
+/* 아래 영역: 왼쪽에 대화 · 지갑과 가이딩 단추 · 탭, 오른쪽에 메뉴 */
+.dock{grid-template-areas:"talk act" "mid act" "tabs act"!important}
+.dockmid{grid-area:mid;display:flex;gap:8px;align-items:stretch;flex-wrap:nowrap;min-width:0}
+.dockmid .subrow{flex:1;display:flex;gap:6px;min-width:0}
+.dockmid .subrow .btn{flex:1;min-width:0;font-size:.9rem!important;padding:8px 6px!important;white-space:nowrap}
+.dockmid .subrow:not(:has(.btn:not([hidden]))){display:none}
+.wallet{display:flex;gap:8px}
+.wallet{flex:none}.wallet>span{white-space:nowrap;display:flex;align-items:baseline;gap:5px;background:var(--panel);border:1px solid var(--line,#D9E0F2);border-radius:12px;padding:8px 14px;box-shadow:var(--sh1)}
+.wallet i{width:10px;height:10px;border-radius:50%;align-self:center}
+.wallet .wcr i{background:#FFC23D;box-shadow:inset 0 -2px 0 #E39A00}.wallet .wap i{background:#8E6CF0;box-shadow:inset 0 -2px 0 #6247C4}
+.wallet em{font-style:normal;font-size:.76rem;color:var(--ink-soft)}
+.wallet b{font-size:1.15rem;font-weight:700;letter-spacing:-.01em}.wallet small{font-size:.74rem;color:var(--ink-soft);font-weight:600}
+@media (min-width:761px){.hudgame{--dockH:250px!important}}
+@media (max-width:760px){.dock{grid-template-areas:"act" "mid" "talk"!important}.dockmid{flex-wrap:wrap}.dockmid .subrow{flex-basis:100%}.wallet{flex:1}.wallet>span{flex:1;padding:6px 10px}.wallet b{font-size:1rem}}
+/* 시간 · 레벨 글자: 도트 글꼴 대신 또렷한 글꼴, 숫자 폭 고정 */
+#timer,.timer{font-family:"IBM Plex Sans KR",system-ui,sans-serif!important;font-weight:700!important;font-variant-numeric:tabular-nums;letter-spacing:.02em;font-size:1.55rem!important;line-height:1.15;padding:4px 16px!important}
+.hud-me .hm-txt>span,.hud-me .hm-txt small{font-family:"IBM Plex Sans KR",system-ui,sans-serif!important;font-weight:600;letter-spacing:0}
+@media (max-width:760px){#timer,.timer{font-size:1.2rem!important}}
+/* 칭호: 이름 옆 작은 배지 */
+.hm-txt b{display:flex!important;align-items:center;gap:6px;min-width:0}
+.htitle{font-style:normal;font-family:"IBM Plex Sans KR",sans-serif;font-size:.66rem;font-weight:700;color:var(--accent-deep,#1D3AA6);background:color-mix(in srgb,var(--accent) 14%,#fff);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:99px;padding:1px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;line-height:1.4}
+body[data-theme="night"] .htitle{background:rgba(111,149,242,.18);color:#C9D6FF}
+.hud-me{max-width:min(340px,70%)}
+/* 다듬기: 카드 · 단추 반응, 탭 · 메뉴 정렬, 글자 대비 */
+body.refined :is(.talk,.wallet>span,.gympick button,.hp){transition:box-shadow .15s,border-color .15s,transform .08s}
+body.refined :is(.gympick button,.hp):hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent);box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 14%,transparent)}
+body.refined :is(.gympick button,.hp):active{transform:translateY(1px)}
+body.refined .hp b{font-size:.95rem;letter-spacing:-.01em}
+body.refined .hp span{color:var(--ink-soft)}
+body.refined .talk{border-radius:16px}
+body.refined .talk .name{letter-spacing:-.01em}
+body.refined .dock-gate{color:var(--ink-soft);font-size:.82rem}
+body.refined .tab{border-radius:12px}
+body.refined .tab[aria-pressed="true"] span{font-weight:700}
+body.refined .drawer .dr-head h2,body.refined #drawerTitle{font-size:1.15rem;letter-spacing:-.02em}
+body.refined .sbtn{transition:background .15s,border-color .15s}
+body.refined .sbtn:focus-visible,body.refined .tab:focus-visible,body.refined .hp:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+body.refined .muted{line-height:1.55}
+.fcode code.fc{font-size:1.05rem;font-weight:700;letter-spacing:.18em;color:var(--ink)}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1081,6 +1123,13 @@ body.hasNotice{padding-top:calc(14px + 36px)!important}
         <canvas id="talkFace" width="24" height="24" aria-hidden="true"></canvas>
         <div class="tx"><span class="name" id="talkName"></span><p id="talkLine"></p><p class="tip" id="tip"></p></div>
       </div>
+      <div class="dockmid">
+        <div class="wallet" id="wallet"><span class="wcr"><i></i><em>크레딧</em><b id="wCr">0</b><small>C</small></span><span class="wap"><i></i><em>각성</em><b id="wAp">0</b><small>AP</small></span></div>
+        <div class="subrow">
+          <button class="btn ghost" type="button" id="subBtn" hidden>휴식 건너뛰기</button>
+          <button class="btn ghost" type="button" id="sub2Btn" hidden>휴식 건너뛰기</button>
+        </div>
+      </div>
       <div class="actions">
         <span class="dock-gate" id="dockGate"></span>
         <div class="gympick homepick" id="homePick" hidden>
@@ -1102,10 +1151,6 @@ body.hasNotice{padding-top:calc(14px + 36px)!important}
         <div class="gympick" id="gymPick" hidden></div>
         <div class="potbar" id="potBar" hidden></div>
         <button class="btn" type="button" id="mainBtn">게이트 선택</button>
-        <div class="subrow">
-          <button class="btn ghost" type="button" id="subBtn" hidden>휴식 건너뛰기</button>
-          <button class="btn ghost" type="button" id="sub2Btn" hidden>휴식 건너뛰기</button>
-        </div>
       </div>
       <nav class="tabs" aria-label="패널">
         <button type="button" class="tab" data-tab="ctl" aria-pressed="false"><canvas width="12" height="12" data-icon="ctl" aria-hidden="true"></canvas><span>관제</span></button>
@@ -1363,12 +1408,12 @@ function makePartner(role,lv){
 }
 /* ═════════ 세계 ═════════ */
 const DIST=[
-  {name:'청람숲',theme:'forest',rect:[0,0,64,46],mon:[2,0],mc:'#E8794E',boss:['왕버섯','덩굴 슬라임']},
-  {name:'구시가지',theme:'town',rect:[64,0,64,46],mon:[1,0],mc:'#9B7BF2',boss:['그림자 박쥐','폐건물 슬라임']},
-  {name:'연구단지',theme:'lab',rect:[128,0,64,50],mon:[0,1],mc:'#3FC7D9',boss:['실험체 X-7','폭주 박쥐']},
-  {name:'은빛항구',theme:'harbor',rect:[0,46,68,62],mon:[0,1],mc:'#5B8CFF',boss:['안개 슬라임','바다 박쥐']},
-  {name:'중앙구',theme:'city',rect:[68,46,62,62],mon:[1,2],mc:'#F0544F',boss:['균열 수호자','회색 감시자']},
-  {name:'남부평원',theme:'plains',rect:[130,50,62,58],mon:[2,0],mc:'#E8A93A',boss:['들판 버섯왕','밀밭 슬라임']}
+  {name:'청람숲',theme:'forest',rect:[0,0,64,46],mon:[2,0,4,10],mc:'#E8794E',boss:['왕버섯','덩굴 슬라임']},
+  {name:'구시가지',theme:'town',rect:[64,0,64,46],mon:[1,0,6,5],mc:'#9B7BF2',boss:['그림자 박쥐','폐건물 슬라임']},
+  {name:'연구단지',theme:'lab',rect:[128,0,64,50],mon:[9,11,0,1],mc:'#3FC7D9',boss:['실험체 X-7','폭주 박쥐']},
+  {name:'은빛항구',theme:'harbor',rect:[0,46,68,62],mon:[7,0,10,1],mc:'#5B8CFF',boss:['안개 슬라임','바다 박쥐']},
+  {name:'중앙구',theme:'city',rect:[68,46,62,62],mon:[5,9,1,6],mc:'#F0544F',boss:['균열 수호자','회색 감시자']},
+  {name:'남부평원',theme:'plains',rect:[130,50,62,58],mon:[4,2,8,0],mc:'#E8A93A',boss:['들판 버섯왕','밀밭 슬라임']}
 ];
 const TRAININGS=[
   {id:'train',train:true,d:4,g:0,x:116,y:88,mins:1,brk:20e3,ap:1,name:'체험 훈련',desc:'출동과 가이딩 흐름을 1분 만에 연습합니다.',boss:'훈련 드론'},
@@ -1820,7 +1865,10 @@ const drawDoll=(L,x,fy,frame,dx)=>G.drawImage(buildDoll(L,frame,dx),Math.round(x
 
 /* ═════════ 몬스터 (귀여운 버전) ═════════ */
 const monCache=new Map();
-const MON_SZ=[[18,14],[20,15],[16,17],[14,20]],MON_BASE=[12,12,15,18];
+const MON_SZ=[[18,14],[20,15],[16,17],[14,20],[20,14],[18,18],[16,16],[20,13],[14,16],[18,12],[18,13],[16,16]],MON_BASE=[12,12,15,18,13,17,14,12,14,10,12,14];
+/* 떠다니는 몬스터: 박쥐 · 유령 · 불꽃 정령 · 드론 · 눈알 */
+const MON_FLY=new Set([1,6,8,9,11]);
+const MON_N=['슬라임','박쥐','버섯','허수아비','늑대','바위 골렘','유령','집게 게','불꽃 정령','감시 드론','통통 개구리','균열의 눈'];
 function buildMon(type,c,f){
   const key=type+c+f;if(monCache.has(key))return monCache.get(key);
   const [w,h]=MON_SZ[type],cvs=document.createElement('canvas');cvs.width=w;cvs.height=h;
@@ -1849,11 +1897,44 @@ function buildMon(type,c,f){
     r(5,2,1,1,INK);r(8,2,1,1,INK);r(3,9,8,1,'#C49562');
     r(5,6,4,4,'#F2546B');r(6,7,2,2,'#FFFFFF');r(6+f%2,7,1,1,'#F2546B');r(4,12,1,2,'#D8BE86');r(9,12,1,2,'#D8BE86');
   }
+  if(type===4){ // 늑대 새끼
+    r(3,5,12,6,c);r(2,6,1,4,c);r(15,3,4,6,c);r(15,1,1,2,c);r(18,1,1,2,c);r(16,2,1,1,BL);r(17,2,1,1,BL);r(19,6,1,2,cl);
+    r(0,3+f,2,3,c);r(1,2+f,1,1,c);r(4,6,8,2,cl);r(16,5,1,1,INK);r(18,5,1,1,INK);r(19,7,1,1,INK);r(4,11,2,2+(f?0:1),cd);r(7,11,2,3-(f?0:1),cd);r(11,11,2,2+(f?1:0),cd);r(14,11,2,3,cd);
+  }
+  if(type===5){ // 바위 골렘
+    r(4,2,10,8,c);r(2,5,2,8,cd);r(14,5,2,8,cd);r(1,12,4,3,c);r(13,12,4,3,c);r(5,10,8,5,cd);r(4,15,4,3,c);r(10,15,4,3,c);
+    r(5,3,3,2,cl);r(10,7,3,1,cd);r(6,5,2,2,'#FFE27A');r(11,5,2,2,'#FFE27A');r(6,5,1,1,'#FFFFFF');r(11,5,1,1,'#FFFFFF');r(7,9,4,1,INK);
+  }
+  if(type===6){ // 유령
+    r(4,1,8,1,c);r(2,2,12,2,c);r(1,4,14,8,c);r(1,12,3,2+f,c);r(5,12,3,3-f,c);r(9,12,3,2+f,c);r(12,12,3,3-f,c);r(3,3,3,2,cl);
+    r(4,6,2,3,INK);r(10,6,2,3,INK);r(4,6,1,1,'#FFFFFF');r(10,6,1,1,'#FFFFFF');r(7,10,2,1,INK);r(2,9,2,1,BL);r(12,9,2,1,BL);
+  }
+  if(type===7){ // 집게 게
+    r(4,5,12,5,c);r(3,6,14,3,c);r(5,4,10,1,cl);r(0,2+f,4,3,c);r(0,1+f,1,1,c);r(3,1+f,1,1,c);r(16,2+f,4,3,c);r(16,1+f,1,1,c);r(19,1+f,1,1,c);
+    r(3,5,1,2,cd);r(16,5,1,2,cd);r(7,2,1,3,cd);r(12,2,1,3,cd);r(6,1,3,2,'#FFFFFF');r(11,1,3,2,'#FFFFFF');r(7,1,1,1,INK);r(12,1,1,1,INK);
+    r(8,8,4,1,INK);r(4,10,1,2,cd);r(7,10,1,3,cd);r(12,10,1,3,cd);r(15,10,1,2,cd);
+  }
+  if(type===8){ // 불꽃 정령
+    const y0=f;r(6,0+y0,2,2,cl);r(5,2,4,2,c);r(4,4,6,3,c);r(3,7,8,5,c);r(2,9,10,4,c);r(4,12,6,2,cd);r(5,6,4,6,cl);r(6,9,2,3,'#FFFFFF');
+    r(5,9,1,2,INK);r(8,9,1,2,INK);r(1,6+y0,1,2,cl);r(12,4-y0,1,2,cl);
+  }
+  if(type===9){ // 감시 드론
+    r(3,4,12,6,c);r(2,5,14,4,c);r(4,3,10,1,cl);r(0,1,6,1,cd);r(12,1,6,1,cd);r(2,2,2,2,cd);r(14,2,2,2,cd);
+    r(f?0:3,0,3,1,'#C9CEDB');r(f?12:15,0,3,1,'#C9CEDB');r(6,5,6,4,'#1C2440');r(7+f,6,3,2,'#F0544F');r(8+f,6,1,1,'#FFFFFF');r(5,10,2,2,cd);r(11,10,2,2,cd);
+  }
+  if(type===10){ // 통통 개구리
+    r(3,4,12,7,c);r(2,6,14,5,c);r(3,1,4,4,c);r(11,1,4,4,c);r(4,2,2,2,'#FFFFFF');r(12,2,2,2,'#FFFFFF');r(4+f,2,1,2,INK);r(12+f,2,1,2,INK);
+    r(5,8,8,1,cd);r(5,7,1,1,cd);r(12,7,1,1,cd);r(4,9,10,2,cl);r(1,10,4,2,cd);r(13,10,4,2,cd);r(3,6,2,1,BL);r(13,6,2,1,BL);
+  }
+  if(type===11){ // 균열의 눈
+    r(5,1,6,1,cd);r(3,2,10,2,cd);r(2,4,12,8,cd);r(3,12,10,2,cd);r(5,14,6,1,cd);r(3,4,10,8,'#FFFFFF');r(5,3,6,1,'#FFFFFF');r(5,12,6,1,'#FFFFFF');
+    r(5+f,5,6,6,c);r(6+f,4,4,8,c);r(7+f,6,2,4,INK);r(7+f,6,1,1,'#FFFFFF');r(0,7,2,1,c);r(14,7,2,1,c);r(7,0,2,1,c);r(7,15,2,1,c);
+  }
   outline(cvs);const res={n:cvs,w:whiteOf(cvs)};monCache.set(key,res);return res;
 }
 function drawMon(type,c,x,fy,o={}){
   const f=Math.floor(T*3+(o.ph||0))%2,m=buildMon(type,c,f),sc=o.scale||1;
-  const img=o.flash?m.w:m.n,w=img.width*sc,h=img.height*sc,hover=type===1?(10*sc+Math.round(Math.sin(T*3+(o.ph||0))*2)):0;
+  const img=o.flash?m.w:m.n,w=img.width*sc,h=img.height*sc,hover=MON_FLY.has(type)?(10*sc+Math.round(Math.sin(T*3+(o.ph||0))*2)):0;
   G.globalAlpha=.18;px(x-6*sc,fy,12*sc,1,INK);G.globalAlpha=1;
   G.drawImage(img,Math.round(x-w/2),Math.round(fy-(MON_BASE[type]*sc)-hover),w,h);
   return fy-(MON_BASE[type]*sc)-hover;
@@ -1934,14 +2015,15 @@ async function ensureOnlineSlots(){
 }
 function pushPresence(){
   if(!NET.room||!S.role)return;
-  const p={uid:NET.uid||null,title:S.title||null,role:S.role,nick:(S.name||'').slice(0,10),look:S.look,lv:myLevel(),gr:myGrade(),attrs:S.attrs||[],
+  const pt=S.partner?{role:S.partner.role||'guide',look:S.partner.look,gr:clampI(S.partner.grade,7),attrs:(S.partner.attrs||[]).slice(0,3),nick:String(S.partner.name||'').slice(0,10)}:null;
+  const p={uid:NET.uid||null,ptn:pt,title:S.title||null,role:S.role,nick:(S.name||'').slice(0,10),look:S.look,lv:myLevel(),gr:myGrade(),attrs:S.attrs||[],
     pers:persIdx(S.pers),sp:spIdx(S.speech),wp:myWeapon(),wa:myWeaponAttr(),party:S.party||null,view:S.view||'home',phase:S.phase,gate:S.phase==='focus'&&S.curGate?S.curGate.id:null};
   try{NET.room.presence(p).catch(()=>{})}catch(e){}
 }
 function peerInfo(p){
   const pr=p.presence||{};
   return {role:pr.role==='guide'?'guide':'sentinel',nick:typeof pr.nick==='string'?pr.nick.slice(0,10):'',look:normLook(pr.look,pr.role==='guide'?'guide':'sentinel'),
-    lv:Math.max(1,Math.min(99,Math.round(+pr.lv||1))),gr:clampI(pr.gr,7),uid:typeof pr.uid==='string'?pr.uid.slice(0,64):(typeof p.peer==='string'?p.peer:''),attrs:Array.isArray(pr.attrs)?pr.attrs.filter(a=>Number.isInteger(a)&&a>=0&&a<ATTRS.length).slice(0,3):[],
+    lv:Math.max(1,Math.min(99,Math.round(+pr.lv||1))),gr:clampI(pr.gr,7),uid:typeof pr.uid==='string'?pr.uid.slice(0,64):(typeof p.peer==='string'?p.peer:''),ptn:pr.ptn&&typeof pr.ptn==='object'?{role:pr.ptn.role==='sentinel'?'sentinel':'guide',look:normLook(pr.ptn.look,pr.ptn.role==='sentinel'?'sentinel':'guide'),gr:clampI(pr.ptn.gr,7),attrs:Array.isArray(pr.ptn.attrs)?pr.ptn.attrs.filter(x=>Number.isInteger(x)&&x>=0&&x<ATTRS.length).slice(0,3):[],nick:String(pr.ptn.nick||'').slice(0,10)}:null,attrs:Array.isArray(pr.attrs)?pr.attrs.filter(a=>Number.isInteger(a)&&a>=0&&a<ATTRS.length).slice(0,3):[],
     phase:['idle','focus','break','auto'].includes(pr.phase)?pr.phase:'idle',pers:persIdx(pr.pers),sp:spIdx(pr.sp),wp:typeof pr.wp==='string'&&WTYPES.some(w=>w.id===pr.wp)?pr.wp:null,wa:Number.isInteger(pr.wa)&&pr.wa>=0&&pr.wa<ATTRS.length?pr.wa:null,party:typeof pr.party==='string'?pr.party.slice(0,8):null,title:typeof pr.title==='string'?achTitle(pr.title):'',gate:typeof pr.gate==='string'?pr.gate.slice(0,40):null,peer:p.peer};
 }
 const peersOn=id=>NET.peers.map(peerInfo).filter(p=>p.phase==='focus'&&p.gate===id);
@@ -2565,7 +2647,36 @@ const ACH=[
   {id:'raidwin',n:'균열 봉인자',d:'참여한 균열 레이드가 봉인됩니다.',t:'균열 봉인자',ap:100,p:()=>[S.raidWins||0,1]},
   {id:'assist3',n:'든든한 가이드',d:'다른 플레이어 센티넬을 3번 가이딩합니다.',t:'든든한 가이드',ap:80,p:()=>[S.assists||0,3]},
   {id:'trade3',n:'장터 상인',d:'장터에서 물건을 3번 팝니다.',t:'장터 상인',ap:60,p:()=>[S.sales||0,3]},
-  {id:'decor5',n:'방 꾸미기',d:'가구를 5개 모읍니다.',t:'인테리어 장인',ap:60,p:()=>[(S.decor||[]).length,5]}
+  {id:'decor5',n:'방 꾸미기',d:'가구를 5개 모읍니다.',t:'인테리어 장인',ap:60,p:()=>[(S.decor||[]).length,5]},
+  {id:'lv10',n:'성장의 시작',d:'레벨 10에 오릅니다.',t:'떠오르는 요원',ap:40,p:()=>[myLevel(),10]},
+  {id:'lv30',n:'든든한 전력',d:'레벨 30에 오릅니다.',t:'센터의 기둥',ap:100,p:()=>[myLevel(),30]},
+  {id:'lv50',n:'반환점',d:'레벨 50에 오릅니다.',t:'숙련 요원',ap:200,p:()=>[myLevel(),50]},
+  {id:'lv100',n:'정점',d:'레벨 100에 오릅니다.',t:'전설의 요원',ap:500,p:()=>[myLevel(),100]},
+  {id:'s100',n:'출동 100회',d:'출동을 100번 끝까지 마칩니다.',t:'백전노장',ap:200,p:()=>[S.sessions,100]},
+  {id:'s300',n:'출동 300회',d:'출동을 300번 끝까지 마칩니다.',t:'살아 있는 전설',ap:400,p:()=>[S.sessions,300]},
+  {id:'h100',n:'백 시간의 집중',d:'모두 합쳐 100시간 집중합니다.',t:'몰입의 화신',ap:400,p:()=>[Math.floor(S.totalMin/60),100]},
+  {id:'h300',n:'삼백 시간의 집중',d:'모두 합쳐 300시간 집중합니다.',t:'시간을 다루는 자',ap:800,p:()=>[Math.floor(S.totalMin/60),300]},
+  {id:'close30',n:'봉인 전문가',d:'게이트를 30개 직접 봉인합니다.',t:'봉인 전문가',ap:250,p:()=>[S.closedByMe,30]},
+  {id:'close100',n:'백 개의 문',d:'게이트를 100개 직접 봉인합니다.',t:'문지기',ap:600,p:()=>[S.closedByMe,100]},
+  {id:'kill500',n:'몬스터 사냥꾼',d:'몬스터를 모두 합쳐 500마리 쓰러뜨립니다.',t:'사냥꾼',ap:80,p:()=>[S.totalKills||0,500]},
+  {id:'kill5000',n:'균열의 재앙',d:'몬스터를 모두 합쳐 5000마리 쓰러뜨립니다.',t:'균열의 재앙',ap:300,p:()=>[S.totalKills||0,5000]},
+  {id:'raid5',n:'레이드 단골',d:'참여한 균열 레이드가 5번 봉인됩니다.',t:'레이드 단골',ap:200,p:()=>[S.raidWins||0,5]},
+  {id:'raid20',n:'균열 정복자',d:'참여한 균열 레이드가 20번 봉인됩니다.',t:'균열 정복자',ap:600,p:()=>[S.raidWins||0,20]},
+  {id:'assist10',n:'믿음직한 파장',d:'다른 플레이어 센티넬을 10번 가이딩합니다.',t:'믿음직한 파장',ap:150,p:()=>[S.assists||0,10]},
+  {id:'assist30',n:'센터의 안식처',d:'다른 플레이어 센티넬을 30번 가이딩합니다.',t:'센터의 안식처',ap:400,p:()=>[S.assists||0,30]},
+  {id:'trade10',n:'장터의 큰손',d:'장터에서 물건을 10번 팝니다.',t:'장터의 큰손',ap:150,p:()=>[S.sales||0,10]},
+  {id:'decor10',n:'아늑한 방',d:'가구를 10개 모읍니다.',t:'아늑함 수집가',ap:120,p:()=>[(S.decor||[]).length,10]},
+  {id:'decor20',n:'꿈의 방',d:'가구를 20개 모읍니다.',t:'꿈의 방 주인',ap:300,p:()=>[(S.decor||[]).length,20]},
+  {id:'cr10k',n:'저축왕',d:'크레딧을 10,000 이상 모읍니다.',t:'저축왕',ap:150,p:()=>[Math.floor(S.cr||0),10000]},
+  {id:'enh10',n:'완전 각성 장비',d:'장비 하나를 속성 강화 +10까지 올립니다.',t:'장인',ap:300,p:()=>[Math.max(0,...(S.items||[]).filter(x=>x.kind==='gear').map(x=>+x.enh||0)),10]},
+  {id:'cenh5',n:'속성의 극의',d:'내 속성 하나를 +5까지 강화합니다.',t:'속성의 극의',ap:300,p:()=>[Math.max(0,...Object.values(S.attrEnh||{}).map(v=>+v||0)),5]},
+  {id:'pot30',n:'물약 애호가',d:'물약을 30번 마십니다.',t:'물약 애호가',ap:80,p:()=>[S.potUsed||0,30]},
+  {id:'party10',n:'함께라서',d:'파티로 10번 출동합니다.',t:'파티의 중심',ap:150,p:()=>[S.partyN||0,10]},
+  {id:'night10',n:'밤의 파수꾼',d:'밤에 게이트를 10번 공략합니다.',t:'밤의 파수꾼',ap:120,p:()=>[S.nightN||0,10]},
+  {id:'weak20',n:'약점 공략가',d:'게이트 약점 속성으로 20번 공략합니다.',t:'약점 공략가',ap:150,p:()=>[S.weakN||0,20]},
+  {id:'down1',n:'다시 일어서다',d:'쓰러졌다가 다시 일어나 공략을 마칩니다.',t:'칠전팔기',ap:40,p:()=>[S.downs||0,1]},
+  {id:'friend5',n:'인싸 요원',d:'친구를 5명 사귑니다.',t:'인싸 요원',ap:100,p:()=>[typeof friendsAll==='function'?friendsAll().filter(f=>f.status==='ok').length:0,5]},
+  {id:'pair1',n:'서약',d:'페어 서약을 맺습니다.',t:'서약한 자',ap:150,p:()=>[S.pairUid?1:0,1]}
 ];
 const achTitle=id=>{const a=ACH.find(x=>x.id===id);return a?a.t:''};
 function checkAch(){
@@ -2617,7 +2728,16 @@ function buyDecor(id){
 function toggleDecor(id){S.decorOn=S.decorOn||{};S.decorOn[id]=S.decorOn[id]===false;save();updateUI(true)}
 
 /* ═════════ 균열 레이드 (매일 19:00~23:00, 한국 시간) ═════════ */
-const RAID_BOSS=['균열의 군주','심연 슬라임 여왕','거대 균열 박쥐','태초의 버섯왕'];
+/* 레이드 보스 20종: 이름 · 몬스터 모양 · 색. 날짜와 차수로 무작위 출현합니다 */
+const RAID_DEF=[
+  {n:'균열의 군주',t:11,c:'#9B7BF2'},{n:'심연 슬라임 여왕',t:0,c:'#5A4AA8'},{n:'거대 균열 박쥐',t:1,c:'#6A3A8A'},{n:'태초의 버섯왕',t:2,c:'#C2453A'},
+  {n:'잿빛 늑대왕',t:4,c:'#7A809A'},{n:'고대 바위 거인',t:5,c:'#8A7A6A'},{n:'울음의 망령',t:6,c:'#B8C4F0'},{n:'강철 집게 대장',t:7,c:'#D9705A'},
+  {n:'겁화의 정령',t:8,c:'#F2793D'},{n:'폭주 감시기 Ω',t:9,c:'#5A6488'},{n:'늪지의 두꺼비왕',t:10,c:'#4E9A5A'},{n:'천 개의 눈',t:11,c:'#F0544F'},
+  {n:'얼음 슬라임 군주',t:0,c:'#8FD3FA'},{n:'달빛 흡혈박쥐',t:1,c:'#3A4A8A'},{n:'독안개 버섯',t:2,c:'#9C7CF0'},{n:'서리 늑대',t:4,c:'#BFE3FF'},
+  {n:'용암 골렘',t:5,c:'#D2552E'},{n:'황금 망령',t:6,c:'#FFC23D'},{n:'심해 거대게',t:7,c:'#2F5BEA'},{n:'폭풍 정령',t:8,c:'#3FC7D9'}
+];
+const RAID_BOSS=RAID_DEF.map(b=>b.n);
+const raidDef=n=>RAID_DEF.find(b=>b.n===n)||RAID_DEF[0];
 const RAID_OPEN=19*60,RAID_CLOSE=23*60,RAID_SETTLE=23*60+30;
 const kst=t=>{const d=new Date((t||Date.now())+9*3600e3);return {y:d.getUTCFullYear(),m:d.getUTCMonth()+1,d:d.getUTCDate(),min:d.getUTCHours()*60+d.getUTCMinutes(),dow:d.getUTCDay()}};
 const dayKey=t=>{const k=kst(t);return `${k.y}${String(k.m).padStart(2,'0')}${String(k.d).padStart(2,'0')}`};
@@ -2631,7 +2751,7 @@ function raidWhen(){const m=kst().min;
   if(m<RAID_SETTLE)return '입장 마감 · 11시 30분에 결과가 정산됩니다';
   return '내일 저녁 7시에 다시 열립니다'}
 const raidHp=(gen,online)=>online?900+300*(gen-1):180+60*(gen-1);
-const bossFor=(day,gen)=>RAID_BOSS[((+String(day).slice(-2)||0)+gen-1)%RAID_BOSS.length];
+const bossFor=(day,gen)=>{let h=2166136261;for(const ch of String(day)+'#'+gen){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0}return RAID_BOSS[h%RAID_BOSS.length]};
 function makeRaid(day,gen,online){return {day,gen,hp:raidHp(gen,online),boss:bossFor(day,gen),contrib:{},names:{},openedAt:Date.now()}}
 function cleanRaid(d){
   if(!d||typeof d!=='object')return null;
@@ -3340,13 +3460,30 @@ function renderMail(){
   <p class="muted">점검 보상이나 이벤트처럼 전체 배포되는 아이템과 보상은 우편으로 지급됩니다. 받기를 눌러야 가방에 들어옵니다.</p>`;
 }
 
+/* ── 짧은 친구 코드 (6자리) ──
+   계정마다 한 번 만들어 fcodes/{코드} = {uid, nick}로 저장합니다. 헷갈리는 글자(0 O 1 I L)는 쓰지 않습니다 */
+const FC_AL='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function fcFrom(uid,salt){let h=2166136261;for(const ch of uid+'#'+salt){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0}let c='';for(let i=0;i<6;i++){c+=FC_AL[h%FC_AL.length];h=(Math.floor(h/FC_AL.length)^Math.imul(h,2654435761))>>>0}return c}
+let fcBusy=false;
+async function ensureFriendCode(){
+  if(!online()||!NET.uid||fcBusy)return;if(S.fcode&&S.fcodeUid===NET.uid)return;fcBusy=true;
+  try{for(let salt=0;salt<6;salt++){const c=fcFrom(NET.uid,salt),ref=NET.db.doc('fcodes/'+c),d=await ref.get();
+      if(d.exists&&d.data().uid!==NET.uid)continue;
+      if(!d.exists)await ref.set({uid:NET.uid,nick:myNick(),t:Date.now()});
+      S.fcode=c;S.fcodeUid=NET.uid;save();if(curTab==='crew')renderFriends();break}}catch(e){}
+  fcBusy=false;
+}
+setInterval(ensureFriendCode,5000);
 /* ── 친구 ── */
 const friendsAll=()=>Object.values(SOC.fr).filter(f=>f.status==='pending'||f.status==='ok');
 const otherOf=f=>f.a===NET.uid?{uid:f.b,nick:f.bnick,role:f.brole}:{uid:f.a,nick:f.anick,role:f.arole};
 const isFriend=u=>friendsAll().some(f=>f.status==='ok'&&otherOf(f).uid===u);
 async function addFriend(uid,nick,role){
   if(!online()){toast('친구 기능은 온라인에서만 쓸 수 있습니다.');return}
-  uid=String(uid||'').trim();if(!uid||uid===NET.uid){toast('친구 코드를 확인해 주세요.');return}
+  uid=String(uid||'').trim();
+  if(uid&&uid.replace(/[^A-Za-z0-9]/g,'').length<=8){const c=uid.toUpperCase().replace(/[^A-Z0-9]/g,'');
+    try{const d=await NET.db.doc('fcodes/'+c).get();if(!d.exists){toast('없는 친구 코드입니다.');return}uid=d.data().uid;nick=nick||d.data().nick}catch(e){toast('친구 코드를 확인하지 못했습니다.');return}}
+  if(!uid||uid===NET.uid){toast(uid===NET.uid?'내 친구 코드입니다.':'친구 코드를 확인해 주세요.');return}
   const id=pairKey(NET.uid,uid),ex=SOC.fr[id];
   if(ex&&ex.status==='ok'){toast('이미 친구입니다.');return}
   if(ex&&ex.status==='pending'&&ex.from!==NET.uid){return acceptFriend(id)}
@@ -3367,8 +3504,8 @@ function renderFriends(){
   const on=onlineUids(),L=friendsAll();
   const okL=L.filter(f=>f.status==='ok'),inc=L.filter(f=>f.status==='pending'&&f.from!==NET.uid),out=L.filter(f=>f.status==='pending'&&f.from===NET.uid);
   const row=(f,btns)=>{const o=otherOf(f),here=on.includes(o.uid);return `<li class="frow"><span class="fdot${here?' on':''}"></span><span class="fn"><b>${esc(o.nick||'요원')}</b><span class="muted">${o.role==='guide'?'가이드':o.role==='sentinel'?'센티넬':''}${here?' · 접속 중':''}${pairActive()&&pairOther()===o.uid?' · 페어':''}</span></span>${btns}</li>`};
-  box.innerHTML=`<div class="fcode"><span>내 친구 코드</span><code>${esc(NET.uid)}</code><button type="button" class="sbtn" id="fCopy">복사</button></div>
-   <div class="mform two"><input id="fCode" placeholder="친구 코드를 붙여 넣습니다" autocomplete="off"><button type="button" class="sbtn" id="fAdd">친구 신청</button></div>
+  box.innerHTML=`<div class="fcode"><span>내 친구 코드</span><code class="fc">${S.fcode&&S.fcodeUid===NET.uid?esc(S.fcode):'만드는 중…'}</code><button type="button" class="sbtn" id="fCopy">복사</button></div>
+   <div class="mform two"><input id="fCode" placeholder="친구 코드 6자리 (예: K7P2QX)" maxlength="64" autocomplete="off" autocapitalize="characters"><button type="button" class="sbtn" id="fAdd">친구 신청</button></div>
    ${inc.length?`<span class="eyebrow">받은 신청</span><ul class="flist">${inc.map(f=>row(f,`<button type="button" class="sbtn buy" data-facc="${esc(f.id)}">수락</button><button type="button" class="sbtn" data-fdel="${esc(f.id)}">거절</button>`)).join('')}</ul>`:''}
    <span class="eyebrow">친구 ${okL.length}명</span>${okL.length?`<ul class="flist">${okL.map(f=>row(f,`<button type="button" class="sbtn" data-fdel="${esc(f.id)}">삭제</button>`)).join('')}</ul>`:'<p class="muted">아직 친구가 없습니다. 위의 접속 요원 목록이나 친구 코드로 신청할 수 있습니다.</p>'}
    ${out.length?`<span class="eyebrow">보낸 신청</span><ul class="flist">${out.map(f=>row(f,`<button type="button" class="sbtn" data-fdel="${esc(f.id)}">취소</button>`)).join('')}</ul>`:''}`;
@@ -3420,7 +3557,7 @@ const pairAssistMul=()=>S.pairUid&&S.assist&&S.assist.suid===S.pairUid?2:1;
 /* 이벤트 */
 document.addEventListener('click',e=>{
   const t=e.target.closest('button');if(!t)return;
-  if(t.id==='fCopy'){try{navigator.clipboard.writeText(NET.uid);toast('친구 코드를 복사했습니다.')}catch(_){}}
+  if(t.id==='fCopy'){try{navigator.clipboard.writeText(S.fcode||NET.uid);toast('친구 코드를 복사했습니다.')}catch(_){}}
   else if(t.id==='fAdd')addFriend($('fCode').value);
   else if(t.dataset.facc)acceptFriend(t.dataset.facc);
   else if(t.dataset.fdel)removeFriend(t.dataset.fdel);
@@ -3499,7 +3636,7 @@ const isPot=it=>it&&it.kind==='potion'&&POTS[it.p];
 const potCount=p=>S.items.filter(x=>isPot(x)&&x.p===p).length;
 const potHeal=(p,max)=>Math.round(max*POTS[p].v*(1+.04*myGrade()));
 const makePot=p=>({id:'p'+Date.now().toString(36)+Math.floor(Math.random()*1e5).toString(36),kind:'potion',p});
-function consumePot(id){S.items=S.items.filter(x=>x.id!==id)}
+function consumePot(id){S.items=S.items.filter(x=>x.id!==id);S.potUsed=(S.potUsed||0)+1}
 function pickHpPot(){for(const p of ['hp1','hp2','hp3']){const it=S.items.find(x=>isPot(x)&&x.p===p);if(it)return it}return null}
 const inBattle=()=>S.phase==='focus'&&S.curGate&&!S.curGate.train&&!S.curGate.report;
 function usePotion(p){
@@ -3930,10 +4067,10 @@ function resetBattle(){mons=[];spawnT=.6;atkCD=0;atkT=0;boss=null;gCD=.8;gAtk=0;
 function battleUpdate(dt,bx,berserk,gate,gx){
   const frac=fracNow(),dist=DIST[gate.d],col=gate.raid?'#9B7BF2':gate.train?'#C98E66':gate.exam?'#8E95AE':dist.mc;
   const si=sentInfo(),gi=guideInfo(),n=matchN(),m=matchMult(n);
-  if(frac>=.75&&!boss){boss={x:184,type:gate.raid?((gate.gen||1)-1)%3:gate.train?3:gate.exam?2:dist.mon[0],flash:0};if(!S.bossSaid){S.bossSaid=true;say('boss')}}
+  if(frac>=.75&&!boss){boss={x:184,type:gate.raid?raidDef(gate.boss).t:gate.train?3:gate.exam?2:dist.mon[0],flash:0};if(!S.bossSaid){S.bossSaid=true;say('boss')}}
   spawnT-=dt;
   const mhp=12+gate.g*7;
-  if(frac<.75&&spawnT<=0&&mons.length<3){mons.push({x:180,type:gate.raid?Math.floor(Math.random()*3):gate.train?3:pick(dist.mon),hp:mhp,max:mhp,flash:0,ph:Math.random()*6});spawnT=2.2+Math.random()*1.4}
+  if(frac<.75&&spawnT<=0&&mons.length<3){mons.push({x:180,type:gate.raid?pick([0,1,2,4,5,6,7,8,9,10,11]):gate.train?3:pick(dist.mon),hp:mhp,max:mhp,flash:0,ph:Math.random()*6});spawnT=2.2+Math.random()*1.4}
   atkCD-=dt;atkT=Math.max(0,atkT-dt);gCD-=dt;gAtk=Math.max(0,gAtk-dt);
   mons.forEach((mm,i)=>{mm.x=Math.max(bx+12+i*16,mm.x-12*dt);mm.flash=Math.max(0,mm.flash-dt)});
   if(boss){boss.x=Math.max(bx+(mons.length?30+mons.length*16:23),boss.x-8*dt);boss.flash=Math.max(0,boss.flash-dt)}
@@ -3958,13 +4095,35 @@ function battleUpdate(dt,bx,berserk,gate,gx){
   });
   for(const mm of mons){const top=drawMon(mm.type,col,mm.x,92,{flash:mm.flash>0,ph:mm.ph});
     px(mm.x-6,top-4,12,2,INK);px(mm.x-5,top-3.5,Math.max(0,Math.round(10*mm.hp/mm.max)),1,'#7DD181')}
-  if(boss){drawMon(boss.type,shade(col,-.08),boss.x,92,{flash:boss.flash>0,scale:2});
-    const top=92-MON_BASE[boss.type]*2-(boss.type===1?20:0);px(boss.x-5,top-4,10,2,'#FFC23D');px(boss.x-5,top-6,2,2,'#FFC23D');px(boss.x-1,top-7,2,3,'#FFE27A');px(boss.x+3,top-6,2,2,'#FFC23D')}
+  if(boss){drawMon(boss.type,gate.raid?raidDef(gate.boss).c:shade(col,-.08),boss.x,92,{flash:boss.flash>0,scale:2});
+    const top=92-MON_BASE[boss.type]*2-(MON_FLY.has(boss.type)?20:0);px(boss.x-5,top-4,10,2,'#FFC23D');px(boss.x-5,top-6,2,2,'#FFC23D');px(boss.x-1,top-7,2,3,'#FFE27A');px(boss.x+3,top-6,2,2,'#FFC23D')}
 }
 function drawShots(){for(const sh of shots){G.globalAlpha=.5;px(sh.x-(sh.vx||1)*3,sh.y-(sh.vy||0)*3,2,2,'#FFE27A');G.globalAlpha=1;px(sh.x-1,sh.y-1,3,3,'#FFE27A');px(sh.x,sh.y,1,1,'#FFFFFF')}}
 function heroLooks(){
   const me={look:S.look,attrs:S.attrs||[],tier:visTier()},pt={look:S.partner.look,attrs:S.partner.attrs,tier:VTIER[S.partner.grade]};
   return S.role==='sentinel'?{s:me,g:pt}:{s:pt,g:me};
+}
+/* 한 게이트 최대 4명. 빈자리는 파트너 NPC가 채웁니다.
+   혼자: 나 + 내 파트너 / 2명: 두 사람 + 각자의 파트너 / 3명: 세 사람 + 파트너 한 명 / 4명: 플레이어만 */
+const GATE_MAX=4,ALLY_POS=[[56,92],[40,88],[24,92]];
+const myPtnCard=()=>S.partner?{role:S.partner.role||'guide',look:S.partner.look,tier:VTIER[S.partner.grade]||0,attrs:S.partner.attrs||[],nick:S.partner.name,npc:true}:null;
+function allySlots(gate){
+  const others=peersOn(gate.id).slice(0,GATE_MAX-1);
+  const pl=others.map(p=>({uid:p.uid,role:p.role,look:p.look,tier:VTIER[p.gr],attrs:p.attrs,nick:p.nick||'요원',wp:p.wp,wa:p.wa,npc:false,ptn:p.ptn}));
+  const ptnOf=p=>p.ptn?{role:p.ptn.role,look:p.ptn.look,tier:VTIER[p.ptn.gr]||0,attrs:p.ptn.attrs,nick:p.ptn.nick,npc:true}:null;
+  const free=GATE_MAX-1-pl.length,npcs=[];
+  if(pl.length===0){const m=myPtnCard();if(m)npcs.push(m)}
+  else if(pl.length===1){const m=myPtnCard();if(m)npcs.push(m);const o=ptnOf(pl[0]);if(o)npcs.push(o)}
+  else if(pl.length===2){/* 세 사람 중 UID가 가장 앞선 사람의 파트너 한 명만 남습니다(모두에게 같은 장면) */
+    const all=[{uid:NET.uid||'',me:true},...pl].sort((a,b)=>String(a.uid).localeCompare(String(b.uid)))[0];
+    const c=all.me?myPtnCard():ptnOf(all);if(c)npcs.push(c)}
+  return [...pl,...npcs.slice(0,free)];
+}
+function drawAllies(dt,gate){
+  allySlots(gate).forEach((a,i)=>{const [x,fy]=ALLY_POS[i];
+    drawHero(a.role,a.look,x,fy,{s:.5,wp:a.wp,wa:a.wa,tier:a.tier,attrs:a.attrs,dx:1,ph:i+.3,atk:Math.sin(T*2+i*1.3)>.85?.2:0});
+    if(!reduce&&Math.random()<dt*.6)burst(x+10,fy-12,['#FFFFFF',ATTRS[(a.attrs||[])[0]??0].col],3,18,0);
+    if(!a.npc){G.save();G.font='600 3.4px "IBM Plex Sans KR",sans-serif';G.textAlign='center';const nm=String(a.nick).slice(0,8),w=G.measureText(nm).width+4;G.fillStyle='rgba(47,91,234,.85)';G.fillRect(x-w/2,fy-24,w,4.6);G.fillStyle='#fff';G.fillText(nm,x,fy-20.6);G.restore()}});
 }
 function drawBattle(dt){
   const gate=cine?cine.gate:S.curGate;if(!gate)return;
@@ -3984,8 +4143,8 @@ function drawBattle(dt){
   // 함께 공략 중인 다른 요원
   /* 전투는 혼자 나갑니다. 같은 게이트에 들어온 다른 요원만 함께 보인다 */
   const bx=76,me=S.role||'sentinel';
-  if(!cine&&S.curGate)peersOn(S.curGate.id).slice(0,3).forEach((p,i)=>{const px_=48-i*17,fy=92-(i%2)*4;drawHero(p.role,p.look,px_,fy,{s:.5,wp:p.wp,wa:p.wa,tier:VTIER[p.gr],attrs:p.attrs,dx:1,ph:i+.3,atk:Math.sin(T*2+i)>.85?.2:0});
-    if(!reduce&&Math.random()<dt*.8)burst(px_+10,fy-12,['#FFFFFF',ATTRS[p.attrs[0]??0].col],3,18,0)});
+  /* 함께 싸우는 동료: 기본은 NPC 3명, 같은 게이트에 플레이어가 들어오면 NPC 자리를 차례로 차지합니다(최대 8명) */
+  if(!cine&&S.curGate&&!gate.train&&!gate.report)drawAllies(dt,gate);
   if(!cine)battleUpdate(dt,bx,rw>=100,gate,bx);
   const hs=!cine&&!gate.train?hpNow():null;
   if(hs&&hs.down){G.globalAlpha=.45;drawHero(me,S.look,bx,92,{s:.5,tier:visTier(),attrs:S.attrs||[],still:true,dx:1});G.globalAlpha=1;
@@ -4058,6 +4217,7 @@ function draw(dt){
 function startFocus(){
   if(S.phase!=='idle')return;
   const g=gateById(S.selGate);if(!g||gateLocked(g))return;
+  if(!g.train&&!g.report&&!g.raid&&peersOn(g.id).length>=GATE_MAX-1){toast(`이 게이트는 이미 ${GATE_MAX}명이 공략 중입니다. 다른 게이트를 골라 주세요.`);return}
   if(!g.train&&!g.report&&healLeft()>0){toast(`치료 중입니다. ${mmss(healLeft())} 뒤에 게이트에 출동할 수 있습니다. 훈련과 보고서 작성은 할 수 있습니다.`);return}
   if(g.exam){const c=EXAM_AP[myGrade()]||0;if((S.ap||0)<c){toast(`각성 포인트가 ${c-Math.floor(S.ap||0)} 부족합니다. 훈련장에서 모을 수 있습니다.`);return}S.ap=Math.round((S.ap-c)*10)/10}
   ac();ensurePartner();
@@ -4083,6 +4243,7 @@ async function completeFocus(early){
   const xp=pm*(1+gearXp())*effMin*mult*(gate.party?1.1:1)*(gate.dual?.9:1)*(gate.report?.5:1);S.xp+=xp;S.totalMin+=effMin;
   const apGain=gate.report?0:Math.round(pm*(1+gearAp())*effMin*(gate.train?(gate.ap||1):.3+(gate.dual?.5:0))*(early?.5:1)*10)/10;S.ap=Math.round(((S.ap||0)+apGain)*10)/10;
   const crGain=Math.round(pm*(1+gearCr())*effMin*(gate.report?reportRate():gate.train||gate.exam?0:1.2*(gate.raid?1.5:1))*(early?.5:1));addCr(crGain);if(!gate.train&&!gate.exam)S.lastGate=gate.id;
+  S.totalKills=(S.totalKills||0)+(S.kills||0);if(hs&&hs.deaths&&!(hs.down))S.downs=(S.downs||0)+1;if(!early&&!gate.train&&!gate.report){if(gate.party)S.partyN=(S.partyN||0)+1;if(aff&&aff.kind==='weak')S.weakN=(S.weakN||0)+1;if(isNight())S.nightN=(S.nightN||0)+1}
   if(!early){S.sessions++;const d=today();if(S.todayDate!==d){S.todayDate=d;S.todayCount=0}S.todayCount++}
   S.runaway=Math.min(100,rw+(early?10:0));
   if(S.partner&&S.role==='guide')S.partner.runaway=S.runaway;
@@ -4430,7 +4591,7 @@ function renderGateInfo(){
   const lk=S.phase==='idle'&&gateLocked(g);
   const fm=fmtMin(focusMsOf(g)/60000),bm='상태에 따라 1~3분',on=peersOn(g.id).length;
   const seal=g.train||g.exam||g.hp==null?'':`<div class="seal"><div class="lbl"><b>봉인 진행</b><span>${Math.floor(g.sum||0)} / ${g.hp}분 · ${g.n||0}명 참여</span></div><div class="bar2"><i style="width:${Math.min(100,(g.sum||0)/g.hp*100)}%"></i></div></div>`;
-  box.innerHTML=`<div class="ghead"><span class="gchip" style="background:${lk?'#DDE2EF':gcolOf(g)}">${g.raid?'R':g.train?'TR':g.exam?'EX':GRADES[g.g]}</span><div><b>${esc(gateName(g))}</b><span class="muted">${g.raid?'매일 저녁 7시~11시에 열리는 거대 균열입니다. 서버의 모든 요원이 레벨 제한 없이 함께 닫습니다.'+(on?` · 지금 ${on}명 공략 중`:''):g.train?'출동 흐름을 연습하는 짧은 게이트입니다.':g.exam?'폭주하지 않고 끝까지 버티면 합격입니다.':'권장 레벨 '+REC_LV[g.g]+(on?` · 지금 ${on}명 공략 중`:'')}</span></div></div>
+  box.innerHTML=`<div class="ghead"><span class="gchip" style="background:${lk?'#DDE2EF':gcolOf(g)}">${g.raid?'R':g.train?'TR':g.exam?'EX':GRADES[g.g]}</span><div><b>${esc(gateName(g))}</b><span class="muted">${g.raid?'매일 저녁 7시~11시에 열리는 거대 균열입니다. 서버의 모든 요원이 레벨 제한 없이 함께 닫습니다.'+(on?` · 지금 ${on}명 공략 중`:''):g.train?'출동 흐름을 연습하는 짧은 게이트입니다.':g.exam?'폭주하지 않고 끝까지 버티면 합격입니다.':'권장 레벨 '+REC_LV[g.g]+` · 공략 인원 ${Math.min(GATE_MAX,on+(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id?1:0))}/${GATE_MAX}명`+(on>=GATE_MAX-1&&!(S.curGate&&S.curGate.id===g.id)?' · 가득 참':'')}</span></div></div>
   ${affHtml(g)}${seal}<dl class="gdl"><dt>보스</dt><dd>${esc(g.boss)}</dd><dt>집중 · 휴식</dt><dd>${fm} · ${bm}</dd><dt>경험치 배율</dt><dd>×${multOf(g).toFixed(2)}</dd><dt>폭주 위험</dt><dd>+${Math.round(gainOf(g))}</dd></dl>
   ${g.raid?`<p class="raidwhen">${raidWhen()}</p><span class="eyebrow">지난 레이드 결과</span>${raidResultsHtml(5)}`:''}
   ${!g.train&&!g.exam?`<div class="dualrow"><span><b>병행 훈련</b> · 출동하면서 훈련도 합니다. 각성 포인트 1분에 +0.5, 경험치 ×0.9</span><button type="button" class="sbtn" id="dualBtn">${S.dualTrain?'켜짐':'꺼짐'}</button></div>`:''}
@@ -4495,7 +4656,7 @@ function renderPartner(){
 let armedEarly=0,armedReset=0;
 const ptCtx=$('ptCv').getContext('2d'),meCtx=$('meCv').getContext('2d');
 function drawSmall(ctx,kind,L,tier,attrs){const p=G;use2x(ctx);px(0,0,48,48,'#EEF3FF');px(0,40,48,8,'#DCE5F7');for(let x=0;x<48;x+=8)px(x+((x/8)%2)*4,40,4,8,'#CFDAF1');drawHero(kind,L,24,44,{tier,attrs,dx:0});G=p}
-function updateUI(full){if(typeof renderPotBar==='function')renderPotBar();
+function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){a.textContent=CR().toLocaleString('ko-KR');b.textContent=Math.floor(S.ap||0).toLocaleString('ko-KR')}}if(typeof renderPotBar==='function')renderPotBar();
   const role=S.role,t=now(),lvI=levelOf(S.xp),rw=liveRunaway();
   document.body.dataset.role=role||'sentinel';
   const sel=gateById(S.selGate);
@@ -4543,7 +4704,7 @@ function updateUI(full){if(typeof renderPotBar==='function')renderPotBar();
   $('stTotal').textContent=fmtMin(S.totalMin);$('stSess').textContent=S.sessions+'회';
   $('stToday').textContent=(S.todayDate===today()?S.todayCount:0)+'회';$('stClose').textContent=S.closedByMe+'개';
   renderPartner();
-  $('hudName').textContent=S.name||'이름 없음';$('hudLv').textContent=`Lv.${lvI.lv} · ${GRADES[gr]}급 ${role==='guide'?'가이드':'센티넬'}`;
+  {const hn=$('hudName'),tt=S.title?achTitle(S.title):'';hn.textContent=S.name||'이름 없음';if(tt){const em=document.createElement('em');em.className='htitle';em.textContent=tt;hn.appendChild(em)}}$('hudLv').textContent=`Lv.${lvI.lv} · ${GRADES[gr]}급 ${role==='guide'?'가이드':'센티넬'}`;
   $('hudXp').style.width=Math.min(100,lvI.into/lvI.need*100)+'%';
   const dg=$('dockGate'),cg=S.phase==='focus'&&S.curGate?(gateById(S.curGate.id)||S.curGate):sel;
   if(S.assist)dg.innerHTML=`<b>${esc(S.assist.snick)}</b> 센티넬 가이딩 지원 중 · 맞춘 호흡 ${S.assist.taps}`;else if(S.phase==='break'||S.phase==='auto')dg.innerHTML=`<b>${esc(S.realGuide?S.realGuide.nick:S.partner?S.partner.name:'')}</b> ${S.realGuide?'가이드(플레이어)':'요원'}와 가이딩 중 · 폭주 ${Math.round(rw)}`;

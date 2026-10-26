@@ -163,6 +163,12 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isGM();
     }
+    // 짧은 친구 코드: 코드를 아는 사람만 하나씩 확인하고, 본인 코드만 만듭니다
+    match /fcodes/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if signedIn() && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid;
+    }
     // GM 행동 기록: GM만 남기고 읽습니다
     match /gmlog/{lid} {
       allow read, create: if isGM();
