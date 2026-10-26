@@ -821,6 +821,25 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
 .roomth button i{height:14px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
 .roomth button span{grid-column:1/-1;font-size:.72rem;text-align:center;margin-top:2px}
 .roomth button[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}
+.noticebar{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;gap:10px;align-items:center;justify-content:center;padding:7px 16px;background:var(--accent);color:var(--on-accent);font-size:.88rem;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.noticebar.warn{background:var(--coral);color:#fff}
+.banscreen{position:fixed;inset:0;z-index:90;background:rgba(20,28,52,.85);display:grid;place-items:center;padding:16px}
+.banscreen .card{max-width:420px;text-align:center}
+.gmsheet{max-width:min(860px,96vw);max-height:90dvh;overflow:auto}
+.gmtabs{display:flex!important;flex-wrap:wrap;gap:6px}
+.gmbody{display:grid;gap:10px}
+.gmbody textarea,.gmbody input,.gmbody select{font:inherit;font-size:.86rem;border:1px solid var(--line2,#C7D2EF);border-radius:9px;padding:6px 9px;background:var(--panel);color:var(--ink);min-width:0}
+.gmbody textarea{width:100%;resize:vertical}
+.gmgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.gmgrid label{display:grid;gap:3px;font-size:.78rem;color:var(--ink-soft)}.gmgrid .wide{grid-column:1/-1}.gmgrid .chk{display:flex;align-items:center;gap:6px}
+.gmrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.gmchips{display:flex;flex-wrap:wrap;gap:6px}.gmchips span{display:flex;align-items:center;gap:4px;background:var(--wash);border-radius:99px;padding:2px 8px;font-size:.78rem}.gmchips button{border:0;background:none;cursor:pointer;font-weight:700}
+.gmlist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.gmlist li{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1px solid var(--line,#D9E0F2);border-radius:10px;padding:6px 9px;font-size:.84rem}
+.gmlist li.on{border-color:var(--accent)}.gmlist li.off{opacity:.5}.gmlist li>span:not(.muted){flex:1;min-width:120px}
+.gmuser{display:grid;gap:8px;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:12px;padding:10px 12px}
+@media (max-width:560px){.gmgrid{grid-template-columns:1fr}}
+body.hasNotice{padding-top:calc(14px + 36px)!important}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1151,11 +1170,17 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
 <div class="modal" id="pvModal" hidden role="dialog" aria-modal="true" aria-labelledby="pvTitle">
   <div class="sheet card pvsheet"><div class="mhead"><h2 id="pvTitle">가구 미리보기</h2><button class="xbtn" type="button" id="pvClose" aria-label="미리보기 닫기">X</button></div>
     <canvas id="pvCv" width="1152" height="648" aria-label="가구를 놓은 방 미리보기"></canvas><p class="muted" id="pvDesc"></p></div></div>
+<div class="noticebar" id="noticeBar" hidden role="status"><b>공지</b><span id="noticeText"></span></div>
+<div class="banscreen" id="banScreen" hidden role="alertdialog" aria-labelledby="banT"><div class="card"><h2 id="banT">이용이 정지된 계정입니다</h2><p class="muted">운영 정책에 따라 이 계정은 지금 게임을 이용할 수 없습니다.</p><p id="banWhy"></p><p id="banUntil" class="muted"></p><button class="btn ghost" type="button" id="banOut">로그아웃</button></div></div>
+<div class="modal" id="gmModal" hidden role="dialog" aria-modal="true" aria-labelledby="gmTitle">
+  <div class="sheet card wide gmsheet"><div class="mhead"><h2 id="gmTitle">GM 관리</h2><button class="xbtn" type="button" id="gmClose" aria-label="GM 관리 닫기">X</button></div>
+    <div class="vnav gmtabs" id="gmTabs"></div><div class="gmbody" id="gmBody"></div></div></div>
 <div class="modal" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
   <div class="sheet card wide settings">
     <div class="mhead"><h2 id="setTitle">설정</h2><button class="xbtn" type="button" id="setClose" aria-label="설정 닫기">X</button></div>
     <section class="sgroup">
       <h3>도움말</h3>
+      <div class="srow" id="gmRow" hidden><div class="sl"><b>GM 관리</b><span>공지 · 우편 · 유저 · 게이트 · 채팅과 장터를 관리합니다. GM 계정에만 보입니다.</span></div><button class="sbtn big" type="button" id="gmBtn">GM 관리 열기</button></div>
       <div class="srow"><div class="sl"><b>타이틀 화면</b><span>처음 화면으로 돌아갑니다. 진행 중인 출동과 가이딩은 그대로 이어집니다.</span></div><button class="sbtn big" type="button" id="toTitle">타이틀로 가기</button></div>
       <div class="srow"><div class="sl"><b>가이드북</b><span>게임 방법과 모든 기능을 장별로 정리했습니다.</span></div><button class="sbtn big" type="button" id="guideBookBtn">가이드북 열기</button></div>
     </section>
@@ -1850,6 +1875,7 @@ function cleanGate(id,d){
   const x=Math.max(6,Math.min(186,+d.x||0)),y=Math.max(18,Math.min(104,+d.y||0));
   const contrib={};let sum=0,n=0;
   if(d.contrib&&typeof d.contrib==='object')for(const k in d.contrib){const v=Math.max(0,Math.min(600,+d.contrib[k]||0));if(v>0){contrib[k]=v;sum+=v;n++}}
+  sum=Math.max(0,sum+(Number.isFinite(+d.adj)?+d.adj:0));  // GM이 조정한 봉인 진행
   return {id,slot,gen:+d.gen||1,d:slot,g,x,y,boss:String(d.boss||'').slice(0,20)||DIST[slot].boss[0],hp:Math.max(1,+d.hp||HP_ONLINE[g]),contrib,sum,n,status:d.status==='closed'?'closed':'open'};
 }
 const allGates=()=>NET.mode==='online'?NET.gates:S.localGates.map(x=>cleanGate(x.id,x)).filter(Boolean);
@@ -2596,7 +2622,7 @@ const kst=t=>{const d=new Date((t||Date.now())+9*3600e3);return {y:d.getUTCFullY
 const dayKey=t=>{const k=kst(t);return `${k.y}${String(k.m).padStart(2,'0')}${String(k.d).padStart(2,'0')}`};
 /* 정산(23:30) 전까지는 오늘, 그 뒤엔 내일 레이드 */
 const raidTargetDay=()=>kst().min<RAID_SETTLE?dayKey():dayKey(Date.now()+86400e3);
-const raidOpenNow=()=>{const m=kst().min;return m>=RAID_OPEN&&m<RAID_CLOSE};
+const raidOpenNow=()=>{const ov=typeof GMX!=='undefined'&&GMX.raid;if(ov&&+ov.until>Date.now())return ov.mode==='open';const m=kst().min;return m>=RAID_OPEN&&m<RAID_CLOSE};
 const fmtDay=k=>k&&k.length===8?`${+k.slice(4,6)}월 ${+k.slice(6,8)}일`:'';
 function raidWhen(){const m=kst().min;
   if(m<RAID_OPEN){const l=RAID_OPEN-m;return `오늘 저녁 7시에 열립니다 · ${l>=60?Math.floor(l/60)+'시간 ':''}${l%60}분 남음`}
@@ -3240,7 +3266,7 @@ function watchChat(){
     if(CHAT.subs[c]&&CHAT.subs[c].k===k)return;
     try{CHAT.subs[c]&&CHAT.subs[c].off&&CHAT.subs[c].off()}catch(e){}
     const off=NET.db.collection('chat').where('ch','==',k).onSnapshot(s=>{
-      CHAT.msgs[c]=s.docs.map(d=>({id:d.id,...d.data()})).filter(m=>typeof m.text==='string').sort((a,b)=>(a.t||0)-(b.t||0)).slice(-60);
+      CHAT.msgs[c]=s.docs.map(d=>({id:d.id,...d.data()})).filter(m=>typeof m.text==='string'&&!m.hidden).sort((a,b)=>(a.t||0)-(b.t||0)).slice(-60);
       if(curTab==='chat'&&CHAT.ch===c){CHAT.seen[c]=now();renderChat(true)}chatBadge();
     },()=>{});
     CHAT.subs[c]={k,off};
@@ -3249,6 +3275,7 @@ function watchChat(){
 function chatBadge(){const b=$('chatCount');if(!b)return;const n=['center','party'].reduce((a,c)=>a+CHAT.msgs[c].filter(m=>(m.t||0)>CHAT.seen[c]&&m.uid!==NET.uid).length,0);b.hidden=!n||curTab==='chat';b.textContent=n>9?'9+':n}
 async function sendChat(){
   const inp=$('chatIn'),text=inp.value.trim().slice(0,120);if(!text)return;
+  if(typeof muted==='function'&&muted()){toast('운영 정책에 따라 지금은 채팅을 보낼 수 없습니다.');return}
   const k=chKey(CHAT.ch);if(!online()||!k){toast(CHAT.ch==='party'?'파티에 들어가야 파티 채팅을 쓸 수 있습니다.':'채팅은 온라인에서만 쓸 수 있습니다.');return}
   inp.value='';inp.focus();
   try{await NET.db.doc('chat/'+NET.uid.slice(0,10)+'_'+Date.now().toString(36)).set({ch:k,uid:NET.uid,nick:(S.name||'요원').slice(0,10),role:S.role,text,t:now()})}catch(e){toast('메시지를 보내지 못했습니다.')}
@@ -3533,6 +3560,166 @@ function previewDecor(id){
 }
 function closePreview(){pvId=null;cancelAnimationFrame(pvRaf);$('pvModal').hidden=true}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pv]');if(b){previewDecor(b.dataset.pv);return}if(e.target.id==='pvClose'||e.target.id==='pvModal')closePreview()});
+/* ═════════ GM(운영자) 기능 ═════════
+   gms/{uid} 문서가 있는 계정만 GM입니다. 화면은 GM에게만 보이고, 실제 권한은 Firestore 보안 규칙이 지킵니다.
+   모든 GM 행동은 gmlog에 남습니다. */
+const GMX={is:false,raid:null,notice:null,ban:null,mute:null,tab:'stats',users:[],sel:null,selSave:null,chat:[],market:[],mails:[],logs:[],draft:[],subs:{}};
+const gmT=()=>Date.now();
+const gmId=p=>p+gmT().toString(36)+Math.floor(Math.random()*1e5).toString(36);
+
+/* ── 모두에게 필요한 것: 공지 · 레이드 조정 · 정지 · 채팅 금지 · GM 보정 · 프로필 ── */
+function gmWatchAll(){
+  if(GMX.subs.all||!online()||!NET.uid)return;GMX.subs.all=true;
+  try{
+    NET.db.doc('notices/main').onSnapshot(s=>{GMX.notice=s.exists?s.data():null;renderNotice()},()=>{});
+    NET.db.doc('world/gmraid').onSnapshot(s=>{GMX.raid=s.exists?s.data():null},()=>{});
+    NET.db.doc('bans/'+NET.uid).onSnapshot(s=>{GMX.ban=s.exists?s.data():null;checkBan()},()=>{});
+    NET.db.doc('mutes/'+NET.uid).onSnapshot(s=>{GMX.mute=s.exists?s.data():null},()=>{});
+    NET.db.collection('gmpatch').where('to','==',NET.uid).onSnapshot(s=>{s.docs.forEach(d=>applyPatch(d.id,d.data()))},()=>{});
+    NET.db.doc('gms/'+NET.uid).get().then(s=>{GMX.is=!!(s&&s.exists);$('gmRow').hidden=!GMX.is}).catch(()=>{});
+  }catch(e){}
+}
+function writeProfile(){
+  if(!online()||!NET.uid||!S.role)return;
+  const id=(window.closeGateAuth&&closeGateAuth.name&&closeGateAuth.name())||'';
+  try{NET.db.doc('profiles/'+NET.uid).set({nick:(S.name||'').slice(0,10),id:String(id).slice(0,30),role:S.role,lv:myLevel(),gr:myGrade(),cr:CR(),t:gmT()}).catch(()=>{})}catch(e){}
+}
+setInterval(()=>{gmWatchAll();writeProfile()},60000);setTimeout(()=>{gmWatchAll();writeProfile()},4000);setInterval(gmWatchAll,5000);
+function renderNotice(){const n=GMX.notice,el=$('noticeBar');const on=n&&n.on&&n.text;el.hidden=!on;document.body.classList.toggle('hasNotice',!!on);if(on){el.className='noticebar '+(n.level==='warn'?'warn':'');$('noticeText').textContent=String(n.text).slice(0,200)}}
+const muted=()=>GMX.mute&&+GMX.mute.until>gmT();
+function checkBan(){const b=GMX.ban,on=b&&(+b.until>gmT());$('banScreen').hidden=!on;
+  if(on){$('banWhy').textContent=b.reason?`사유: ${String(b.reason).slice(0,120)}`:'';$('banUntil').textContent=+b.until>gmT()+50*365*864e5?'기간: 영구':`기간: ${new Date(+b.until).toLocaleString('ko-KR')}까지`}}
+function applyPatch(id,p){
+  if(!p||p.applied||(S.gmApplied||[]).includes(id))return;
+  const o=p.ops||{};
+  if(+o.cr)addCr(+o.cr);if(+o.ap)S.ap=Math.max(0,Math.round(((S.ap||0)+(+o.ap))*10)/10);if(+o.xp)S.xp=Math.max(0,(S.xp||0)+(+o.xp));
+  if(Number.isInteger(o.grade)&&o.grade>=0&&o.grade<=6)S.grade=o.grade;
+  if(o.heal)S.healUntil=0;if(o.runaway)S.runaway=0;
+  S.gmApplied=[...(S.gmApplied||[]),id].slice(-50);save();updateUI(true);
+  toast(`운영팀이 계정을 조정했습니다.${p.note?' '+String(p.note).slice(0,60):''}`);
+  try{NET.db.doc('gmpatch/'+id).update({applied:true,appliedAt:gmT()})}catch(e){}
+}
+
+/* ── GM 화면 ── */
+async function gmLog(act,target,detail){try{await NET.db.doc('gmlog/'+gmId('l')).set({by:NET.uid,byNick:(S.name||'GM').slice(0,10),act,target:target||'',detail:String(detail||'').slice(0,200),t:gmT()})}catch(e){}}
+function gmOpen(){if(!GMX.is){toast('GM 계정만 열 수 있습니다.');return}$('settings').hidden=true;$('gmModal').hidden=false;gmSubs();gmRender()}
+function gmSubs(){
+  if(GMX.subs.gm)return;GMX.subs.gm=true;const col=n=>NET.db.collection(n);
+  col('profiles').onSnapshot(s=>{GMX.users=s.docs.map(d=>({uid:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0));gmRender(true)},()=>{});
+  col('chat').where('ch','==','center').onSnapshot(s=>{GMX.chat=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,40);gmRender(true)},()=>{});
+  col('market').where('status','==','open').onSnapshot(s=>{GMX.market=s.docs.map(d=>({id:d.id,...d.data()}));gmRender(true)},()=>{});
+  col('mail').onSnapshot(s=>{GMX.mails=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,30);gmRender(true)},()=>{});
+  col('gmlog').onSnapshot(s=>{GMX.logs=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,60);gmRender(true)},()=>{});
+}
+const GM_TABS=[['stats','통계'],['notice','공지'],['mail','우편'],['users','유저'],['gates','게이트 · 레이드'],['mod','채팅 · 장터'],['log','기록']];
+const fmtT=t=>new Date(+t||0).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+function gmItemLabel(it){return it.kind==='potion'?POTS[it.p].n:it.kind==='gear'?`${GEAR_T[it.tier]} ${SLOT_N[it.slot]} Lv.${it.lv}`:it.attr<0?'무작위 각성석':ATTRS[it.attr].n+' 각성석'}
+function gmKeepMail(){if(!$('gmMtitle'))return;GMX.mf={to:val('gmMto'),from:val('gmMfrom'),title:val('gmMtitle'),body:val('gmMbody'),cr:val('gmMcr'),ap:val('gmMap')}}
+function gmRender(soft){
+  if($('gmModal').hidden)return;
+  if(soft&&document.activeElement&&$('gmBody').contains(document.activeElement)&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
+  $('gmTabs').innerHTML=GM_TABS.map(([k,n])=>`<button type="button" data-gmt="${k}" aria-pressed="${GMX.tab===k}">${n}</button>`).join('');
+  const b=$('gmBody'),t=GMX.tab;let h='';
+  if(t==='stats'){const today=new Date().toDateString(),closed=(NET.log||[]).filter(x=>new Date(+x.t).toDateString()===today).length;
+    const card=(n,v)=>`<div class="stat"><span>${n}</span><b>${v}</b></div>`;
+    h=`<div class="stats">${card('지금 접속',NET.peers.length+1+'명')}${card('등록된 요원',GMX.users.length+'명')}${card('열린 게이트',(NET.gates||[]).filter(g=>g.status==='open').length+'개')}${card('오늘 닫힌 게이트',closed+'개')}${card('장터 판매 중',GMX.market.length+'개')}${card('공지',GMX.notice&&GMX.notice.on?'켜짐':'꺼짐')}${card('레이드',raidOpenNow()?'열림':'닫힘')}${card('보낸 우편',GMX.mails.length+'통')}</div>`}
+  else if(t==='notice'){const n=GMX.notice||{};
+    h=`<label class="flab">공지 내용</label><textarea id="gmNtx" maxlength="200" rows="3" placeholder="모든 화면 위에 띄울 공지입니다.">${esc(n.text||'')}</textarea>
+      <div class="gmrow"><label><input type="radio" name="gmNl" value="info" ${n.level!=='warn'?'checked':''}> 일반</label><label><input type="radio" name="gmNl" value="warn" ${n.level==='warn'?'checked':''}> 점검 · 주의</label></div>
+      <div class="gmrow"><button type="button" class="sbtn buy" data-gma="noticeOn">공지 띄우기</button><button type="button" class="sbtn" data-gma="noticeOff">공지 내리기</button><span class="muted">지금: ${n.on?'켜짐':'꺼짐'}</span></div>`}
+  else if(t==='mail'){const F=GMX.mf||{};
+    h=`<div class="gmgrid"><label>받는 사람<select id="gmMto"><option value="all">전체 배포</option>${GMX.users.map(u=>`<option value="${esc(u.uid)}" ${(F.to?F.to===u.uid:GMX.sel===u.uid)?'selected':''}>${esc(u.nick||'이름 없음')} (${esc(u.id||u.uid.slice(0,8))})</option>`).join('')}</select></label>
+      <label>보내는 이름<input id="gmMfrom" value="${esc(F.from||'센터 운영팀')}" maxlength="12"></label>
+      <label class="wide">제목<input id="gmMtitle" maxlength="40" placeholder="예: 점검 보상" value="${esc(F.title||'')}"></label>
+      <label class="wide">내용<textarea id="gmMbody" maxlength="400" rows="3">${esc(F.body||'')}</textarea></label>
+      <label>크레딧<input id="gmMcr" type="number" min="0" value="${esc(F.cr||'0')}"></label><label>각성 포인트<input id="gmMap" type="number" min="0" value="${esc(F.ap||'0')}"></label></div>
+      <span class="flab">아이템</span><div class="gmrow"><select id="gmIk"><option value="stone">각성석</option><option value="potion">물약</option><option value="gear">장비</option></select>
+      <select id="gmIa">${[-1,...S_ATTRS].map(a=>`<option value="${a}">${a<0?'무작위 속성':ATTRS[a].n}</option>`).join('')}</select>
+      <select id="gmIp">${POT_IDS.map(p=>`<option value="${p}">${POTS[p].n}</option>`).join('')}</select>
+      <select id="gmIs"><option value="weapon">무기</option><option value="armor">방어구</option><option value="acc">장신구</option></select>
+      <select id="gmIt">${GEAR_T.map((n,i)=>`<option value="${i}">${n}</option>`).join('')}</select><input id="gmIl" type="number" min="1" max="100" value="10" style="width:70px" title="장비 레벨">
+      <input id="gmIn" type="number" min="1" max="20" value="1" style="width:60px" title="개수"><button type="button" class="sbtn" data-gma="addItem">추가</button></div>
+      <div class="gmchips">${GMX.draft.map((it,i)=>`<span>${itemIcon(it,20)}${esc(gmItemLabel(it))}<button type="button" data-gmdel="${i}">×</button></span>`).join('')||'<span class="muted">추가한 아이템이 없습니다.</span>'}</div>
+      <button type="button" class="btn" data-gma="sendMail">우편 보내기</button>
+      <span class="eyebrow">보낸 우편</span><ul class="gmlist">${GMX.mails.map(m=>`<li><b>${esc(String(m.title||''))}</b><span class="muted">${m.to==='all'?'전체':esc(String(m.to).slice(0,8))} · ${fmtT(m.t)}${m.exp&&m.exp<gmT()?' · 회수됨':''}</span>${m.exp&&m.exp<gmT()?'':`<button type="button" class="sbtn" data-gmrecall="${esc(m.id)}">회수</button>`}</li>`).join('')}</ul>`}
+  else if(t==='users'){
+    const q=(GMX.q||'').toLowerCase(),L=GMX.users.filter(u=>!q||[u.nick,u.id,u.uid].some(v=>String(v||'').toLowerCase().includes(q))).slice(0,50);
+    h=`<input id="gmQ" placeholder="닉네임 · 아이디 · UID로 찾기" value="${esc(GMX.q||'')}"><ul class="gmlist">${L.map(u=>`<li class="${GMX.sel===u.uid?'on':''}"><b>${esc(u.nick||'이름 없음')}</b><span class="muted">${esc(u.id||'')} · ${u.role==='guide'?'가이드':'센티넬'} · Lv.${u.lv||1} ${GRADES[clampI(u.gr,7)]}급 · ${fmtT(u.t)}</span><button type="button" class="sbtn" data-gmsel="${esc(u.uid)}">선택</button></li>`).join('')||'<li class="muted">요원이 없습니다.</li>'}</ul>`;
+    const u=GMX.users.find(x=>x.uid===GMX.sel);
+    if(u){const sv=GMX.selSave;
+      h+=`<div class="gmuser"><b>${esc(u.nick||'이름 없음')}</b> <span class="muted">UID ${esc(u.uid)}</span>
+        <div class="muted">${sv?`Lv.${levelOf(+sv.xp||0).lv} · ${GRADES[clampI(sv.grade,7)]}급 · 크레딧 ${Math.floor(+sv.cr||0)} · 각성 포인트 ${Math.floor(+sv.ap||0)} · 아이템 ${(sv.items||[]).length}개 · 폭주 ${Math.round(+sv.runaway||0)}`:'저장 기록을 불러오는 중이거나 없습니다.'}</div>
+        <div class="gmgrid"><label>크레딧 ±<input id="gmPcr" type="number" value="0"></label><label>각성 포인트 ±<input id="gmPap" type="number" value="0"></label><label>경험치 ±<input id="gmPxp" type="number" value="0"></label>
+        <label>등급 설정<select id="gmPgr"><option value="">그대로</option>${GRADES.map((g,i)=>`<option value="${i}">${g}급</option>`).join('')}</select></label>
+        <label class="chk"><input type="checkbox" id="gmPheal"> 치료 대기 해제</label><label class="chk"><input type="checkbox" id="gmPrw"> 폭주 게이지 0</label>
+        <label class="wide">안내 문구<input id="gmPnote" maxlength="60" placeholder="유저에게 함께 보여 줄 문구 (선택)"></label></div>
+        <div class="gmrow"><button type="button" class="sbtn buy" data-gma="patch">계정 조정 보내기</button><button type="button" class="sbtn" data-gma="mailTo">이 요원에게 우편</button></div>
+        <div class="gmrow"><input id="gmBr" placeholder="정지 · 채팅 금지 사유" maxlength="120"><select id="gmBd"><option value="1">1일</option><option value="3">3일</option><option value="7">7일</option><option value="30">30일</option><option value="99999">영구</option></select>
+        <button type="button" class="sbtn del" data-gma="ban">이용 정지</button><button type="button" class="sbtn" data-gma="unban">정지 해제</button></div>
+        <div class="gmrow"><select id="gmMh"><option value="1">1시간</option><option value="6">6시간</option><option value="24">24시간</option><option value="168">7일</option></select><button type="button" class="sbtn" data-gma="mute">채팅 금지</button><button type="button" class="sbtn" data-gma="unmute">채팅 금지 해제</button></div></div>`}}
+  else if(t==='gates'){
+    const R=GMX.raid&&+GMX.raid.until>gmT()?GMX.raid:null;
+    h=`<span class="eyebrow">레이드</span><div class="gmrow"><span class="muted">지금 ${raidOpenNow()?'열림':'닫힘'}${R?` · GM 조정 중(${R.mode==='open'?'강제 열기':'강제 닫기'}, ${fmtT(R.until)}까지)`:' · 기본 일정(저녁 7~11시)'}</span></div>
+      <div class="gmrow"><select id="gmRh"><option value="1">1시간</option><option value="2">2시간</option><option value="4">4시간</option></select><button type="button" class="sbtn buy" data-gma="raidOpen">강제로 열기</button><button type="button" class="sbtn" data-gma="raidClose">강제로 닫기</button><button type="button" class="sbtn" data-gma="raidReset">기본 일정으로</button></div>
+      <span class="eyebrow">게이트</span><ul class="gmlist">${(NET.gates||[]).filter(g=>g.status==='open').map(g=>`<li><b>${esc(gateName(g))}</b><span class="muted">봉인 ${Math.floor(g.sum||0)} / ${g.hp}분 · ${g.n||0}명</span><input type="number" min="0" max="${g.hp}" value="${Math.floor(g.sum||0)}" data-gmsum="${esc(g.id)}" style="width:80px"><button type="button" class="sbtn" data-gmsetsum="${esc(g.id)}">진행 저장</button><button type="button" class="sbtn del" data-gmclose="${esc(g.id)}">강제로 닫기</button></li>`).join('')||'<li class="muted">열린 게이트가 없습니다.</li>'}</ul>
+      <p class="muted">강제로 닫으면 그 자리에 새 게이트가 자동으로 열립니다.</p>`}
+  else if(t==='mod'){
+    h=`<span class="eyebrow">센터 채팅 (최근)</span><ul class="gmlist">${GMX.chat.map(m=>`<li class="${m.hidden?'off':''}"><b>${esc(String(m.nick||''))}</b><span>${esc(String(m.text||''))}</span><span class="muted">${fmtT(m.t)}</span>${m.hidden?'<span class="muted">숨김</span>':`<button type="button" class="sbtn" data-gmhide="${esc(m.id)}">지우기</button>`}<button type="button" class="sbtn" data-gmsel="${esc(m.uid)}" data-gogo="users">요원 보기</button></li>`).join('')||'<li class="muted">메시지가 없습니다.</li>'}</ul>
+      <span class="eyebrow">장터 판매 중</span><ul class="gmlist">${GMX.market.map(L=>`<li><b>${esc(itemName(cleanItem(L.item)||{attr:0}))}</b><span class="muted">${esc(String(L.snick||''))} · ${+L.price} C · ${fmtT(L.t)}</span><button type="button" class="sbtn del" data-gmmk="${esc(L.id)}">내리기</button></li>`).join('')||'<li class="muted">판매 중인 물건이 없습니다.</li>'}</ul>`}
+  else if(t==='log'){h=`<ul class="gmlist">${GMX.logs.map(l=>`<li><b>${esc(String(l.act))}</b><span>${esc(String(l.detail||''))}</span><span class="muted">${esc(String(l.byNick||''))} · ${fmtT(l.t)}</span></li>`).join('')||'<li class="muted">기록이 없습니다.</li>'}</ul>`}
+  b.innerHTML=h;
+}
+async function gmSelUser(uid){GMX.sel=uid;GMX.selSave=null;gmRender();try{const s=await NET.db.doc('data/users/'+uid+'/save').get();GMX.selSave=s.exists&&typeof s.data().json==='string'?JSON.parse(s.data().json):null}catch(e){GMX.selSave=null}gmRender()}
+const val=id=>{const e=$(id);return e?e.value:''};
+async function gmAct(a){
+  const db=NET.db,u=GMX.users.find(x=>x.uid===GMX.sel),who=u?(u.nick||u.uid.slice(0,8)):'';
+  try{
+  if(a==='noticeOn'){const text=val('gmNtx').trim();if(!text){toast('공지 내용을 입력해 주세요.');return}const level=(document.querySelector('[name=gmNl]:checked')||{}).value||'info';await db.doc('notices/main').set({text,level,on:true,t:gmT(),by:NET.uid});gmLog('공지 띄우기','',text);toast('공지를 띄웠습니다.')}
+  else if(a==='noticeOff'){await db.doc('notices/main').update({on:false,t:gmT()});gmLog('공지 내리기','','');toast('공지를 내렸습니다.')}
+  else if(a==='addItem'){gmKeepMail();const k=val('gmIk'),n=Math.max(1,Math.min(20,+val('gmIn')||1));for(let i=0;i<n;i++){
+      if(k==='stone')GMX.draft.push({attr:+val('gmIa')});else if(k==='potion')GMX.draft.push({kind:'potion',p:val('gmIp')});
+      else GMX.draft.push({kind:'gear',slot:val('gmIs'),tier:+val('gmIt'),lv:Math.max(1,Math.min(100,+val('gmIl')||1)),wt:pick(WTYPES).id})}
+    GMX.draft=GMX.draft.slice(0,20);gmRender()}
+  else if(a==='sendMail'){const to=val('gmMto'),title=val('gmMtitle').trim();if(!title){toast('제목을 입력해 주세요.');return}
+    const d={to,from:val('gmMfrom').trim()||'센터 운영팀',title,body:val('gmMbody').trim(),items:GMX.draft.map(x=>({...x})),cr:Math.max(0,+val('gmMcr')||0),ap:Math.max(0,+val('gmMap')||0),t:gmT()};
+    await db.doc('mail/'+gmId('m')).set(d);gmLog('우편 보내기',to,`${title} · 아이템 ${d.items.length}개 · ${d.cr} C · ${d.ap} AP`);GMX.draft=[];GMX.mf=null;toast(to==='all'?'전체 우편을 보냈습니다.':'우편을 보냈습니다.');gmRender()}
+  else if(a==='mailTo'){GMX.tab='mail';gmRender()}
+  else if(!u&&['patch','ban','unban','mute','unmute'].includes(a)){toast('먼저 유저 탭에서 요원을 선택해 주세요.')}
+  else if(a==='patch'){const ops={cr:+val('gmPcr')||0,ap:+val('gmPap')||0,xp:+val('gmPxp')||0,heal:$('gmPheal').checked,runaway:$('gmPrw').checked};const g=val('gmPgr');if(g!=='')ops.grade=+g;
+    await db.doc('gmpatch/'+gmId('p')).set({to:u.uid,ops,note:val('gmPnote').trim(),by:NET.uid,t:gmT(),applied:false});gmLog('계정 조정',u.uid,`${who} · `+[ops.cr&&`크레딧 ${ops.cr>0?'+':''}${ops.cr}`,ops.ap&&`각성 포인트 ${ops.ap>0?'+':''}${ops.ap}`,ops.xp&&`경험치 ${ops.xp>0?'+':''}${ops.xp}`,ops.grade!=null&&`등급 ${GRADES[ops.grade]}`,ops.heal&&'치료 해제',ops.runaway&&'폭주 0'].filter(Boolean).join(', '));toast(`${who} 요원에게 조정을 보냈습니다. 접속하면 바로 적용됩니다.`)}
+  else if(a==='ban'){const d=+val('gmBd'),until=gmT()+d*864e5,reason=val('gmBr').trim();await db.doc('bans/'+u.uid).set({until,reason,by:NET.uid,t:gmT()});gmLog('이용 정지',u.uid,`${who} · ${d>=99999?'영구':d+'일'} · ${reason}`);toast(`${who} 요원을 정지했습니다.`)}
+  else if(a==='unban'){await db.doc('bans/'+u.uid).set({until:0,reason:'',by:NET.uid,t:gmT()});gmLog('정지 해제',u.uid,who);toast('정지를 해제했습니다.')}
+  else if(a==='mute'){const hh=+val('gmMh');await db.doc('mutes/'+u.uid).set({until:gmT()+hh*36e5,reason:val('gmBr').trim(),by:NET.uid,t:gmT()});gmLog('채팅 금지',u.uid,`${who} · ${hh}시간`);toast('채팅을 금지했습니다.')}
+  else if(a==='unmute'){await db.doc('mutes/'+u.uid).set({until:0,by:NET.uid,t:gmT()});gmLog('채팅 금지 해제',u.uid,who);toast('채팅 금지를 해제했습니다.')}
+  else if(a==='raidOpen'||a==='raidClose'){const hh=+val('gmRh');await db.doc('world/gmraid').set({mode:a==='raidOpen'?'open':'closed',until:gmT()+hh*36e5,by:NET.uid,t:gmT()});gmLog(a==='raidOpen'?'레이드 강제 열기':'레이드 강제 닫기','',hh+'시간');toast('레이드 일정을 바꿨습니다.')}
+  else if(a==='raidReset'){await db.doc('world/gmraid').set({mode:null,until:0,by:NET.uid,t:gmT()});gmLog('레이드 기본 일정','','');toast('레이드를 기본 일정으로 되돌렸습니다.')}
+  }catch(e){toast('처리하지 못했습니다. GM 권한과 보안 규칙을 확인해 주세요.')}
+}
+async function gmSetSum(id,close){
+  const g=(NET.gates||[]).find(x=>x.id===id);if(!g)return;const ref=NET.db.doc('gates/'+id);
+  try{
+    if(close){const s=await ref.get();const d=cleanGate(id,s.data());const ok=await closeOnline(ref,d,d.n||1);gmLog('게이트 강제 닫기',id,gateName(g));toast(ok?'게이트를 닫았습니다. 새 게이트가 열립니다.':'닫지 못했습니다.')}
+    else{const v=Math.max(0,Math.min(g.hp-1,+(document.querySelector(`[data-gmsum="${id}"]`)||{}).value||0)),s=await ref.get(),d=s.data()||{};
+      const raw=Object.values(d.contrib||{}).reduce((a,x)=>a+Math.max(0,Math.min(600,+x||0)),0);
+      await ref.update({adj:Math.round((v-raw)*100)/100,lastAt:gmT()});gmLog('게이트 진행 조정',id,`${gateName(g)} → ${v}분`);toast('봉인 진행을 바꿨습니다.')}
+  }catch(e){toast('처리하지 못했습니다.')}
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t||!$('gmModal')||$('gmModal').hidden&&t.id!=='gmBtn')return;
+  if(t.id==='gmBtn')return gmOpen();
+  if(t.id==='gmClose'){$('gmModal').hidden=true;return}
+  if(t.dataset.gmt){gmKeepMail();GMX.tab=t.dataset.gmt;gmRender();return}
+  if(t.dataset.gma)return gmAct(t.dataset.gma);
+  if(t.dataset.gmdel!=null){gmKeepMail();GMX.draft.splice(+t.dataset.gmdel,1);gmRender();return}
+  if(t.dataset.gmsel){if(t.dataset.gogo)GMX.tab='users';gmSelUser(t.dataset.gmsel);return}
+  if(t.dataset.gmrecall){NET.db.doc('mail/'+t.dataset.gmrecall).update({exp:gmT()-1}).then(()=>{gmLog('우편 회수',t.dataset.gmrecall,'');toast('우편을 회수했습니다. 아직 받지 않은 사람에게서 사라집니다.')}).catch(()=>toast('회수하지 못했습니다.'));return}
+  if(t.dataset.gmhide){NET.db.doc('chat/'+t.dataset.gmhide).update({hidden:true}).then(()=>gmLog('채팅 지우기',t.dataset.gmhide,'')).catch(()=>toast('지우지 못했습니다.'));return}
+  if(t.dataset.gmmk){NET.db.doc('market/'+t.dataset.gmmk).update({status:'removed'}).then(()=>{gmLog('장터 판매글 내리기',t.dataset.gmmk,'');toast('판매글을 내렸습니다.')}).catch(()=>toast('내리지 못했습니다.'));return}
+  if(t.dataset.gmsetsum)return gmSetSum(t.dataset.gmsetsum,false);
+  if(t.dataset.gmclose)return gmSetSum(t.dataset.gmclose,true);
+});
+document.addEventListener('input',e=>{if(e.target.id==='gmQ'){GMX.q=e.target.value;const pos=e.target.selectionStart;gmRender();const q=$('gmQ');if(q){q.focus();q.setSelectionRange(pos,pos)}}});
+$('banOut').addEventListener('click',()=>{try{$('accOut').click()}catch(e){location.reload()}});
 /* ═════════ 타이틀 화면: 밤하늘 도시 위에 열린 거대 게이트 (320×180, 2배) ═════════ */
 const TW=320,TH=180,TCX=160,TCY=98,PK=.8;
 let tParts=[],tBolts=[],tBoltT=0;

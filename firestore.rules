@@ -6,6 +6,10 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
     function isGM() { return signedIn() && exists(/databases/$(database)/documents/gms/$(request.auth.uid)); }
+    function banDoc() { return /databases/$(database)/documents/bans/$(request.auth.uid); }
+    function notBanned() { return !exists(banDoc()) || get(banDoc()).data.until < request.time.toMillis(); }
+    function muteDoc() { return /databases/$(database)/documents/mutes/$(request.auth.uid); }
+    function notMuted() { return !exists(muteDoc()) || get(muteDoc()).data.until < request.time.toMillis(); }
 
     // 함께 닫는 게이트
     match /gates/{gateId} {
@@ -15,7 +19,8 @@ service cloud.firestore {
     // 레이드 · 봉인 기록 · 레이드 결과
     match /world/{docId} {
       allow read: if signedIn();
-      allow write: if signedIn();
+      // 레이드 일정 조정(gmraid)은 GM만 바꿀 수 있습니다
+      allow write: if signedIn() && (docId != 'gmraid' || isGM());
     }
     // 동시에 봉인할 때 한 사람만 처리하도록 거는 짧은 잠금
     match /locks/{lockId} {
@@ -31,7 +36,8 @@ service cloud.firestore {
     // 채팅 (센터 · 파티)
     match /chat/{mid} {
       allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && request.resource.data.text.size() <= 120;
+      allow create: if signedIn() && notBanned() && notMuted() && request.resource.data.uid == request.auth.uid && request.resource.data.text.size() <= 120;
+      allow update: if isGM();
     }
     // 파티
     match /parties/{code} {
@@ -41,7 +47,7 @@ service cloud.firestore {
     match /market/{lid} {
       allow read: if signedIn();
       // 올리기: 본인 이름으로만, 가격은 10~99999 정수, 물건 형식 확인
-      allow create: if signedIn()
+      allow create: if signedIn() && notBanned()
         && request.resource.data.seller == request.auth.uid
         && request.resource.data.status == 'open'
         && request.resource.data.price is int
@@ -51,7 +57,7 @@ service cloud.firestore {
         && (!('lv' in request.resource.data.item) || (request.resource.data.item.lv is int && request.resource.data.item.lv >= 1 && request.resource.data.item.lv <= 100))
         && (!('sub' in request.resource.data.item) || request.resource.data.item.sub.size() <= 3);
       // 수정: 가격과 물건은 못 바꾼다. 다른 사람은 '판매됨'으로만, 판매자는 '내림' · '대금 수령'으로만 바꿀 수 있다
-      allow update: if signedIn()
+      allow update: if isGM() || signedIn()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','buyer','bnick','soldAt'])
         && (
           (resource.data.status == 'open' && request.resource.data.status == 'sold'
@@ -70,7 +76,7 @@ service cloud.firestore {
     }
     // 우편: GM만 보낼 수 있고, 받는 사람(또는 전체 'all')만 읽습니다. 받는 사람은 '받음' 표시만 바꿀 수 있습니다.
     match /mail/{mid} {
-      allow read: if signedIn() && (resource.data.to == request.auth.uid || resource.data.to == 'all');
+      allow read: if isGM() || signedIn() && (resource.data.to == request.auth.uid || resource.data.to == 'all');
       allow create, delete: if isGM();
       allow update: if isGM() || (signedIn() && resource.data.to == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed']));
@@ -105,11 +111,43 @@ service cloud.firestore {
     // 지금 접속한 요원 (본인 문서만 쓸 수 있다)
     match /presence/{uid} {
       allow read: if signedIn();
-      allow write: if signedIn() && request.auth.uid == uid;
+      allow write: if signedIn() && request.auth.uid == uid && notBanned();
     }
     // 개인 저장 기록
     match /data/users/{uid}/{docId} {
-      allow read, write: if signedIn() && request.auth.uid == uid;
+      allow read: if signedIn() && (request.auth.uid == uid || isGM());
+      allow write: if signedIn() && request.auth.uid == uid && notBanned();
+    }
+    // ── GM ──
+    // 요원 목록(GM 검색용): 본인만 쓰고, GM만 읽습니다
+    match /profiles/{uid} {
+      allow read: if isGM();
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+    // 이용 정지 · 채팅 금지: 본인과 GM이 읽고, GM만 씁니다
+    match /bans/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isGM());
+      allow write: if isGM();
+    }
+    match /mutes/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isGM());
+      allow write: if isGM();
+    }
+    // 공지: 모두 읽고, GM만 씁니다
+    match /notices/{id} {
+      allow read: if signedIn();
+      allow write: if isGM();
+    }
+    // 계정 조정: GM이 보내고, 받는 사람은 '적용함' 표시만 바꿉니다
+    match /gmpatch/{pid} {
+      allow read: if isGM() || signedIn() && resource.data.to == request.auth.uid;
+      allow create: if isGM();
+      allow update: if isGM() || signedIn() && resource.data.to == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applied','appliedAt']);
+    }
+    // GM 행동 기록: GM만 남기고 읽습니다
+    match /gmlog/{lid} {
+      allow read, create: if isGM();
     }
   }
 }
