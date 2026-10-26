@@ -966,6 +966,32 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .lenrow .hours button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 .lenrow .hours button:disabled{opacity:.55;cursor:default}
 .sklist{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}.sklist span{white-space:nowrap}.sklist em{font-style:normal;font-size:.68rem;font-weight:700;margin-left:3px;padding:0 5px;border-radius:99px;background:var(--wash);color:var(--ink-soft)}
+/* v35.11 채팅: 서랍 높이를 꽉 채우고, 목록만 스크롤합니다 */
+.drawer.chatmode .dr-body{overflow:hidden;display:flex;flex-direction:column;padding:8px 10px 10px}
+.drawer.chatmode .pane[data-pane="chat"]{flex:1;min-height:0;display:flex;flex-direction:column}
+#chatBox{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;position:relative}
+.chtabs{display:flex;gap:4px;background:var(--wash);border-radius:99px;padding:3px}
+.chtabs button{flex:1;border:0;background:none;border-radius:99px;padding:5px 8px;font:inherit;font-size:.82rem;font-weight:600;color:var(--ink-soft);cursor:pointer}
+.chtabs button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(20,30,60,.15)}
+.chatlist{flex:1;min-height:120px;overflow-y:auto;overscroll-behavior:contain;padding:2px 2px 4px;scrollbar-width:thin}
+.drawer:not(.chatmode) .chatlist{max-height:min(48vh,420px)}
+.chatlist .chat{display:flex;flex-direction:column;gap:2px;max-height:none;overflow:visible}
+.chat li,.chat li.me{display:flex;flex-direction:column;align-items:flex-start;background:none;padding:0;border-radius:0;margin-top:8px;font-size:.88rem}
+.chat li.cont{margin-top:1px}
+.chat li.me{align-items:flex-end}
+.chat li>b{font-size:.72rem;font-weight:700;color:var(--ink-soft);margin:0 0 2px 4px}
+.chat .bub{display:flex;align-items:flex-end;gap:5px;max-width:86%}
+.chat li.me .bub{flex-direction:row-reverse}
+.chat .bub span{background:var(--wash);padding:6px 10px;border-radius:14px 14px 14px 4px;line-height:1.45;word-break:break-word;overflow-wrap:anywhere}
+.chat li.me .bub span{background:var(--accent);color:#fff;border-radius:14px 14px 4px 14px}
+.chat li.cont .bub span{border-radius:14px}
+.chat .bub time{flex:none;font-size:.64rem;color:var(--ink-soft);white-space:nowrap;padding-bottom:2px}
+.chatempty{margin:auto 0;text-align:center}
+.chatnew{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);border:0;border-radius:99px;background:var(--ink);color:#fff;font:inherit;font-size:.78rem;font-weight:600;padding:5px 12px;box-shadow:0 3px 10px rgba(20,30,60,.25);cursor:pointer;z-index:2}
+.drawer.chatmode .chatform{padding:0;position:static}
+.drawer.chatmode .dr-head{padding:6px 10px}.drawer.chatmode .dr-head h2{font-size:1.05rem}.drawer.chatmode .dr-head .xbtn{width:30px;height:30px}
+.drawer.chatmode .chtabs button{padding:3px 8px}
+.drawer.chatmode .chatform input{padding:8px 12px}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1386,7 +1412,7 @@ const HAIRC=['#2B2238','#5A3A26','#A0663A','#E8C46A','#ECE8F2','#D2484A','#EE8DB
 const EYEC=['#2B2238','#7A4A22','#2F5BEA','#21A574','#D2484A','#D49A1E','#8E6CF0'];
 const OUTC=['#2F5BEA','#2A3150','#F1F3F8','#D2484A','#21A574','#7F5CE0','#F2B233','#EE8DBA'];
 const FRONT_N=['일자 앞머리','가르마','옆으로 넘긴 앞머리','올백','뾰족한 머리','한쪽 눈 가린 앞머리','5:5 앞머리 (짧게)','5:5 앞머리 (길게)','시스루 앞머리','처피뱅','바보털','옆으로 내린 앞머리'];
-const BACK_N=['숏컷','단발','긴 생머리','포니테일','트윈테일','올림머리','반묶음','울프컷','귀 높이 반묶음','내려 묶은 장발','양쪽 번','양갈래 땋은 머리','웨이브 장발','히메컷','높은 포니테일','곱슬 단발','한쪽 땋은 머리'];
+const BACK_N=['숏컷','단발','긴 생머리','포니테일','트윈테일','올림머리','반묶음','울프컷','귀 높이 반묶음','내려 묶은 장발','양쪽 번','양갈래 땋은 머리','웨이브 장발','히메컷','높은 포니테일','곱슬 단발','한쪽 땋은 머리','리본 반묶음','허리까지 웨이브','아주 긴 생머리','사이드 포니테일','낮은 양갈래','투블럭','리프컷','댄디컷','꽁지머리','덥수룩한 머리','울프 장발'];
 const EYES_N=['기본','반짝이는 눈','웃는 눈','감은 눈','졸린 눈','속눈썹 눈'];
 const OUTFIT_N=['센터 제복 재킷','롱 코트','후드 집업','정장 재킷','가이드 로브','전투 슈트','세일러 블라우스','셔츠와 니트 조끼'];
 const BOTTOM_N=['슬랙스','반바지','플리츠 스커트','롱스커트','와이드 팬츠'];
@@ -1864,7 +1890,18 @@ const T_BEHIND=[
   ['','','','','','.HHHHHHHHHh.','HHHHHHHHHHhh','HH........hh','HH........hh','HH........hh','HH........hh','HH........hh','hh........hh'], // 히메컷
   ['.........RhH..','.........HLHh.','..........HHh.','...........HHh','...........HHh','............Hh','............Hh','............Hh','............h.'], // 높은 포니테일
   ['','','','','','.HHH......hhh.','HH..........hh','.HHh......hHh.'], // 곱슬 단발
-  null                                                               // 한쪽 땋은 머리
+  null, // 한쪽 땋은 머리
+  ["", "", "", "", "", ".HHHHHHHHHh.", "HHHHHHHHHHhh", "HHHHHHHHHHhh", "HH........hh", "HH........hh", "HH........hh", "HH........hh", ".h........h."], // 리본 반묶음
+  ["", "", "", "", "..HHHHHHHHHH..", "..HHHHHHHHHh..", ".HH........hh.", "HH..........hh", ".HH........hh.", "HH..........hh", ".HH........hh.", "HH..........hh", ".HH........hh.", "HH..........hh", ".h..........h."], // 허리까지 웨이브
+  ["", "", "", "", "", ".HHHHHHHHHh.", "HHHHHHHHHHhh", "HHHHHHHHHHhh", "HH........hh", "HH........hh", "HH........hh", "HH........hh", "HH........hh", "HH........hh", "hh........hh"], // 아주 긴 생머리
+  ["", "", "", ".h............", "HH............", "HHh...........", "HH............", "Hh............", "HH............", ".h............"], // 사이드 포니테일
+  ["", "", "", "", "", "", "", ".R..........R.", "HH..........HH", "HH..........HH", "Hh..........hH", "HH..........HH", ".h..........h."], // 낮은 양갈래
+  null, // 투블럭
+  null, // 리프컷
+  null, // 댄디컷
+  ["", "", "", "", "", "", "", "..........hH..", "...........RH.", "...........Hh.", "............h."], // 꽁지머리
+  ["", "", ".h..........h.", "HH..........HH", ".Hh........hH.", "HH..........hH", ".h..........h."], // 덥수룩한 머리
+  ["", "", "", "", "", "", ".HH........hh.", "HH..........hh", ".Hh........hh.", ".h..........h."], // 울프 장발
 ];
 const T_SIDE=[
   [],
@@ -1883,8 +1920,21 @@ const T_SIDE=[
   ['','','','','H..........h','HH........hh','HH........hh','HH........hh','HH........hh','hh........hh'],
   [],
   ['','','','','H..........h','HH........hh','Hh........Hh','HH........hh','HhH....HhHh.'],
-  ['','','','','H..........h','HH........hh','HH........hh','.HH.......hh','.hH........h','.HH.........','.hH.........','.R..........','.h..........']
+  ['','','','','H..........h','HH........hh','HH........hh','.HH.......hh','.hH........h','.HH.........','.hH.........','.R..........','.h..........'],
+  ["", "", "", "", "H..........h", "HH........hh", "HH........hh", "HH........hh", "HH........hh", "HH........hh", "Hh........hh"],
+  ["", "", "", "", "H..........h", "HH........hh", "Hh........Hh", "HH........hh", "HH........hh", ".h........h."],
+  ["", "", "", "", "H..........h", "HH........hh", "HH........hh", "HH........hh", "HH........hh", "HH........hh", "HH........hh", "Hh........hh"],
+  ["", "", "", "", "H..........h", "H..........."],
+  ["", "", "", "", "H..........h", "HH........hh", "HH........hh", "Hh........hh"],
+  ["", "", "", "", "h..........h", "h..........h", ".h........h."],
+  ["", "", "", "", "H..........h", "HH........hh", "Hh........hh", ".h........h."],
+  ["", "", "", "", "H..........h", "Hh........hh", ".h........h."],
+  ["", "", "", "", "H..........h", "HH........hh", "Hh........hh"],
+  ["", "", "", "", "H..........h", "HH........hh", ".Hh......hH."],
+  ["", "", "", "", "H..........h", "HH........hh", "HH........hh", "Hh........hh", ".H........h.", ".h........h."]
 ];
+/* 머리 위에 덧그리는 장식(리본 등): 뒷머리 번호별 */
+const T_TOP={17:["", "..........R.R.", "..........RRR.", "...........R.."]};
 const T_OUT=[
   ['','','','','','','','','','','..ACTAATCA..','.SCCCAACCcS.','..CCDDDDcc..'],          // 제복
   ['','','','','','','','','','','..CCTTTTCC..','.SCCcTTcCcS.','..CCCCCCcc..','..C......c..'], // 롱 코트
@@ -1939,6 +1989,7 @@ function tinyMap(L,frame){
   lay(T_SIDE[L.back]);
   lay(T_DOME);
   lay(T_FRONT[L.front]);
+  lay(T_TOP[L.back]);
   lay(T_ACC[L.acc]);
   if(frame[0]==='k'){put(10,10,'C');put(11,10,'S');put(10,11,'c')}
   return M;
@@ -3525,19 +3576,33 @@ async function sendChat(){
   inp.value='';inp.focus();
   try{await NET.db.doc('chat/'+NET.uid.slice(0,10)+'_'+Date.now().toString(36)).set({ch:k,uid:NET.uid,nick:(S.name||'요원').slice(0,10),role:S.role,text,t:now()})}catch(e){toast('메시지를 보내지 못했습니다.')}
 }
+/* 채팅: 메신저처럼 내 말은 오른쪽, 남의 말은 왼쪽에 놓습니다. 같은 사람이 이어 말하면 이름을 한 번만 씁니다.
+   위로 올려 읽는 중에는 새 메시지가 와도 아래로 끌어내리지 않고 '새 메시지' 단추만 띄웁니다. */
+const chatTime=t=>new Date(t||0).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+let chatLast={ch:null,n:0};
 function renderChat(keepInput){
   const box=$('chatBox');if(!box)return;watchChat();
   const c=CHAT.ch,ms=CHAT.msgs[c];CHAT.seen[c]=now();chatBadge();
-  const head=`<div class="vnav two"><button type="button" data-ch="center" aria-pressed="${c==='center'}">센터</button><button type="button" data-ch="party" aria-pressed="${c==='party'}">파티${S.party?' '+esc(S.party):''}</button></div>`;
-  const body=!online()?'<p class="muted">채팅은 서버에 연결되어 있을 때만 쓸 수 있습니다.</p>':c==='party'&&!S.party?'<p class="muted">파티에 들어가면 파티원끼리만 보는 채팅을 쓸 수 있습니다.</p>':
-    (ms.length?`<ul class="chat">${ms.map(m=>`<li class="${m.uid===NET.uid?'me':''}"><b>${esc(String(m.nick||'요원'))}</b><span>${esc(m.text)}</span><time>${new Date(m.t||0).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</time></li>`).join('')}</ul>`:'<p class="muted">아직 대화가 없습니다. 먼저 인사를 건넵니다.</p>');
+  const head=`<div class="chtabs" role="tablist"><button type="button" data-ch="center" aria-pressed="${c==='center'}">센터</button><button type="button" data-ch="party" aria-pressed="${c==='party'}">파티${S.party?' · '+esc(S.party):''}</button></div>`;
+  let body;
+  if(!online())body='<p class="muted chatempty">채팅은 서버에 연결되어 있을 때만 쓸 수 있습니다.</p>';
+  else if(c==='party'&&!S.party)body='<p class="muted chatempty">파티에 들어가면 파티원끼리만 보는 채팅을 쓸 수 있습니다.</p>';
+  else if(!ms.length)body='<p class="muted chatempty">아직 대화가 없습니다. 먼저 인사를 건네 보세요.</p>';
+  else{let prev=null;body='<ul class="chat">'+ms.map((m,i)=>{const me=m.uid===NET.uid,nx=ms[i+1];
+      const cont=prev&&prev.uid===m.uid&&(m.t-prev.t)<180000,last=!nx||nx.uid!==m.uid||(nx.t-m.t)>=180000;prev=m;
+      return `<li class="${me?'me':'them'}${cont?' cont':''}">${!me&&!cont?`<b>${esc(String(m.nick||'요원'))}</b>`:''}<div class="bub"><span>${esc(m.text)}</span>${last?`<time>${chatTime(m.t)}</time>`:''}</div></li>`}).join('')+'</ul>'}
   /* 입력칸은 다시 만들지 않습니다. 새 메시지가 와도 쓰던 글과 커서, 한글 조합이 그대로 남아 연달아 보낼 수 있습니다 */
-  if(!$('chatList')||!$('chatForm')){box.innerHTML=`<div id="chatHead"></div><div id="chatList"></div><form class="chatform" id="chatForm"><input id="chatIn" maxlength="120" autocomplete="off" enterkeyhint="send"><button type="submit" class="sbtn">보내기</button></form>`}
-  $('chatHead').innerHTML=head;$('chatList').innerHTML=body;$('chatIn').placeholder=`${c==='party'?'파티원에게':'센터의 요원들에게'} 보낼 메시지`;
-  /* 열 때와 새 메시지가 올 때 가장 최근 채팅이 보이게 아래로 내립니다. 서랍이 열린 뒤에 높이가 정해지므로 다음 프레임에도 한 번 더 내립니다 */
-  const down=()=>{const ul=box.querySelector('.chat');if(!ul)return;ul.scrollTop=ul.scrollHeight;let p=ul.parentElement;while(p&&p!==document.body){if(p.scrollHeight>p.clientHeight+2)p.scrollTop=p.scrollHeight;p=p.parentElement}};
-  down();requestAnimationFrame(()=>{down();setTimeout(down,60)});
+  if(!$('chatList')||!$('chatForm')){box.innerHTML=`<div id="chatHead"></div><div id="chatList" class="chatlist"></div><button type="button" class="chatnew" id="chatNew" hidden>새 메시지 ↓</button><form class="chatform" id="chatForm"><input id="chatIn" maxlength="120" autocomplete="off" enterkeyhint="send"><button type="submit" class="sbtn">보내기</button></form>`;
+    $('chatList').addEventListener('scroll',()=>{const l=$('chatList');if(l.scrollHeight-l.scrollTop-l.clientHeight<24)$('chatNew').hidden=true})}
+  const list=$('chatList'),near=list.scrollHeight-list.scrollTop-list.clientHeight<40,fresh=chatLast.ch!==c||!list.firstChild;
+  const grew=ms.length>chatLast.n&&chatLast.ch===c,mine=grew&&ms[ms.length-1]&&ms[ms.length-1].uid===NET.uid;
+  $('chatHead').innerHTML=head;list.innerHTML=body;$('chatIn').placeholder=`${c==='party'?'파티원에게':'센터의 요원들에게'} 보낼 메시지`;
+  chatLast={ch:c,n:ms.length};
+  const down=()=>{list.scrollTop=list.scrollHeight;$('chatNew').hidden=true};
+  if(fresh||near||mine||keepInput==='open'){down();requestAnimationFrame(()=>{down();setTimeout(down,60)})}
+  else if(grew)$('chatNew').hidden=false;
 }
+$('chatBox').addEventListener('click',e=>{if(e.target.id==='chatNew'){const l=$('chatList');l.scrollTop=l.scrollHeight;e.target.hidden=true}});
 $('chatBox').addEventListener('click',e=>{const b=e.target.closest('[data-ch]');if(b){CHAT.ch=b.dataset.ch;renderChat()}});
 $('chatBox').addEventListener('submit',e=>{e.preventDefault();sendChat()});
 setInterval(()=>{try{watchChat();chatBadge()}catch(e){}},4000);
@@ -5201,7 +5266,7 @@ function drawRolePreview(id,kind){
 function showScreen(id){['account','onboard','gacha','custom','game'].forEach(k=>$(k).hidden=k!==id);$('topbar').hidden=id!=='game'||!S.role;$('hdr').hidden=id==='game'||id==='account';document.body.classList.toggle('ingame',id==='game');if(id!=='game')closeDrawer();window.scrollTo(0,0)}
 const TAB_T={mail:'우편함',chat:'채팅',party:'파티',shop:'상점',market:'장터',guiding:'가이딩실',ach:'업적과 칭호',ctl:'출동 관제',me:'내 캐릭터',partner:'파트너 상태',bag:'가방',crew:'요원과 친구'};
 let curTab=null;
-function openTab(t){curTab=t;if(t==='bag'){S.bagSeen=S.items.length;save()}if(t==='mail')renderMail();if(t==='crew')renderFriends();if(t==='partner')renderPair();if(t==='shop')renderShop();if(t==='market')renderMarket();if(t==='guiding')renderGuiding();if(t==='party')renderParty();if(t==='chat')renderChat();$('drawer').hidden=false;$('drawerTitle').textContent=TAB_T[t];document.querySelectorAll('.pane[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==t);document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===t)))}
+function openTab(t){curTab=t;if(t==='bag'){S.bagSeen=S.items.length;save()}if(t==='mail')renderMail();if(t==='crew')renderFriends();if(t==='partner')renderPair();if(t==='shop')renderShop();if(t==='market')renderMarket();if(t==='guiding')renderGuiding();if(t==='party')renderParty();if(t==='chat')chatLast.ch=null;$('drawer').hidden=false;$('drawer').classList.toggle('chatmode',t==='chat');$('drawerTitle').textContent=TAB_T[t];document.querySelectorAll('.pane[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==t);if(t==='chat')renderChat('open');document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===t)))}
 function closeDrawer(){curTab=null;$('drawer').hidden=true;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed','false'))}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{if(curTab===b.dataset.tab)closeDrawer();else openTab(b.dataset.tab)}));
 $('drawerClose').addEventListener('click',closeDrawer);
