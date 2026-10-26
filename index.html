@@ -1002,6 +1002,13 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 @media (max-width:760px){#timer,.timer,.hudgame .timer{padding:5px 8px 3px!important;top:6px!important;left:auto!important;right:8px!important;transform:none!important}}
 #timer canvas{display:block;image-rendering:pixelated}
 @media (max-width:440px){#killTag{display:none!important}}
+.pmood .pchips button{font-size:.8rem;padding:7px 2px;white-space:nowrap;letter-spacing:-.02em}
+.gbtn.brk .gl{background:#B0203A!important;color:#fff;animation:brkp 1s ease-in-out infinite}
+.gbtn.warn .gl{animation:brkw 1.2s steps(2) infinite}
+@keyframes brkp{50%{box-shadow:0 0 0 3px rgba(240,84,79,.5)}}
+@keyframes brkw{50%{outline:2px solid #F0544F;outline-offset:1px}}
+.brkline{margin:6px 0;font-size:.85rem;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,#B0203A 12%,var(--panel));border:1px solid #B0203A}
+.brkline b{color:#B0203A}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1219,7 +1226,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
               <div class="apbar"><span id="achSum">업적 0 / 0</span><b id="achAp">0 AP</b></div>
               <div class="field"><span class="eyebrow">칭호</span><div class="titles" id="titleList"></div></div>
               <ul class="achs" id="achList"></ul>
-              <div class="field" id="raidRecHead"><span class="eyebrow">균열 레이드 기록</span><span class="muted">레이드는 매일 저녁 7시부터 11시까지 열립니다. 끝난 레이드의 결과는 여기에서 언제든 볼 수 있습니다.</span></div>
+              <div class="field" id="raidRecHead"><span class="eyebrow">균열 레이드 기록</span><span class="muted">레이드는 <b>게이트 브레이크</b>: 열린 뒤 오래 닫히지 않은 게이트 가운데 일부는 2~4시간 뒤 브레이크가 일어나 특수 게이트로 바뀝니다. 30분 전에 경고가 뜹니다. 브레이크 게이트는 공략 시간이 길고 강하지만 등급과 상관없이 누구나 들어갈 수 있고, 보상이 커집니다. 6시간이 지나도 닫히지 않은 게이트는 NPC 요원들이 처리하고 새 게이트가 열립니다.</p>
+      <p>매일 저녁 7시부터 11시까지 열립니다. 끝난 레이드의 결과는 여기에서 언제든 볼 수 있습니다.</span></div>
               <div id="raidRec"></div>
             </section>
             <section class="pane crew" data-pane="crew" hidden>
@@ -1314,7 +1322,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
       <ul><li><b>직접 가이딩</b>: 고리가 가운데 원에 겹칠 때 눌러 호흡을 맞춥니다. 정확할수록 많이 내려갑니다.</li>
       <li><b>자동 가이딩</b>: 화면을 보지 않아도 시간이 지나면 내려갑니다. 게이지가 80 이상이면 자동 가이딩만 쓸 수 있습니다.</li>
       <li><b>게이트 안 가이딩</b>: 가이드는 게이트 공략 중에 가이딩을 할 수 있습니다. 화면이나 가이딩 단추를 한 번 누르면 그 게이트가 끝날 때까지 5초마다 자동으로 가이딩하며, 함께 싸우는 센티넬의 폭주 게이지가 내려가고 HP가 조금 회복됩니다. 센티넬은 앞에서 싸우고 가이드는 뒤에서 돕습니다. 같은 게이트에 플레이어 센티넬이 있으면 NPC 파트너보다 그 플레이어에게 먼저 가이딩합니다.</li>
-      <li><b>가이딩 숙련</b>: 휴식 때 호흡 맞추기와 게이트 안 가이딩을 할수록 오릅니다. 단계마다 가이딩 효과가 5%씩(최대 50%) 커집니다.</li>
+      <li><b>가이딩 숙련</b>(가이드): 휴식 때 호흡 맞추기와 게이트 안 가이딩을 할수록 오르며 최대 500단계입니다. 단계마다 가이딩 효과가 0.15%씩(최대 75%) 커지고, 50단계마다 각성 포인트 100을 받습니다. 센티넬의 <b>호흡 동조</b>는 20마다 1단계가 오르며 단계마다 5%씩(최대 50%) 커집니다.</li>
       <li><b>긴 가이딩</b>: 3분이 넘는 가이딩은 50번 맞추면 남은 시간 동안 자동으로 호흡을 맞춥니다.</li>
       <li><b>함께하는 가이딩</b>: 가이드 플레이어가 가이딩실에서 요청을 받아 도와줄 수 있습니다. 페어가 아닌 가이드에게도 언제든 받을 수 있습니다.</li></ul>
       <p>폭주 게이지가 0이 되면 가이딩은 바로 끝납니다. 함께한 가이드 플레이어는 그때 보상을 받고, 0까지 안정시켰다면 1.5배를 받습니다.</p>
@@ -1334,7 +1342,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
       <p><b>페어</b>: 센티넬과 가이드 플레이어가 <b>서로 서약해야</b> 맺어지는 특별한 관계입니다. 친구 중에서 신청할 수 있고, 한 사람은 한 번에 하나의 페어만 가질 수 있습니다.</p>
       <ul><li>페어 가이드에게 받는 가이딩 효율이 2배가 됩니다.</li><li>같은 게이트를 함께 공략하면 경험치 · 각성 포인트 · 크레딧이 2배, 봉인 기여가 1.5배가 됩니다.</li><li>페어가 있어도 다른 가이드에게 가이딩을 받을 수 있습니다.</li><li>해제할 때도 두 사람이 모두 동의해야 합니다.</li><li>페어가 되면 두 캐릭터가 한 방에서 함께 지냅니다.</li><li>페어 무드는 사이 좋은 친구 · 사귀는 사이 · 투닥거리는 사이 중에서 두 사람이 합의해 정하며, 방의 분위기가 바뀝니다.</li></ul></details>
     <details id="gb10"><summary><span class="gbno">10</span><span class="gbt">상점 · 장터 · 우편</span></summary>
-      <p><b>상점</b>에서는 크레딧으로 각성석, 장비 상자, 가구를 삽니다. 각성 포인트(AP)로는 폭주 게이지를 바로 30 낮추는 <b>진정 물약</b>과 30분 동안 가이딩 효과를 50% 키우는 <b>증폭 물약</b>을 하루에 한 번씩 살 수 있습니다. 크레딧은 게이트를 닫거나 보고서를 써서 얻습니다.</p>
+      <p><b>상점</b>에서는 크레딧으로 각성석, 장비 상자, 가구를 삽니다. 각성 포인트(AP)로는 폭주 게이지를 바로 30 낮추는 <b>진정 물약</b>과 30분 동안 가이딩 효과를 50% 키우는 <b>증폭 물약</b>을 하루에 한 번씩 살 수 있습니다. 그 밖에 다음 출동 경험치를 1.5배로 만드는 <b>경험치 부스터</b>, 남은 치료 시간을 바로 끝내는 <b>긴급 치료</b>, 물약 2개가 든 <b>보급 상자</b>도 AP로 살 수 있습니다. 크레딧은 게이트를 닫거나 보고서를 써서 얻습니다.</p>
       <p><b>장터</b>에서는 요원끼리 물건을 사고팝니다. 올라온 물건의 능력치와 판매 금액을 그대로 볼 수 있고, 사면 금액이 바로 빠지고 가방에 들어옵니다. 내가 올린 물건은 나만 내릴 수 있습니다.</p>
       <p><b>우편함</b>은 화면 오른쪽 위 봉투 단추로 엽니다. 점검 보상이나 이벤트처럼 전체 배포되는 아이템과 보상은 우편으로 지급되고, 받기를 눌러야 가방에 들어옵니다.</p></details>
     <details id="gb11"><summary><span class="gbno">11</span><span class="gbt">화면과 계정</span></summary>
@@ -2013,6 +2021,116 @@ playful:{
 }
 };
 for(const p in TALK3)for(const k in TALK3[p]){const cur=TALK[p][k];TALK[p][k]=Array.isArray(cur)?[...cur,...TALK3[p][k]]:cur&&typeof cur==='object'?{g:[...cur.g,...TALK3[p][k]],s:[...cur.s,...TALK3[p][k]]}:[...TALK3[p][k]]}
+/* ── 대사 추가분(v35.31): 캐릭터를 눌렀을 때(poke) 대사를 성격마다 10줄씩 더합니다. 한 줄 = "존댓말|반말|다나까" ── */
+const TALK4={
+kind:['오늘 밥은 챙겨 먹었어요? 꼭 먹어야 해요.|오늘 밥은 챙겨 먹었어? 꼭 먹어야 해.|오늘 식사는 챙기셨습니까? 꼭 드셔야 합니다.',
+  '피곤해 보여요. 잠깐 눈 붙여도 괜찮아요.|피곤해 보여. 잠깐 눈 붙여도 괜찮아.|피곤해 보이십니다. 잠시 눈을 붙이셔도 괜찮습니다.',
+  '오늘도 와 줘서 고마워요.|오늘도 와 줘서 고마워.|오늘도 와 주셔서 감사합니다.',
+  '창밖 좀 봐요. 하늘이 예뻐요.|창밖 좀 봐. 하늘이 예뻐.|창밖을 보십시오. 하늘이 아름답습니다.',
+  '힘든 일 있으면 저한테 먼저 말해요.|힘든 일 있으면 나한테 먼저 말해.|힘든 일이 있으시면 제게 먼저 말씀하십시오.',
+  '차 한 잔 끓여 줄까요? 따뜻한 걸로요.|차 한 잔 끓여 줄까? 따뜻한 걸로.|차를 한 잔 끓여 드리겠습니다. 따뜻한 것으로 하겠습니다.',
+  '어제보다 한결 나아 보여서 다행이에요.|어제보다 한결 나아 보여서 다행이야.|어제보다 한결 나아 보이셔서 다행입니다.',
+  '조금 느려도 괜찮아요. 같이 가면 돼요.|조금 느려도 괜찮아. 같이 가면 돼.|조금 느려도 괜찮습니다. 함께 가면 됩니다.',
+  '방에 꽃 하나 두면 좋겠어요. 어울릴 것 같아요.|방에 꽃 하나 두면 좋겠다. 어울릴 것 같아.|방에 꽃을 하나 두면 좋겠습니다. 잘 어울릴 것 같습니다.',
+  '여기 있으면 저도 마음이 놓여요.|여기 있으면 나도 마음이 놓여.|여기 있으면 저도 마음이 놓입니다.'],
+bright:['오늘 날씨 최고예요! 나가서 한 판 해요!|오늘 날씨 최고야! 나가서 한 판 하자!|오늘 날씨가 최고입니다! 나가서 한 판 하겠습니다!',
+  '찌르면 저도 찌를 거예요! 에잇!|찌르면 나도 찌를 거야! 에잇!|찌르시면 저도 찌르겠습니다! 에잇!',
+  '새 기록 세우러 가요! 오늘은 느낌이 와요!|새 기록 세우러 가자! 오늘은 느낌이 와!|새 기록을 세우러 가겠습니다! 오늘은 느낌이 옵니다!',
+  '노래 한 곡 불러 줄까요? 라라라~|노래 한 곡 불러 줄까? 라라라~|노래를 한 곡 불러 드리겠습니다. 라라라~',
+  '오늘 몇 번 출동할 거예요? 저는 열 번!|오늘 몇 번 출동할 거야? 나는 열 번!|오늘 몇 번 출동하시겠습니까? 저는 열 번입니다!',
+  '방에 트램펄린 놓으면 안 돼요? 재밌을 텐데!|방에 트램펄린 놓으면 안 돼? 재밌을 텐데!|방에 트램펄린을 놓으면 안 되겠습니까? 재미있을 겁니다!',
+  '하이파이브! 오늘도 파이팅이에요!|하이파이브! 오늘도 파이팅!|하이파이브! 오늘도 파이팅입니다!',
+  '심심하면 저랑 달리기 시합해요!|심심하면 나랑 달리기 시합하자!|심심하시면 저와 달리기 시합을 하시겠습니까!',
+  '오늘 간식은 제가 쏠게요!|오늘 간식은 내가 쏠게!|오늘 간식은 제가 사겠습니다!',
+  '웃어요, 웃어! 웃으면 복이 와요!|웃어, 웃어! 웃으면 복이 와!|웃으십시오! 웃으면 복이 옵니다!'],
+cool:['……또 눌렀네요.|……또 눌렀네.|……또 누르셨습니다.',
+  '용건 없으면 쉬어요.|용건 없으면 쉬어.|용건이 없으시면 쉬십시오.',
+  '……나쁘지 않은 하루예요.|……나쁘지 않은 하루야.|……나쁘지 않은 하루입니다.',
+  '커피 마실래요? 블랙밖에 없어요.|커피 마실래? 블랙밖에 없어.|커피 드시겠습니까? 블랙밖에 없습니다.',
+  '시끄러운 건 질색이에요. 여긴 조용해서 좋아요.|시끄러운 건 질색이야. 여긴 조용해서 좋아.|시끄러운 것은 질색입니다. 이곳은 조용해서 좋습니다.',
+  '……걱정하는 거 아니에요. 그냥 확인한 거예요.|……걱정하는 거 아니야. 그냥 확인한 거야.|……걱정하는 것이 아닙니다. 그냥 확인한 것입니다.',
+  '다음 게이트, 이미 골라 뒀어요.|다음 게이트, 이미 골라 뒀어.|다음 게이트는 이미 골라 두었습니다.',
+  '손 차갑네요. 장갑 껴요.|손 차갑네. 장갑 껴.|손이 차갑습니다. 장갑을 끼십시오.',
+  '……가끔은 이렇게 있는 것도 괜찮아요.|……가끔은 이렇게 있는 것도 괜찮아.|……가끔은 이렇게 있는 것도 괜찮습니다.',
+  '자꾸 보면 닳아요.|자꾸 보면 닳아.|자꾸 보시면 닳습니다.'],
+shy:['저, 저기… 오늘 머리 이상하지 않아요…?|저, 저기… 오늘 머리 이상하지 않아…?|저, 저기… 오늘 머리가 이상하지 않습니까…?',
+  '깜짝이야…! 심장 떨어지는 줄 알았어요…|깜짝이야…! 심장 떨어지는 줄 알았어…|깜짝이야…! 심장이 떨어지는 줄 알았습니다…',
+  '이, 이 방… 너무 아늑해서 졸려요…|이, 이 방… 너무 아늑해서 졸려…|이, 이 방은… 너무 아늑해서 졸립니다…',
+  '오, 오늘도 같이 있어 줄 거죠…?|오, 오늘도 같이 있어 줄 거지…?|오, 오늘도 함께 있어 주실 겁니까…?',
+  '저, 쿠키 구워 왔는데… 드실래요?|나, 쿠키 구워 왔는데… 먹을래?|저, 쿠키를 구워 왔는데… 드시겠습니까?',
+  '사, 사람 많은 데는 아직 무서워요…|사, 사람 많은 데는 아직 무서워…|사, 사람 많은 곳은 아직 두렵습니다…',
+  '조, 조금만 더 이러고 있어도 돼요…?|조, 조금만 더 이러고 있어도 돼…?|조, 조금만 더 이러고 있어도 되겠습니까…?',
+  '칭찬받으면… 얼굴이 빨개져요…|칭찬받으면… 얼굴이 빨개져…|칭찬을 받으면… 얼굴이 빨개집니다…',
+  '저, 저도 언젠가 S급이 될 수 있을까요…?|나, 나도 언젠가 S급이 될 수 있을까…?|저, 저도 언젠가 S급이 될 수 있겠습니까…?',
+  '부, 불러 줘서… 기뻐요.|부, 불러 줘서… 기뻐.|부, 불러 주셔서… 기쁩니다.'],
+serious:['오늘 일정 브리핑을 할까요?|오늘 일정 브리핑을 할까?|오늘 일정을 브리핑하겠습니까?',
+  '장비 손질은 했어요? 날이 무뎌지면 위험해요.|장비 손질은 했어? 날이 무뎌지면 위험해.|장비 손질은 하셨습니까? 날이 무뎌지면 위험합니다.',
+  '수면 시간은 최소 일곱 시간이에요.|수면 시간은 최소 일곱 시간이야.|수면 시간은 최소 일곱 시간입니다.',
+  '이번 주 봉인 목표, 절반 넘었어요.|이번 주 봉인 목표, 절반 넘었어.|이번 주 봉인 목표의 절반을 넘었습니다.',
+  '자세가 흐트러졌어요. 허리 펴요.|자세가 흐트러졌어. 허리 펴.|자세가 흐트러졌습니다. 허리를 펴십시오.',
+  '훈련 기록을 보면 꾸준히 늘고 있어요.|훈련 기록을 보면 꾸준히 늘고 있어.|훈련 기록을 보면 꾸준히 늘고 있습니다.',
+  '규칙은 지키라고 있는 거예요.|규칙은 지키라고 있는 거야.|규칙은 지키라고 있는 것입니다.',
+  '쉬는 것도 계획에 넣어 뒀어요.|쉬는 것도 계획에 넣어 뒀어.|휴식도 계획에 넣어 두었습니다.',
+  '방 정리 상태, 합격이에요.|방 정리 상태, 합격이야.|방 정리 상태는 합격입니다.',
+  '질문이 있으면 언제든 하세요.|질문이 있으면 언제든 해.|질문이 있으시면 언제든 하십시오.'],
+playful:['또 찔렀죠? 이번엔 제가 이겼어요.|또 찔렀지? 이번엔 내가 이겼어.|또 찌르셨습니까? 이번에는 제가 이겼습니다.',
+  '저 지금 바빠요. 노는 중이라서요.|나 지금 바빠. 노는 중이라서.|저는 지금 바쁩니다. 노는 중이기 때문입니다.',
+  '오늘 운세 봐 줄까요? 음… 대박이에요!|오늘 운세 봐 줄까? 음… 대박이야!|오늘 운세를 봐 드리겠습니다. 음… 대박입니다!',
+  '이 방 비밀번호는 제 생일로 해요.|이 방 비밀번호는 내 생일로 해.|이 방 비밀번호는 제 생일로 하십시오.',
+  '방금 거 사진 찍었어요. 나중에 보여 줄게요.|방금 거 사진 찍었어. 나중에 보여 줄게.|방금 것을 사진으로 찍었습니다. 나중에 보여 드리겠습니다.',
+  '저 없으면 심심하죠? 다 알아요.|나 없으면 심심하지? 다 알아.|제가 없으면 심심하시지 않습니까? 다 알고 있습니다.',
+  '가위바위보 해요! 진 사람이 간식 사기!|가위바위보 하자! 진 사람이 간식 사기!|가위바위보를 하겠습니다! 진 사람이 간식을 삽니다!',
+  '보스가 저 보면 도망갈걸요?|보스가 나 보면 도망갈걸?|보스가 저를 보면 도망갈 겁니다.',
+  '심심해서 몬스터 이름 지어 줬어요. 저 녀석은 뭉치예요.|심심해서 몬스터 이름 지어 줬어. 저 녀석은 뭉치야.|심심해서 몬스터에게 이름을 지어 주었습니다. 저 녀석은 뭉치입니다.',
+  '이번엔 진지하게… 는 농담이에요!|이번엔 진지하게… 는 농담이야!|이번에는 진지하게… 는 농담입니다!']
+};
+for(const p in TALK4)TALK[p].poke=[...(TALK[p].poke||[]),...TALK4[p]];
+
+/* ── 페어 대사: 무드마다 페어가 하는 말(poke · chat)과 내 답(reply) ── */
+const PAIR_TALK={
+friend:{
+  poke:['왜? 같이 놀자고?|왜? 같이 놀자고?|무슨 일이십니까? 함께 놀자는 겁니까?',
+    '오늘도 짝꿍 컨디션 확인 완료!|오늘도 짝꿍 컨디션 확인 완료!|오늘도 짝꿍의 컨디션 확인을 완료했습니다!',
+    '우리 다음엔 같은 게이트 가요.|우리 다음엔 같은 게이트 가자.|저희 다음에는 같은 게이트로 가겠습니다.',
+    '간식 반띵할래요?|간식 반띵할래?|간식을 반씩 나누시겠습니까?',
+    '너랑 있으면 시간이 빨리 가요.|너랑 있으면 시간이 빨리 가.|함께 있으면 시간이 빨리 갑니다.'],
+  chat:['오늘 게임 몇 판 할래요? 내기해요!|오늘 게임 몇 판 할래? 내기하자!|오늘 게임을 몇 판 하시겠습니까? 내기하겠습니다!',
+    '방 정리 같이 해요. 금방 끝나요.|방 정리 같이 하자. 금방 끝나.|방 정리를 함께 하겠습니다. 금방 끝납니다.',
+    '다음 레이드 때 꼭 같이 가요!|다음 레이드 때 꼭 같이 가자!|다음 레이드 때 꼭 함께 가겠습니다!',
+    '어제 그 보스, 진짜 웃겼죠?|어제 그 보스, 진짜 웃겼지?|어제 그 보스는 정말 웃겼습니다.'],
+  reply:['좋아요, 지는 사람이 간식 사기!|좋아, 지는 사람이 간식 사기!|좋습니다. 지는 사람이 간식을 사겠습니다!',
+    '역시 우리 짝꿍이에요.|역시 우리 짝꿍이야.|역시 저희 짝꿍입니다.',
+    '그럼 내일도 같이 가는 거예요.|그럼 내일도 같이 가는 거다.|그러면 내일도 함께 가는 겁니다.',
+    '하하, 맞아요. 다음에도 기대돼요.|하하, 맞아. 다음에도 기대돼.|하하, 맞습니다. 다음에도 기대됩니다.']},
+love:{
+  poke:['보고 싶었어요. 방금 봤는데도요.|보고 싶었어. 방금 봤는데도.|보고 싶었습니다. 방금 뵈었는데도 말입니다.',
+    '손 잡아도 돼요?|손 잡아도 돼?|손을 잡아도 되겠습니까?',
+    '오늘따라 더 멋져 보여요.|오늘따라 더 멋져 보여.|오늘따라 더 멋져 보이십니다.',
+    '다치지 말고 꼭 돌아와요. 약속이에요.|다치지 말고 꼭 돌아와. 약속이야.|다치지 마시고 꼭 돌아오십시오. 약속입니다.',
+    '여기 있을게요. 어디 안 가요.|여기 있을게. 어디 안 가.|여기 있겠습니다. 어디에도 가지 않습니다.'],
+  chat:['오늘 하루, 어땠는지 다 말해 줘요.|오늘 하루, 어땠는지 다 말해 줘.|오늘 하루가 어떠셨는지 모두 말씀해 주십시오.',
+    '창밖 별이 예뻐요. 같이 봐요.|창밖 별이 예뻐. 같이 보자.|창밖의 별이 아름답습니다. 함께 보시겠습니까.',
+    '가이딩 받을 때가 제일 편해요.|가이딩 받을 때가 제일 편해.|가이딩을 받을 때가 가장 편안합니다.',
+    '다음 휴일엔 둘이서만 쉬어요.|다음 휴일엔 둘이서만 쉬자.|다음 휴일에는 둘이서만 쉬겠습니다.'],
+  reply:['…나도 같은 생각 하고 있었어요.|…나도 같은 생각 하고 있었어.|…저도 같은 생각을 하고 있었습니다.',
+    '그 말 들으니까 힘이 나요.|그 말 들으니까 힘이 나.|그 말씀을 들으니 힘이 납니다.',
+    '응, 꼭 그렇게 해요.|응, 꼭 그렇게 하자.|네, 꼭 그렇게 하겠습니다.',
+    '같이 있어서 다행이에요.|같이 있어서 다행이야.|함께 있어서 다행입니다.']},
+bicker:{
+  poke:['뭐예요, 왜 찔러요!|뭐야, 왜 찔러!|무엇입니까, 왜 찌르십니까!',
+    '흥, 오늘은 내가 더 많이 잡을 거예요.|흥, 오늘은 내가 더 많이 잡을 거야.|흥, 오늘은 제가 더 많이 잡겠습니다.',
+    '그 머리 스타일, 좀 이상한데요?|그 머리 스타일, 좀 이상한데?|그 머리 모양은 좀 이상합니다.',
+    '…걱정한 거 아니거든요.|…걱정한 거 아니거든.|…걱정한 것은 아닙니다.',
+    '또 늦잠 잤죠? 딱 보면 알아요.|또 늦잠 잤지? 딱 보면 알아.|또 늦잠을 주무셨습니다. 딱 보면 압니다.'],
+  chat:['내 간식 먹은 사람 누구예요?|내 간식 먹은 사람 누구야?|제 간식을 드신 분은 누구입니까?',
+    '어제 그 실수, 아직 기억하고 있어요.|어제 그 실수, 아직 기억하고 있어.|어제의 그 실수를 아직 기억하고 있습니다.',
+    '이번엔 내가 리드할 거예요. 따라와요.|이번엔 내가 리드할 거야. 따라와.|이번에는 제가 앞장서겠습니다. 따라오십시오.',
+    '방 꾸민 거, 내 취향은 아니네요.|방 꾸민 거, 내 취향은 아니네.|방을 꾸미신 것은 제 취향이 아닙니다.'],
+  reply:['증거 있어요? 없으면 무효예요.|증거 있어? 없으면 무효야.|증거가 있습니까? 없으면 무효입니다.',
+    '흥, 그건 너도 마찬가지거든요.|흥, 그건 너도 마찬가지거든.|흥, 그것은 그쪽도 마찬가지입니다.',
+    '…그래도 같이 가 줄게요. 특별히.|…그래도 같이 가 줄게. 특별히.|…그래도 함께 가 드리겠습니다. 특별히.',
+    '취향 존중 좀 해 줘요!|취향 존중 좀 해 줘!|취향을 좀 존중해 주십시오!']}
+};
 /* ═════════ 캐릭터: 작은 도트 (12×16 지도 → 외곽선 → 2배 = 28×36) ═════════ */
 /* 모든 장면에서 캐릭터를 같은 크기로 그립니다(방 · 센터 · 게이트 · 가이딩실 · 훈련장 공통) */
 const CHAR_S=.75;
@@ -2281,7 +2399,7 @@ function cleanGate(id,d){
   const contrib={};let sum=0,n=0;
   if(d.contrib&&typeof d.contrib==='object')for(const k in d.contrib){const v=Math.max(0,Math.min(600,+d.contrib[k]||0));if(v>0){contrib[k]=v;sum+=v;n++}}
   sum=Math.max(0,sum+(Number.isFinite(+d.adj)?+d.adj:0));  // GM이 조정한 봉인 진행
-  return {id,slot,gen:+d.gen||1,d:slot,g,x,y,boss:String(d.boss||'').slice(0,20)||DIST[slot].boss[0],hp:Math.max(1,+d.hp||HP_ONLINE[g]),contrib,sum,n,status:d.status==='closed'?'closed':'open'};
+  return {id,slot,gen:+d.gen||1,d:slot,g,x,y,boss:String(d.boss||'').slice(0,20)||DIST[slot].boss[0],hp:Math.max(1,+d.hp||HP_ONLINE[g]),contrib,sum,n,status:d.status==='closed'?'closed':'open',openedAt:+d.openedAt||0,brk:!!d.brk,brkAt:+d.brkAt||0};
 }
 /* 온라인 게이트의 봉인 진행에는 아직 끝나지 않은 출동(탭을 닫은 요원 포함)이 지금까지 쌓았을 몫을 더해 보여 줍니다 */
 const withProj=g=>{if(typeof projOf!=='function')return g;const p=projOf(g.id);return p.m>0?{...g,sum:g.sum+p.m,proj:p.m}:g};
@@ -2324,7 +2442,7 @@ async function initNet(){
     pushPresence();
   }
 }
-let slotBusy=false;
+let slotBusy=false;const slotClosedAt={};
 async function ensureOnlineSlots(){
   if(slotBusy||!NET.db||!NET.canWrite)return;slotBusy=true;
   try{
@@ -2332,6 +2450,9 @@ async function ensureOnlineSlots(){
     for(let s=0;s<6;s++){
       if(NET.gates.some(g=>g.slot===s))continue;
       const id=`s${s}-r${bucket}`;
+      /* 방금 닫혀 새 게이트가 만들어지는 중이거나, 같은 이름의 문서가 이미 있으면 만들지 않습니다(한 지역에 게이트가 둘 생기는 것 방지) */
+      if(now()-(slotClosedAt[s]||0)<30e3)continue;
+      try{const ex=await NET.db.doc('gates/'+id).get();if(ex.exists)continue}catch(e){continue}
       const low=NET.gates.filter(g=>g.g<=1).length<2;
       await NET.db.doc('gates/'+id).set(makeGate(s,1,true,low));
     }
@@ -2376,18 +2497,18 @@ async function contribute(gate,mins){
   if(sum>=lg.hp){lg.status='closed';pushLog(lg.d,lg.g,1);ensureLocalGates();return {closed:true,sum,hp:lg.hp,n:1,g:cleanGate(lg.id,lg)}}
   return {sum,hp:lg.hp,n:1,g:cleanGate(lg.id,lg)};
 }
-async function closeOnline(ref,d,n){
+async function closeOnline(ref,d,n,npc){
   try{const l=await ref.acquire({holder:NET.uid,ttlMs:6000});if(l&&!l.acquired)return false}catch(e){}
   try{
-    const fresh=cleanGate(d.id,(await ref.get()).data());if(!fresh||fresh.status!=='open')return false;
-    await ref.update({status:'closed',closedAt:Date.now()});
+    const fresh=cleanGate(d.id,(await ref.get()).data());if(!fresh||fresh.status!=='open')return false;slotClosedAt[fresh.slot]=Date.now();
+    await ref.update({status:'closed',closedAt:Date.now(),...(npc?{closedBy:'npc'}:{})});
     const gen=(fresh.gen||1)+1;
     await NET.db.doc(`gates/s${fresh.slot}-g${gen}-${fresh.id.slice(-4)}`).set(makeGate(fresh.slot,gen,true,NET.gates.filter(g=>g.g<=1&&g.id!==fresh.id).length<2));
-    pushLog(fresh.d,fresh.g,n);return true;
+    pushLog(fresh.d,fresh.g,n,npc?{npc:1,brk:fresh.brk?1:0}:(fresh.brk?{brk:1}:null));return true;
   }catch(e){return false}
 }
-async function pushLog(d,g,n){
-  const item={t:Date.now(),d,g,n};
+async function pushLog(d,g,n,extra){
+  const item={t:Date.now(),d,g,n,...(extra||{})};
   if(NET.mode==='online'&&NET.db){
     try{const ref=NET.db.doc('world/log'),s=await ref.get();const items=s.exists&&Array.isArray(s.data().items)?s.data().items.slice(0,7):[];await ref.set({items:[item,...items]})}catch(e){}
   }else{S.log=[item,...(S.log||[])].slice(0,8);renderLog()}
@@ -3369,6 +3490,9 @@ const SHOP=[
 ,
   {id:'pot:calm',n:'진정 물약',d:'폭주 게이지를 바로 30 낮춥니다. 하루에 한 번 살 수 있습니다.',ap:60,daily:true},
   {id:'pot:amp',n:'증폭 물약',d:'30분 동안 가이딩 효과가 50% 커집니다. 하루에 한 번 살 수 있습니다.',ap:60,daily:true},
+  {id:'ap:xp',n:'경험치 부스터',d:'다음 게이트 출동 한 번의 경험치가 1.5배가 됩니다. 사면 바로 준비됩니다.',ap:80},
+  {id:'ap:heal',n:'긴급 치료',d:'치료 중일 때 남은 치료 시간을 바로 끝냅니다.',ap:40},
+  {id:'ap:supply',n:'보급 상자',d:'회복약 · 방어 물약 · 공격 물약 중 무작위 2개가 들어 있습니다.',ap:50},
   {id:'tk:role',n:'역할 변경권',d:'센티넬과 가이드를 서로 바꿉니다. 등급 · 레벨 · 장비는 그대로입니다.',ap:1000}
 ];
 /* 하루 한 번 상품: 오늘 이미 샀는지 */
@@ -3376,8 +3500,13 @@ const boughtToday=id=>!!(S.dailyBuy&&S.dailyBuy.d===today()&&S.dailyBuy[id]);
 function buyShop(id){
   const s=SHOP.find(x=>x.id===id);if(!s)return;
   if(s.daily&&boughtToday(id)){toast('이 물건은 하루에 한 번만 살 수 있습니다. 내일 다시 살 수 있습니다.');return}
+  if(id==='ap:heal'&&!(healLeft()>0)){toast('지금은 치료 중이 아닙니다.');return}
+  if(id==='ap:xp'&&S.xpBoost){toast('이미 경험치 부스터가 준비되어 있습니다. 다음 출동에 적용됩니다.');return}
   if(s.ap){if((S.ap||0)<s.ap){toast(`각성 포인트가 ${s.ap-Math.floor(S.ap||0)} 부족합니다.`);return}S.ap=Math.round((S.ap-s.ap)*10)/10}
   else{if(CR()<s.cr){toast(`크레딧이 ${s.cr-CR()} 부족합니다.`);return}addCr(-s.cr)}
+  if(id==='ap:heal'){S.healUntil=0;toast('긴급 치료를 받았습니다. 바로 게이트에 출동할 수 있습니다.');beep(988,.08);save();updateUI(true);return}
+  if(id==='ap:xp'){S.xpBoost=1.5;toast('경험치 부스터를 준비했습니다. 다음 게이트 출동의 경험치가 1.5배가 됩니다.');beep(988,.08);save();updateUI(true);return}
+  if(id==='ap:supply'){const got=[0,1].map(()=>makePot(pick(['hp1','hp1','hp2','df1','at1'])));S.items.push(...got);toast(`보급 상자에서 ${got.map(x=>POTS[x.p].n).join(', ')}이(가) 나왔습니다.`);beep(988,.08);save();updateUI(true);return}
   let it;
   if(id==='tk:role')it={id:'t'+Date.now().toString(36),kind:'ticket',t:'role'};
   else if(id.startsWith('pot:'))it=makePot(id.slice(4));
@@ -3555,12 +3684,12 @@ function crBar(){return `<div class="apbar"><span>크레딧 <b>${CR()} C</b></sp
 function renderShop(){
   const sell=S.items.filter(it=>!(S.equip&&Object.values(S.equip).includes(it.id)));
   $('shopBox').innerHTML=`${crBar()}
-  <span class="eyebrow">Buy</span><ul class="shop">${SHOP.map(s=>`<li>${shopIco(s)}<span class="tx"><b>${s.n}</b><span>${s.d}</span></span><button type="button" class="sbtn" data-shop="${s.id}" ${(s.daily&&boughtToday(s.id))||(s.ap?(S.ap||0)<s.ap:CR()<s.cr)?'disabled':''}>${s.daily&&boughtToday(s.id)?'오늘 구매함':s.ap?s.ap+' AP':s.cr+' C'}</button></li>`).join('')}</ul>
+  <span class="eyebrow">Buy</span><ul class="shop">${SHOP.map(s=>`<li>${shopIco(s)}<span class="tx"><b>${s.n}</b><span>${s.d}</span></span><button type="button" class="sbtn" data-shop="${s.id}" ${(s.daily&&boughtToday(s.id))||(s.id==='ap:heal'&&!(healLeft()>0))||(s.id==='ap:xp'&&S.xpBoost)||(s.ap?(S.ap||0)<s.ap:CR()<s.cr)?'disabled':''}>${s.daily&&boughtToday(s.id)?'오늘 구매함':s.id==='ap:xp'&&S.xpBoost?'준비됨':s.ap?s.ap+' AP':s.cr+' C'}</button></li>`).join('')}</ul>
   <span class="eyebrow">Furniture</span><ul class="decor">${DECOR2.map(d=>{const own=(S.decor||[]).includes(d.id);return `<li><span class="tx"><b>${d.n}</b><span>${d.d}</span></span><button type="button" class="sbtn" data-pv="${d.id}">미리보기</button>${own?'<span class="muted">보유 중</span>':`<button type="button" class="sbtn" data-d2="${d.id}" ${CR()<d.cr?'disabled':''}>${d.cr} C</button>`}</li>`}).join('')}</ul>
   <span class="eyebrow">Sell</span>${sell.length?`<ul class="shop">${sell.map(it=>`<li>${itemIcon(it)}<span class="tx"><b>${itemName(it)}</b><span>${itemDesc(it)}</span></span><button type="button" class="sbtn" data-sell="${it.id}">${sellPrice(it)} C에 팔기</button></li>`).join('')}</ul>`:'<p class="muted">팔 수 있는 물건이 없습니다. 장착 중인 장비는 해제해야 팔 수 있습니다.</p>'}
   <p class="muted">크레딧은 게이트를 닫거나 센터에서 보고서를 쓰면 얻습니다. 가이드는 보고서로 두 배를 받습니다.</p>`;
 }
-function shopIco(s){const id=s.id;if(id==='tk:role')return itemIcon({kind:'ticket'});if(id.startsWith('pot:'))return itemIcon({kind:'potion',p:id.slice(4)});if(id==='stone')return itemIcon({attr:4});
+function shopIco(s){const id=s.id;if(id==='ap:supply')return itemIcon({kind:'box',col:'#B48CFF'});if(id==='ap:xp')return itemIcon({kind:'potion',p:'at2'});if(id==='ap:heal')return itemIcon({kind:'potion',p:'hp3'});if(id==='tk:role')return itemIcon({kind:'ticket'});if(id.startsWith('pot:'))return itemIcon({kind:'potion',p:id.slice(4)});if(id==='stone')return itemIcon({attr:4});
   return itemIcon({kind:'box',col:id==='wbox'?'#F2A07A':id==='abox'?'#7FA5FF':id==='cbox'?'#B48CFF':'#FFC23D'})}
 function renderMarket(){
   const box=$('marketBox');
@@ -3830,7 +3959,9 @@ function mailList(){
 }
 const mailUnread=()=>mailList().filter(m=>!m.claimed).length;
 function mailBadge(){const n=mailUnread(),b=$('mailBadge');if(b){b.textContent=n;b.hidden=!n}if(curTab==='mail')renderMail()}
-function mailItems(m){return (Array.isArray(m.items)?m.items:[]).slice(0,20).map(it=>{if(it&&(it.kind==='gear'||it.kind==='potion'||it.kind==='ticket'))return cleanItem(it);const a=Number.isInteger(it&&it.attr)&&it.attr>=0&&it.attr<ATTRS.length?it.attr:pick(STONE_ATTRS);return {id:'i'+Date.now().toString(36)+Math.floor(Math.random()*1e5).toString(36),attr:a}}).filter(Boolean)}
+/* GM이 보낸 장비 상자는 받는 순간 내 레벨 근처의 장비로 열립니다(희귀는 고급 이상) */
+const BOX_N={weapon:'무기 상자',armor:'방어구 상자',acc:'장신구 상자',rare:'고급 장비 상자'};
+function mailItems(m){return (Array.isArray(m.items)?m.items:[]).slice(0,20).map(it=>{if(it&&it.kind==='box'&&BOX_N[it.t])return makeGear(it.t==='rare'?pick(['weapon','armor','acc']):it.t,it.t==='rare'?1:0);if(it&&(it.kind==='gear'||it.kind==='potion'||it.kind==='ticket'))return cleanItem(it);const a=Number.isInteger(it&&it.attr)&&it.attr>=0&&it.attr<ATTRS.length?it.attr:pick(STONE_ATTRS);return {id:'i'+Date.now().toString(36)+Math.floor(Math.random()*1e5).toString(36),attr:a}}).filter(Boolean)}
 async function claimMail(id){
   const m=mailList().find(x=>x.id===id);if(!m||m.claimed)return;
   S.mailGot=S.mailGot||{};S.mailGot[id]=1;
@@ -3871,7 +4002,7 @@ const isFriend=u=>friendsAll().some(f=>f.status==='ok'&&otherOf(f).uid===u);
 async function addFriend(uid,nick,role){
   if(!online()){toast('친구 기능은 온라인에서만 쓸 수 있습니다.');return}
   uid=String(uid||'').trim();
-  if(uid&&uid.replace(/[^A-Za-z0-9]/g,'').length<=8){const c=uid.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!role&&uid&&uid.replace(/[^A-Za-z0-9]/g,'').length<=8){const c=uid.toUpperCase().replace(/[^A-Z0-9]/g,'');
     try{const d=await NET.db.doc('fcodes/'+c).get();if(!d.exists){toast('없는 친구 코드입니다.');return}uid=d.data().uid;nick=nick||d.data().nick}catch(e){toast('친구 코드를 확인하지 못했습니다.');return}}
   if(!uid||uid===NET.uid){toast(uid===NET.uid?'내 친구 코드입니다.':'친구 코드를 확인해 주세요.');return}
   const id=pairKey(NET.uid,uid),ex=SOC.fr[id];
@@ -3974,7 +4105,7 @@ $('guideBook').addEventListener('click',e=>{if(e.target.id==='guideBook')$('guid
 /* ═════════ 페어: 한 방 쓰기 · 페어 무드 ═════════ */
 const PAIR_MOOD={friend:{n:'사이 좋은 친구',d:'서로 든든한 단짝입니다. 방에 음표와 반짝임이 떠다닙니다.'},love:{n:'사귀는 사이',d:'서로 아끼는 연인입니다. 방에 하트가 피어오릅니다.'},bicker:{n:'투닥거리는 사이',d:'티격태격하지만 결국 함께하는 사이입니다. 방에 가끔 불꽃이 튑니다.'}};
 const pairMood=()=>{const p=pairActive();return p&&PAIR_MOOD[p.mood]?p.mood:'friend'};
-const myLookCard=()=>({look:S.look,gr:myGrade(),attrs:(S.attrs||[]).slice(0,3),nick:(S.name||'요원').slice(0,10)});
+const myLookCard=()=>({look:S.look,gr:myGrade(),attrs:(S.attrs||[]).slice(0,3),nick:(S.name||'요원').slice(0,10),sp:spIdx(S.speech)});
 const pairOtherCard=()=>{const p=pairActive();if(!p)return null;const c=p.s===NET.uid?p.glook:p.slook;return c&&typeof c==='object'?c:null};
 let lastLookJson='';
 function syncPairLook(){const p=pairActive();if(!p||!online())return;const k=p.s===NET.uid?'slook':'glook',c=myLookCard(),j=JSON.stringify(c);
@@ -4002,7 +4133,7 @@ function drawPairRoom(){
   drawHero(S.role||'sentinel',S.look,68,98,{s:CHAR_S,tier:visTier(),attrs:S.attrs||[],dx:turn?-1:1,wp:myWeapon()});
   drawHero(other,normLook(c.look,other),102,98,{s:CHAR_S,tier:VTIER[clampI(c.gr,7)],attrs:Array.isArray(c.attrs)?c.attrs:[],dx:turn?1:-1,ph:.6});
   G.save();G.font='600 4px "IBM Plex Sans KR",sans-serif';G.textAlign='center';const nm=String(c.nick||S.pairNick||'페어').slice(0,10),w=G.measureText(nm).width+6;
-  G.fillStyle='rgba(28,36,64,.65)';G.fillRect(102-w/2,58,w,6);G.fillStyle='#FFFFFF';G.fillText(nm,102,62.5);G.restore();
+  G.fillStyle='rgba(28,36,64,.65)';G.fillRect(102-w/2,64,w,6);G.fillStyle='#FFFFFF';G.fillText(nm,102,68.5);G.restore();
   if(mood==='love'){for(let i=0;i<3;i++){const ph=(t*.5+i/3)%1;G.globalAlpha=1-ph;heartPx(84+Math.sin(t*2+i*2)*3,72-ph*22,i%2?'#FF8FA3':'#F0544F')}G.globalAlpha=1}
   else if(mood==='friend'){for(let i=0;i<2;i++){const ph=(t*.4+i/2)%1;G.globalAlpha=1-ph;const x=80+i*10+Math.sin(t*2+i)*2,y=70-ph*18;px(x,y,1,4,'#2F5BEA');px(x+1,y,2,1,'#2F5BEA');px(x-2,y+3,2,2,'#2F5BEA')}
     if(Math.floor(t*3)%4===0){px(85,64,1,3,'#FFE27A');px(84,65,3,1,'#FFE27A')}G.globalAlpha=1}
@@ -4016,6 +4147,22 @@ $('guideBook').addEventListener('click',e=>{
   const a=e.target.closest('.gbtoc a');if(a){e.preventDefault();const d=$(a.getAttribute('href').slice(1));if(d){d.open=true;d.scrollIntoView({block:'start',behavior:reduce?'auto':'smooth'})}return}
   if(e.target.id==='gbAll'){const ds=[...document.querySelectorAll('#guideBook details')],open=!ds.every(d=>d.open);ds.forEach(d=>d.open=open);e.target.textContent=open?'모두 접기':'모두 펼치기'}
 });
+
+/* ── 페어 대사: 페어 방에서 페어를 누르면 페어가, 나를 누르면 내가 말하고 상대가 받아칩니다. 가끔 둘이 먼저 이야기도 나눕니다 ── */
+function pairSpeak(key){
+  const c=pairOtherCard();if(!c)return false;const T_=PAIR_TALK[pairMood()]||PAIR_TALK.friend,arr=T_[key]||T_.poke;
+  const line=pick(arr).split('|')[clampI(c.sp,3)];sayAs(`${String(c.nick||S.pairNick||'페어').slice(0,10)} · 페어`,line,normLook(c.look,S.role==='guide'?'sentinel':'guide'));return true;
+}
+function meSayText(text){const el=$('meBubble');if(!el)return;el.textContent=text;el.hidden=false;el.classList.remove('fresh');void el.offsetWidth;el.classList.add('fresh');bubbleT=now()+4200;placeBubble()}
+function pairReply(){const T_=PAIR_TALK[pairMood()]||PAIR_TALK.friend;meSayText(pick(T_.reply).split('|')[spIdx(S.speech)])}
+const inPairRoom=()=>S.phase==='idle'&&S.view==='home'&&!!pairOtherCard();
+/* 방 화면 클릭: 페어 캐릭터(오른쪽)를 눌렀는지 확인 */
+$('stage').addEventListener('pointerdown',e=>{
+  if(!inPairRoom()||e.target.closest('button,.drawer,input'))return;
+  const r=$('cv').getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;
+  if(Math.abs(x-102)<12&&y>98-30&&y<100){pairSpeak('poke');beep(988,.05,'triangle',.03);if(Math.random()<.5)setTimeout(pairReply,1500)}
+});
+setInterval(()=>{if(inPairRoom()&&!document.hidden&&Math.random()<.35){pairSpeak('chat');setTimeout(pairReply,1600)}},45000);
 /* ═════════ 물약 ═════════
    회복약 3종 · 방어 물약 2종 · 공격 물약 2종입니다.
    회복량은 최대 HP에 비례하므로 레벨이 오를수록 커지고, 등급이 높을수록 조금 더 잘 듣습니다. */
@@ -4209,8 +4356,10 @@ function gmSubs(){
 }
 const GM_TABS=[['stats','통계'],['notice','공지'],['mail','우편'],['codes','가입 코드'],['users','유저'],['gates','게이트 · 레이드'],['mod','채팅 · 장터'],['log','기록']];
 const fmtT=t=>new Date(+t||0).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
-function gmItemLabel(it){return it.kind==='ticket'?'역할 변경권':it.kind==='potion'?POTS[it.p].n:it.kind==='gear'?`${GEAR_T[it.tier]} ${SLOT_N[it.slot]} Lv.${it.lv}`:it.attr<0?'무작위 각성석':ATTRS[it.attr].n+' 각성석'}
-function gmKeepMail(){if(!$('gmMtitle'))return;GMX.mf={to:val('gmMto'),from:val('gmMfrom'),title:val('gmMtitle'),body:val('gmMbody'),cr:val('gmMcr'),ap:val('gmMap')}}
+function gmItemLabel(it){return it.kind==='box'?BOX_N[it.t]||'장비 상자':it.kind==='ticket'?'역할 변경권':it.kind==='potion'?POTS[it.p].n:it.kind==='gear'?`${GEAR_T[it.tier]} ${SLOT_N[it.slot]} Lv.${it.lv}`:it.attr<0?'무작위 각성석':ATTRS[it.attr].n+' 각성석'}
+function gmKeepMail(){if(!$('gmMtitle'))return;GMX.mf={to:val('gmMto'),from:val('gmMfrom'),title:val('gmMtitle'),body:val('gmMbody'),cr:val('gmMcr'),ap:val('gmMap')};
+  /* 아이템 고르기 칸도 기억해 두어, '추가'를 눌러도 고른 종류가 처음으로 돌아가지 않게 합니다 */
+  GMX.mi={};['gmIk','gmIa','gmIp','gmIb','gmIs','gmIt','gmIl','gmIn'].forEach(id=>{if($(id))GMX.mi[id]=$(id).value})}
 function gmRender(soft){
   if($('gmModal').hidden)return;
   if(soft&&document.activeElement&&$('gmBody').contains(document.activeElement)&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
@@ -4229,7 +4378,8 @@ function gmRender(soft){
       <label class="wide">제목<input id="gmMtitle" maxlength="40" placeholder="예: 점검 보상" value="${esc(F.title||'')}"></label>
       <label class="wide">내용<textarea id="gmMbody" maxlength="400" rows="3">${esc(F.body||'')}</textarea></label>
       <label>크레딧<input id="gmMcr" type="number" min="0" value="${esc(F.cr||'0')}"></label><label>각성 포인트<input id="gmMap" type="number" min="0" value="${esc(F.ap||'0')}"></label></div>
-      <span class="flab">아이템</span><div class="gmrow"><select id="gmIk"><option value="stone">각성석</option><option value="potion">물약</option><option value="gear">장비</option><option value="ticket">역할 변경권</option></select>
+      <span class="flab">아이템</span><div class="gmrow"><select id="gmIk"><option value="stone">각성석</option><option value="potion">물약</option><option value="gear">장비</option><option value="ticket">역할 변경권</option><option value="box">장비 상자</option></select>
+      <select id="gmIb"><option value="weapon">무기 상자</option><option value="armor">방어구 상자</option><option value="acc">장신구 상자</option><option value="rare">고급 장비 상자</option></select>
       <select id="gmIa">${[-1,...S_ATTRS].map(a=>`<option value="${a}">${a<0?'무작위 속성':ATTRS[a].n}</option>`).join('')}</select>
       <select id="gmIp">${POT_IDS.map(p=>`<option value="${p}">${POTS[p].n}</option>`).join('')}</select>
       <select id="gmIs"><option value="weapon">무기</option><option value="armor">방어구</option><option value="acc">장신구</option></select>
@@ -4285,7 +4435,7 @@ async function gmAct(a){
   if(a==='noticeOn'){const text=val('gmNtx').trim();if(!text){toast('공지 내용을 입력해 주세요.');return}const level=(document.querySelector('[name=gmNl]:checked')||{}).value||'info';await db.doc('notices/main').set({text,level,on:true,t:gmT(),by:NET.uid});gmLog('공지 띄우기','',text);toast('공지를 띄웠습니다.')}
   else if(a==='noticeOff'){await db.doc('notices/main').update({on:false,t:gmT()});gmLog('공지 내리기','','');toast('공지를 내렸습니다.')}
   else if(a==='addItem'){gmKeepMail();const k=val('gmIk'),n=Math.max(1,Math.min(20,+val('gmIn')||1));for(let i=0;i<n;i++){
-      if(k==='ticket')GMX.draft.push({kind:'ticket',t:'role'});else if(k==='stone')GMX.draft.push({attr:+val('gmIa')});else if(k==='potion')GMX.draft.push({kind:'potion',p:val('gmIp')});
+      if(k==='ticket')GMX.draft.push({kind:'ticket',t:'role'});else if(k==='box')GMX.draft.push({kind:'box',t:val('gmIb')});else if(k==='stone')GMX.draft.push({attr:+val('gmIa')});else if(k==='potion')GMX.draft.push({kind:'potion',p:val('gmIp')});
       else GMX.draft.push({kind:'gear',slot:val('gmIs'),tier:+val('gmIt'),lv:Math.max(1,Math.min(100,+val('gmIl')||1)),wt:pick(WTYPES).id})}
     GMX.draft=GMX.draft.slice(0,20);gmRender()}
   else if(a==='sendMail'){const to=val('gmMto'),title=val('gmMtitle').trim();if(!title){toast('제목을 입력해 주세요.');return}
@@ -4348,9 +4498,9 @@ setInterval(()=>{if(S.gmRolePending&&S.phase==='idle'){const r=S.gmRolePending;S
 
 /* 아이템 종류에 맞는 칸만 보이기 */
 function gmSyncItemKind(){const k=val('gmIk');const show=(id,on)=>{const e=$(id);if(e)e.hidden=!on};
-  show('gmIa',k==='stone');show('gmIp',k==='potion');['gmIs','gmIt','gmIl'].forEach(id=>show(id,k==='gear'))}
+  show('gmIa',k==='stone');show('gmIb',k==='box');show('gmIp',k==='potion');['gmIs','gmIt','gmIl'].forEach(id=>show(id,k==='gear'))}
 document.addEventListener('change',e=>{if(e.target.id==='gmIk')gmSyncItemKind()});
-new MutationObserver(()=>{if($('gmIk')&&!$('gmIk').dataset.sync){$('gmIk').dataset.sync=1;gmSyncItemKind()}}).observe(document.body,{childList:true,subtree:true});
+new MutationObserver(()=>{if($('gmIk')&&!$('gmIk').dataset.sync){$('gmIk').dataset.sync=1;if(GMX.mi)for(const id in GMX.mi){const e=$(id);if(e&&GMX.mi[id]!=null)e.value=GMX.mi[id]}gmSyncItemKind()}}).observe(document.body,{childList:true,subtree:true});
 /* ═════════ 타이틀 화면: 밤하늘 도시 위에 열린 거대 게이트 (320×180, 2배) ═════════ */
 const TW=320,TH=180,TCX=160,TCY=98,PK=.8;
 let tParts=[],tBolts=[],tBoltT=0;
@@ -4421,8 +4571,18 @@ const matchN=()=>matchCount(sentInfo().attrs,guideInfo().attrs);
 const ME_REPLY={focusStart:1,boss:1,focusEnd:1,rankUp:1,early:1,stable:1,breakEnd:1,match:1,select:1,idle:1};
 let talkLook=null;
 /* 가이딩 숙련: 휴식 때 호흡 맞추기와 게이트 안 가이딩으로 오릅니다(S.bond). 20마다 1단계, 단계마다 가이딩 효과 +5% (최대 +50%) */
-const gMastLv=()=>Math.floor((S.bond||0)/20)+1;
-const gMastMul=()=>(1+Math.min(.5,(gMastLv()-1)*.05))*(typeof ampOn==='function'&&ampOn()?1.5:1);
+/* 가이딩 숙련(가이드): 최대 500단계. 단계마다 필요량 = 100 + 1.4 × 현재 단계, 단계마다 효과 +0.15%(최대 +75%).
+   호흡 동조(센티넬): 지금처럼 20마다 1단계, 단계마다 +5%(최대 +50%) */
+const GM_MAX=500,gmNeed=l=>Math.round(100+1.4*l);
+function gMastInfo(){const b=Math.max(0,+S.bond||0);
+  if(S.role!=='guide'){const lv=Math.floor(b/20)+1;return {lv,into:b%20,need:20,max:0,bonus:Math.min(.5,(lv-1)*.05)}}
+  let lv=1,x=b;while(lv<GM_MAX&&x>=gmNeed(lv)){x-=gmNeed(lv);lv++}
+  return {lv,into:lv>=GM_MAX?gmNeed(lv):Math.floor(x),need:gmNeed(lv),max:GM_MAX,bonus:Math.min(.75,(lv-1)*.0015)}}
+const gMastLv=()=>gMastInfo().lv;
+const bondMul=()=>1+gMastInfo().bonus;
+const gMastMul=()=>bondMul()*(typeof ampOn==='function'&&ampOn()?1.5:1);
+/* 50단계마다 각성 포인트 보상 */
+setInterval(()=>{if(S.role!=='guide')return;const lv=gMastLv(),m=Math.floor(lv/50);if(m>(S.gmMile||0)){const got=m-(S.gmMile||0);S.gmMile=m;S.ap=Math.round(((S.ap||0)+got*100)*10)/10;toastLater(`가이딩 숙련 ${m*50}단계 달성! 각성 포인트 +${got*100}`);save()}},3000);
 /* 게이트 안 가이딩(가이드): 5초마다 한 번, 함께 싸우는 센티넬의 폭주를 낮추고 HP를 조금 회복합니다 */
 const GG_CD=5000;
 function gateGuide(auto){
@@ -4468,18 +4628,19 @@ const fmtAway=ms=>{const s=Math.round(ms/1000);return s<60?`${s}초`:`${Math.rou
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
 
 /* ═════════ 게이트 수치 ═════════ */
-const gateName=g=>g.raid?`균열 레이드 · ${g.boss}`:g.exam?`승급 시험장 (${GRADES[myGrade()]} → ${GRADES[Math.min(6,myGrade()+1)]})`:g.train?(g.name||'훈련'):`${DIST[g.d].name} ${GRADES[g.g]}급 게이트`;
-const gateLocked=g=>g.raid?!raidOpenNow():!g.train&&!g.exam&&!g.raid&&g.g>=6&&myLevel()+3<REC_LV[g.g];
+const gateName=g=>g.brk?`${DIST[g.d].name} 브레이크 게이트 (${GRADES[g.g]}급)`:g.raid?`균열 레이드 · ${g.boss}`:g.exam?`승급 시험장 (${GRADES[myGrade()]} → ${GRADES[Math.min(6,myGrade()+1)]})`:g.train?(g.name||'훈련'):`${DIST[g.d].name} ${GRADES[g.g]}급 게이트`;
+const gateLocked=g=>g.brk?false:g.raid?!raidOpenNow():!g.train&&!g.exam&&!g.raid&&g.g>=6&&myLevel()+3<REC_LV[g.g];
 /* 일반 게이트는 공략 시간을 기본의 1~4배로 고를 수 있습니다. 길게 머물수록 봉인에 많이 쌓여 혼자서도 닫을 수 있습니다 */
 const LEN_OPT=[1,2,3,4];
 const isNormalGate=g=>g&&!g.raid&&!g.train&&!g.exam&&!g.report;
 const lenOf=g=>isNormalGate(g)?(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id&&S.curGate.len?S.curGate.len:Math.max(1,Math.min(4,+S.gLen||1))):1;
-const focusMsOf=g=>g.raid?25*60e3:g.train?(g.mins||1)*60e3:g.exam?25*60e3:FOCUS_MIN[g.g]*60e3*lenOf(g);
+const baseMinOf=g=>g.brk?Math.max(50,FOCUS_MIN[g.g]*2):FOCUS_MIN[g.g];
+const focusMsOf=g=>g.raid?25*60e3:g.train?(g.mins||1)*60e3:g.exam?25*60e3:(g.brk?Math.max(50,FOCUS_MIN[g.g]*2):FOCUS_MIN[g.g])*60e3*lenOf(g);
 const brkMsOf=g=>g.raid?5*60e3:g.train?(g.brk||20e3):g.exam?5*60e3:BREAK_MIN[g.g]*60e3*(1+.5*(lenOf(g)-1));
-const multOf=g=>g.raid?1.3:g.train?.6:g.exam?1:1+.12*g.g;
+const multOf=g=>g.raid?1.3:g.train?.6:g.exam?1:1+.12*g.g+(g.brk?.5:0);
 const myMast=()=>1+.06*(S.attrs||[]).reduce((a,x)=>a+(+(S.mast||{})[x]||0),0);
-const gainOf=g=>Math.min(95,(1-gearCalm())*(S.role==='guide'?40:60)*(g.raid?.9:g.train?.4:g.exam?1:.7+.1*g.g)*(matchN()>0?.85:1)*(1+.2*(lenOf(g)-1)));
-const gcolOf=g=>g.raid?'#B48CFF':g.exam?'#FF8FA3':g.train?'#6FDCEB':GCOL[g.g];
+const gainOf=g=>Math.min(95,(1-gearCalm())*(S.role==='guide'?40:60)*(g.raid?.9:g.train?.4:g.exam?1:.7+.1*g.g+(g.brk?.2:0))*(matchN()>0?.85:1)*(1+.2*(lenOf(g)-1)));
+const gcolOf=g=>g.brk?'#B0203A':g.raid?'#B48CFF':g.exam?'#FF8FA3':g.train?'#6FDCEB':GCOL[g.g];
 const SEVERE=80;
 /* ═════════ HP · 쓰러짐 · 치료 ═════════
    게이트에서 받는 피해와 회복을 분당으로 계산합니다. HP가 0이 되면 10분 뒤 부활해 공략을 이어 갑니다.
@@ -4488,9 +4649,9 @@ const DOWN_MIN=10,HEAL_MIN=30;
 function hpPlan(g,defBuf){
   const cs=combatStats(),lv=myLevel();
   if(g.train||g.report)return {max:cs.hp,net:0};
-  const gr=g.raid?5:g.exam?myGrade():g.g,rec=REC_LV[gr]||1,def=cs.def*(1+(defBuf||0));
+  const gr=g.raid?5:g.exam?myGrade():g.brk?Math.min(6,g.g+1):g.g,rec=REC_LV[gr]||1,def=cs.def*(1+(defBuf||0));
   /* 가이드는 앞의 센티넬이 공격을 대신 받아 주므로 받는 피해가 20% 적습니다 */
-  const dmg=(3+gr*4)*(1+Math.max(0,rec-lv)*.15)*(g.raid?1.6:g.exam?1.2:1)*100/(100+def*2)*(S.role==='guide'?.8:1);
+  const dmg=(3+gr*4)*(g.brk?Math.min(1.6,1+Math.max(0,rec-lv)*.15):1+Math.max(0,rec-lv)*.15)*(g.raid?1.6:g.exam?1.2:g.brk?1.3:1)*100/(100+def*2)*(S.role==='guide'?.8:1);
   const heal=(S.role==='guide'?5*gMastMul():4)*(1+cs.amp/100)*(matchN()>0?1.2:1);
   const am=affMul(g).m,dm=am>1?.85:am<1?1.15:1;
   return {max:cs.hp,net:Math.round((dmg*dm-heal)*100)/100,dmg:dmg*dm};
@@ -4859,7 +5020,7 @@ function startFocus(){
   if(g.exam){const c=EXAM_AP[myGrade()]||0;if((S.ap||0)<c){toast(`각성 포인트가 ${c-Math.floor(S.ap||0)} 부족합니다. 훈련장에서 모을 수 있습니다.`);return}S.ap=Math.round((S.ap-c)*10)/10}
   ac();ensurePartner();
   Object.assign(S,{phase:'focus',phaseStart:now(),phaseEnd:now()+focusMsOf(g),awayMs:0,awayPen:0,hiddenAt:null,
-    runawayStart:S.runaway,gain:gainOf(g),brkMs:brkMsOf(g),curGate:{id:g.id,party:!!(S.party&&partySize()>1&&!g.train&&!g.exam),report:!!g.report,mins:g.mins||0,dual:!!(S.dualTrain&&!g.train&&!g.exam),d:g.d,g:g.g,raid:!!g.raid,len:lenOf(g),gen:g.gen||1,day:g.day||'',train:!!g.train,exam:!!g.exam,boss:g.boss,name:g.name||'',ap:g.ap||0},kills:0,midSaid:false,hotSaid:false,bossSaid:false});
+    runawayStart:S.runaway,gain:gainOf(g),brkMs:brkMsOf(g),curGate:{id:g.id,party:!!(S.party&&partySize()>1&&!g.train&&!g.exam),report:!!g.report,mins:g.mins||0,dual:!!(S.dualTrain&&!g.train&&!g.exam),d:g.d,g:g.g,raid:!!g.raid,brk:!!g.brk,len:lenOf(g),gen:g.gen||1,day:g.day||'',train:!!g.train,exam:!!g.exam,boss:g.boss,name:g.name||'',ap:g.ap||0},kills:0,midSaid:false,hotSaid:false,bossSaid:false});
   {const nb=(g.train||g.report)?{}:(S.nextBuff||{});const hp=hpPlan(g,nb.def||0),cs=combatStats();S.curGate.hpMax=hp.max;S.curGate.hpNet=hp.net;S.curGate.defBuf=nb.def||0;S.curGate.atkBuf=nb.atk||0;if(!g.train&&!g.report&&(nb.def||nb.atk)){S.nextBuff=null;toast('준비해 둔 물약 효과가 이번 출동에 적용됩니다.')}S.curGate.dmg=cs.dmg+(S.curGate.atkBuf||0);S.curGate.crit=cs.crit;S.curGate.aff=affMul(g).m}
   resetBattle();try{sortieStart()}catch(e){}if(typeof closeDrawer==='function')closeDrawer();reqWake();say(matchN()>0?'match':'focusStart');beep(392,.1);beep(523,.14,'square',.045,.1);save();pushPresence();updateUI(true);
 }
@@ -4877,15 +5038,17 @@ async function completeFocus(early){
   else if(hs&&hs.deaths)toastLater(`공략 중 ${hs.deaths}번 쓰러졌습니다. 쓰러져 있던 ${Math.round(downMin)}분은 기여에 들어가지 않았습니다.`);
   S.kills=Math.max(S.kills,Math.floor(eff/4000));
   const n=matchN();
-  const mult=(early?.5:(rw>=100?.7:1))*multOf(gate)*(n>0?1.1:1);
+  const pen=early&&!gate.train?.5:1;/* 훈련은 중간에 그만둬도 깎지 않습니다 */
+  const mult=(early?pen:(rw>=100?.7:1))*multOf(gate)*(n>0?1.1:1);
   const lvBefore=myLevel(),grBefore=myGrade();
   const pm=gate.withPair?2:1;
-  const xp=pm*(1+gearXp())*effMin*mult*(gate.party?1.1:1)*(gate.dual?.9:1)*(gate.report?.5:1);S.xp+=xp;S.totalMin+=effMin;
-  const apGain=gate.report?0:Math.round(pm*(1+gearAp())*effMin*(gate.train?(gate.ap||1):.3+(gate.dual?.5:0))*(early?.5:1)*10)/10;S.ap=Math.round(((S.ap||0)+apGain)*10)/10;
-  const crGain=Math.round(pm*(1+gearCr())*effMin*(gate.report?reportRate():gate.train||gate.exam?0:1.2*(gate.raid?1.5:1))*(early?.5:1));addCr(crGain);if(!gate.train&&!gate.exam)S.lastGate=gate.id;
+  const xb=(!early&&!gate.train&&!gate.report&&S.xpBoost)?S.xpBoost:1;if(xb>1){S.xpBoost=0;toastLater('경험치 부스터가 적용되었습니다. 경험치 1.5배!')}
+  const xp=pm*(1+gearXp())*effMin*mult*(gate.party?1.1:1)*(gate.dual?.9:1)*(gate.report?.5:1)*xb;S.xp+=xp;S.totalMin+=effMin;
+  const apGain=gate.report?0:Math.round(pm*(1+gearAp())*effMin*(gate.train?(gate.ap||1):.3+(gate.dual?.5:0))*pen*10)/10;S.ap=Math.round(((S.ap||0)+apGain)*10)/10;
+  const crGain=Math.round(pm*(1+gearCr())*effMin*(gate.report?reportRate():gate.train||gate.exam?0:1.2*(gate.raid?1.5:1))*pen*(gate.brk?1.5:1));addCr(crGain);if(!gate.train&&!gate.exam)S.lastGate=gate.id;
   S.totalKills=(S.totalKills||0)+(S.kills||0);if(hs&&hs.deaths&&!(hs.down))S.downs=(S.downs||0)+1;if(!early&&!gate.train&&!gate.report){if(gate.party)S.partyN=(S.partyN||0)+1;if(aff&&aff.kind==='weak')S.weakN=(S.weakN||0)+1;if(isNight())S.nightN=(S.nightN||0)+1}
   if(!early){S.sessions++;const d=today();if(S.todayDate!==d){S.todayDate=d;S.todayCount=0}S.todayCount++}
-  S.runaway=Math.min(100,rw+(early?10:0));
+  S.runaway=Math.min(100,rw+(early&&!gate.train?10:0));
   if(S.partner&&S.role==='guide')S.partner.runaway=S.runaway;
   let examResult=null;
   if(gate.exam&&!early){examResult=rw<100;if(examResult){S.grade=Math.min(6,myGrade()+1);S.promos=(S.promos||0)+1}}
@@ -4923,7 +5086,7 @@ const longBreak=()=>S.phase==='break'&&(S.phaseEnd-S.phaseStart)>3*60e3;
 function autoGuideTick(t){
   if(S.phase!=='break'||!S.gAuto)return;
   const end=Math.min(t,S.phaseEnd);let n=Math.floor((end-S.gAutoAt)/RING_P);if(n<=0)return;n=Math.min(n,5000);S.gAutoAt+=n*RING_P;
-  const skill=(1+Math.min(.5,Math.floor(S.bond/20)*.05))*(S.role==='guide'?myMast():1),m=matchMult(matchN());
+  const skill=bondMul()*(S.role==='guide'?myMast():1),m=matchMult(matchN());
   for(let i=0;i<n;i++){S.runaway=Math.max(0,S.runaway-6*(S.role==='guide'?1.5:1)*m*skill);S.bond+=1;if(S.assist)S.assist.taps+=1}
   if(S.partner&&S.role==='guide')S.partner.runaway=S.runaway;
   if(S.assist&&online())NET.db.doc('guidereq/'+S.assist.sid).update({gtap:S.assist.taps}).catch(()=>{});
@@ -4970,7 +5133,7 @@ function tapGuide(){
   const d=Math.abs(ringR(t)-RING_TARGET),res=d<=2?'perfect':d<=5?'good':'miss';
   const wasCalm=S.runaway<=0;
   if(res==='miss'){pop('아쉽습니다','miss');beep(196,.12,'square',.04);save();return}
-  const skill=(1+Math.min(.5,Math.floor(S.bond/20)*.05))*(S.role==='guide'?myMast():1)*(ampOn()?1.5:1),m=matchMult(matchN());
+  const skill=bondMul()*(S.role==='guide'?myMast():1)*(ampOn()?1.5:1),m=matchMult(matchN());
   S.runaway=Math.max(0,S.runaway-(res==='perfect'?12:6)*(S.role==='guide'?1.5:1)*m*skill);
   if(S.partner&&S.role==='guide')S.partner.runaway=S.runaway;
   S.bond+=res==='perfect'?2:1;assistTap(res);if(res==='perfect'){S.perfect=(S.perfect||0)+1;if(S.perfect%10===0)checkAch()}
@@ -5161,6 +5324,58 @@ setInterval(()=>{
   if(want&&!GGR.sub){try{GGR.sub=NET.db.doc('gguide/'+NET.uid).onSnapshot(s=>ggApply(s.exists?s.data():null),()=>{})}catch(e){}}
   else if(!want&&GGR.sub){try{GGR.sub()}catch(e){}GGR.sub=null}
 },2000);
+/* ═════════ 게이트 수명 · 게이트 브레이크 ═════════
+   - 열린 지 6시간이 지나도 닫히지 않은 게이트는 NPC 요원들이 처리합니다(오래된 것부터 사라지고 새 게이트가 열립니다).
+   - 일부 게이트(약 절반)는 열린 뒤 2~4시간 사이에 '게이트 브레이크'가 일어나 특수 게이트로 바뀝니다.
+     브레이크 30분 전부터 경고가 뜨고, 브레이크 게이트는 공략 시간이 길고 강하지만 등급과 상관없이 누구나 들어갈 수 있습니다.
+     브레이크 게이트도 6시간 안에 닫히지 않으면 NPC 특수 부대가 처리합니다.
+   어느 요원 화면이든 1분마다 확인하고, 잠금을 걸어 한 화면만 처리합니다. */
+const GL_LIFE=6*3600e3,GL_WARN=30*60e3;
+const glHash=(id,salt)=>{let h=2166136261;const s=String(id)+'|'+salt;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0)/4294967296};
+const canBreak=g=>!!g&&!g.train&&!g.raid&&!g.exam&&glHash(g.id,'brk')<.5;
+const breakAtOf=g=>(+g.openedAt||0)+2*3600e3+glHash(g.id,'at')*2*3600e3;
+function brkWarn(g){if(!g||g.brk||!canBreak(g)||!g.openedAt)return false;const t=now(),b=breakAtOf(g);return t>=b-GL_WARN&&t<b}
+const GL={busy:false,seenBrk:new Set(),seenWarn:new Set(),boot:true};
+async function gateMaint(){
+  if(GL.busy)return;GL.busy=true;
+  try{
+    const t=now();
+    if(NET.mode==='online'&&NET.db&&NET.canWrite!==false){
+      for(const g of NET.gates.slice().sort((a,b)=>(a.openedAt||0)-(b.openedAt||0))){
+        if(g.status!=='open')continue;const ref=NET.db.doc('gates/'+g.id);
+        if(!g.openedAt){await ref.update({openedAt:t}).catch(()=>{});continue}
+        const npc=g.brk?(g.brkAt&&t-g.brkAt>=GL_LIFE):(t-g.openedAt>=GL_LIFE),brk=!g.brk&&canBreak(g)&&t>=breakAtOf(g);
+        if(!npc&&!brk)continue;
+        if(npc&&(peersOn(g.id).length||SORTIE.list.some(x=>x.gate===g.id&&+x.endAt>t)||(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id)))continue;/* 누가 공략 중이면 NPC가 가로채지 않습니다 */
+        try{const l=await ref.acquire({holder:NET.uid,ttlMs:8000});if(l&&!l.acquired)continue}catch(e){}
+        const fs=await ref.get();const f=fs.exists?cleanGate(g.id,fs.data()):null;if(!f||f.status!=='open')continue;
+        if(npc)await closeOnline(ref,f,f.n,true);
+        else{await ref.update({brk:true,brkAt:t,hp:Math.round(f.hp*2)});pushLog(f.d,f.g,0,{brk:1,warnBrk:1})}
+      }
+    }else if(Array.isArray(S.localGates)){
+      let ch=false;
+      for(const lg of S.localGates){
+        if(lg.status!=='open')continue;if(!lg.openedAt){lg.openedAt=t;ch=true;continue}
+        const g=cleanGate(lg.id,lg);
+        if(g.brk?(lg.brkAt&&t-lg.brkAt>=GL_LIFE):(t-lg.openedAt>=GL_LIFE)){if(S.phase==='focus'&&S.curGate&&S.curGate.id===lg.id)continue;lg.status='closed';pushLog(lg.d,lg.g,0,{npc:1,brk:lg.brk?1:0});ch=true}
+        else if(!lg.brk&&canBreak(g)&&t>=breakAtOf(g)){lg.brk=true;lg.brkAt=t;lg.hp=Math.round((lg.hp||1)*2);pushLog(lg.d,lg.g,0,{brk:1,warnBrk:1});ch=true}
+      }
+      if(ch){ensureLocalGates();save();try{onWorldChange()}catch(e){}}
+    }
+  }catch(e){}
+  GL.busy=false;
+}
+/* 알림: 브레이크 경고 · 발생을 한 번씩 알려 줍니다(처음 켰을 때 이미 일어난 것은 조용히 넘깁니다) */
+function gateNotices(){
+  for(const g of allGates()){
+    if(g.brk&&!GL.seenBrk.has(g.id)){GL.seenBrk.add(g.id);if(!GL.boot){toast(`⚠ 게이트 브레이크 발생! ${DIST[g.d].name}의 게이트가 특수 게이트로 바뀌었습니다. 등급과 상관없이 누구나 공략할 수 있습니다.`);try{beep(220,.2,'sawtooth',.04);beep(180,.3,'sawtooth',.04,.2)}catch(e){}}}
+    else if(brkWarn(g)&&!GL.seenWarn.has(g.id)){GL.seenWarn.add(g.id);if(!GL.boot)toast(`${DIST[g.d].name} ${GRADES[g.g]}급 게이트가 오래 방치되어 곧 브레이크가 일어납니다. 그 전에 닫으면 막을 수 있습니다.`)}
+  }
+}
+setTimeout(()=>{GL.boot=false},20000);
+setInterval(()=>{try{gateMaint()}catch(e){}},60e3);
+setTimeout(()=>{try{gateMaint()}catch(e){}},8000);
+setInterval(()=>{try{gateNotices()}catch(e){}},5000);
 /* ═════════ 계정 · 클라우드 저장 (Firebase 판) ═════════
    계정으로 로그인해야만 게임을 할 수 있습니다. 아이디와 비밀번호로 계정을 만듭니다.
    (Firebase에는 아이디@closegate.game 형태의 가짜 이메일로 저장합니다. 메일은 보내지 않습니다.)
@@ -5435,7 +5650,7 @@ function renderGates(){
   const lay=$('mapLayer'),list=$('gateList'),all=allGates();
   let h='';
   h+=all.map(g=>{const lk=gateLocked(g),on=peersOn(g.id).length,pr=g.hp?Math.min(100,g.sum/g.hp*100):0;
-    return `<button type="button" class="gbtn${lk?' locked':''}" data-id="${g.id}" aria-pressed="${g.id===S.selGate}" aria-label="${esc(gateName(g))}${lk?', 레벨 부족':''}" style="left:${(g.x+(Math.abs(g.y-50)<14&&Math.abs(g.x-128)<17?(g.x<128?-1:1)*(17-Math.abs(g.x-128)):0))/W*100}%;top:${(g.y-6)/H*100}%"><span class="gl" style="background:${lk?'#DDE2EF':gcolOf(g)}">${g.train?'TR':GRADES[g.g]}${on?`<em>${on}</em>`:''}</span>${g.train?'':`<span class="gp"><i style="width:${pr}%"></i></span>`}</button>`}).join('');
+    return `<button type="button" class="gbtn${lk?' locked':''}${g.brk?' brk':brkWarn(g)?' warn':''}" data-id="${g.id}" aria-pressed="${g.id===S.selGate}" aria-label="${esc(gateName(g))}${lk?', 레벨 부족':''}" style="left:${(g.x+(Math.abs(g.y-50)<14&&Math.abs(g.x-128)<17?(g.x<128?-1:1)*(17-Math.abs(g.x-128)):0))/W*100}%;top:${(g.y-6)/H*100}%"><span class="gl" style="background:${lk?'#DDE2EF':gcolOf(g)}">${g.train?'TR':g.brk?'BR':GRADES[g.g]}${on?`<em>${on}</em>`:''}</span>${g.train?'':`<span class="gp"><i style="width:${pr}%"></i></span>`}</button>`}).join('');
   const R=curRaid();
   if(R){const on=peersOn('raid').length,op=raidOpenNow();h+=`<button type="button" class="gbtn raid${op?'':' shut'}" data-id="raid" aria-pressed="${S.selGate==='raid'}" aria-label="${esc(gateName(R))}" style="left:${R.x/W*100}%;top:${(R.y-8)/H*100}%"><span class="gl">${op?'RAID':'19시'}${on?`<em>${on}</em>`:''}</span><span class="gp"><i style="width:${Math.min(100,R.sum/R.hp*100)}%"></i></span></button>`}
   lay.innerHTML=h;
@@ -5454,9 +5669,9 @@ function renderGateInfo(){
   const fm=fmtMin(focusMsOf(g)/60000),bm='상태에 따라 1~3분',on=peersOn(g.id).length;
   const seal=g.train||g.exam||g.hp==null?'':`<div class="seal"><div class="lbl"><b>봉인 진행</b><span>${Math.floor(g.sum||0)} / ${g.hp}분 · ${g.n||0}명 참여</span></div><div class="bar2"><i style="width:${Math.min(100,(g.sum||0)/g.hp*100)}%"></i></div></div>`;
   box.innerHTML=`<div class="ghead"><span class="gchip" style="background:${lk?'#DDE2EF':gcolOf(g)}">${g.raid?'R':g.train?'TR':g.exam?'EX':GRADES[g.g]}</span><div><b>${esc(gateName(g))}</b><span class="muted">${g.raid?'매일 저녁 7시~11시에 열리는 거대 균열입니다. 서버의 모든 요원이 레벨 제한 없이 함께 닫습니다.'+(on?` · 지금 ${on}명 공략 중`:''):g.train?'출동 흐름을 연습하는 짧은 게이트입니다.':g.exam?'폭주하지 않고 끝까지 버티면 합격입니다.':'권장 레벨 '+REC_LV[g.g]+` · 공략 인원 ${Math.min(GATE_MAX,on+(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id?1:0))}/${GATE_MAX}명`+(on>=GATE_MAX-1&&!(S.curGate&&S.curGate.id===g.id)?' · 가득 참':'')}</span></div></div>
-  ${affHtml(g)}${seal}<dl class="gdl"><dt>보스</dt><dd>${esc(g.boss)}</dd>${!g.train&&!g.report?`<dt>보스 스킬</dt><dd class="sklist">${(BOSS_SK[bossTypeOf(g,g.exam?5:DIST[g.d]?DIST[g.d].mon[0]:0)]||[]).map(([n,k])=>`<span title="${SK_DMG[k]?'피해 '+SK_DMG[k]+'배':'피해 없음'}">${n}<em>${SK_DMG[k]?(SK_DMG[k]>=1.5?'강':SK_DMG[k]>=1?'중':'약'):k==='guard'?'방어':'소환'}</em></span>`).join('')}</dd>`:''}<dt>집중 · 휴식</dt><dd>${fm} · ${bm}</dd><dt>경험치 배율</dt><dd>×${multOf(g).toFixed(2)}</dd><dt>폭주 위험</dt><dd>+${Math.round(gainOf(g))}</dd></dl>
+  ${g.brk?'<p class="brkline"><b>게이트 브레이크</b> · 오래 방치되어 폭주한 특수 게이트입니다. 공략 시간이 길고 강하지만, 등급과 상관없이 누구나 들어갈 수 있습니다. 경험치 · 크레딧 보상이 커집니다.</p>':brkWarn(g)?'<p class="warnline">⚠ 오래 방치되어 곧 게이트 브레이크가 일어납니다. 그 전에 닫으면 브레이크를 막을 수 있습니다.</p>':''}${affHtml(g)}${seal}<dl class="gdl"><dt>보스</dt><dd>${esc(g.boss)}</dd>${!g.train&&!g.report?`<dt>보스 스킬</dt><dd class="sklist">${(BOSS_SK[bossTypeOf(g,g.exam?5:DIST[g.d]?DIST[g.d].mon[0]:0)]||[]).map(([n,k])=>`<span title="${SK_DMG[k]?'피해 '+SK_DMG[k]+'배':'피해 없음'}">${n}<em>${SK_DMG[k]?(SK_DMG[k]>=1.5?'강':SK_DMG[k]>=1?'중':'약'):k==='guard'?'방어':'소환'}</em></span>`).join('')}</dd>`:''}<dt>집중 · 휴식</dt><dd>${fm} · ${bm}</dd><dt>경험치 배율</dt><dd>×${multOf(g).toFixed(2)}</dd><dt>폭주 위험</dt><dd>+${Math.round(gainOf(g))}</dd></dl>
   ${g.raid?`<p class="raidwhen">${raidWhen()}</p><span class="eyebrow">지난 레이드 결과</span>${raidResultsHtml(5)}`:''}
-  ${isNormalGate(g)?`<div class="lenrow"><span><b>공략 시간</b> · 길게 머물수록 봉인에 많이 쌓입니다. 폭주 위험도 함께 늘어납니다.</span><div class="hours" role="group" aria-label="공략 시간">${LEN_OPT.map(k=>`<button type="button" data-glen="${k}" aria-pressed="${lenOf(g)===k}" ${S.phase!=='idle'?'disabled':''}>${fmtMin(FOCUS_MIN[g.g]*k)}</button>`).join('')}</div>${g.hp?`<span class="muted">혼자라면 약 ${Math.max(1,Math.ceil(Math.max(0,g.hp-(g.sum||0))/(FOCUS_MIN[g.g]*lenOf(g))))}번 출동하면 닫힙니다.</span>`:''}</div>`:''}
+  ${isNormalGate(g)?`<div class="lenrow"><span><b>공략 시간</b> · 길게 머물수록 봉인에 많이 쌓입니다. 폭주 위험도 함께 늘어납니다.</span><div class="hours" role="group" aria-label="공략 시간">${LEN_OPT.map(k=>`<button type="button" data-glen="${k}" aria-pressed="${lenOf(g)===k}" ${S.phase!=='idle'?'disabled':''}>${fmtMin(baseMinOf(g)*k)}</button>`).join('')}</div>${g.hp?`<span class="muted">혼자라면 약 ${Math.max(1,Math.ceil(Math.max(0,g.hp-(g.sum||0))/(baseMinOf(g)*lenOf(g))))}번 출동하면 닫힙니다.</span>`:''}</div>`:''}
   ${!g.train&&!g.exam?`<div class="dualrow"><span><b>병행 훈련</b> · 출동하면서 훈련도 합니다. 각성 포인트 1분에 +0.5, 경험치 ×0.9</span><button type="button" class="sbtn" id="dualBtn">${S.dualTrain?'켜짐':'꺼짐'}</button></div>`:''}
   ${lk&&!g.raid?`<p class="warnline">레벨이 부족합니다. Lv.${REC_LV[g.g]-3} 이상이 되면 도전할 수 있습니다.</p>`:''}`;
 }
@@ -5473,7 +5688,7 @@ function renderCrew(){
 function renderLog(){
   const items=NET.mode==='online'?NET.log:(S.log||[]);
   $('logList').innerHTML=items.length?items.map(it=>{const d=DIST[clampI(it.d,6)],t=new Date(+it.t||0);
-    return `<li><span>${d.name} ${GRADES[clampI(it.g,7)]}급 봉인 · ${Math.max(1,Math.min(99,+it.n||1))}명</span><time>${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}</time></li>`}).join(''):'<li><span class="muted">아직 봉인된 게이트가 없습니다.</span></li>';
+    return `<li><span>${d.name} ${GRADES[clampI(it.g,7)]}급${it.brk?' 브레이크':''} ${it.warnBrk?'게이트 브레이크 발생':it.npc?'· NPC 요원들이 처리':'봉인 · '+Math.max(1,Math.min(99,+it.n||1))+'명'}</span><time>${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}</time></li>`}).join(''):'<li><span class="muted">아직 봉인된 게이트가 없습니다.</span></li>';
 }
 function renderBag(){
   const ul=$('bagList');$('bagEmpty').hidden=S.items.length>0;const mine=S.attrs||[];
@@ -5576,7 +5791,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
   const g=$('gRun');g.firstElementChild.style.width=rw+'%';g.classList.toggle('warn',rw>=40&&rw<70);g.classList.toggle('hot',rw>=70);
   $('runVal').textContent=`${Math.round(rw)} / 100`;
   $('runDesc').textContent=rw>=100?'폭주 상태입니다. 이번 집중 기록이 30% 줄어듭니다.':rw>=70?'위험합니다. 휴식 시간에 반드시 가이딩을 받아야 합니다.':rw>=40?'조금 거칩니다.':'안정적입니다.';
-  {const bl=Math.floor(S.bond/20)+1,bonus=Math.min(50,(bl-1)*5);$('bondName').textContent=`${role==='guide'?'가이딩 숙련':'호흡 동조'} Lv.${bl}`;$('bondDesc').textContent=role==='guide'?`휴식 시간의 호흡 맞추기와 게이트 안 가이딩으로 오릅니다. 가이딩 효과(폭주 감소 · 회복) +${bonus}%`:`휴식 시간에 가이드와 호흡을 맞출수록 오릅니다. 가이딩을 받을 때 폭주 게이지가 내려가는 양 +${bonus}%`}$('bondVal').textContent=`${S.bond%20} / 20`;$('gBond').firstElementChild.style.width=(S.bond%20)/20*100+'%';
+  {const gi=gMastInfo(),bonus=Math.round(gi.bonus*1000)/10;$('bondName').textContent=`${role==='guide'?'가이딩 숙련':'호흡 동조'} Lv.${gi.lv}${gi.max?' / '+gi.max:''}`;$('bondDesc').textContent=role==='guide'?`휴식 시간의 호흡 맞추기와 게이트 안 가이딩으로 오릅니다. 가이딩 효과(폭주 감소 · 회복) +${bonus}% · 50단계마다 각성 포인트 100`:`휴식 시간에 가이드와 호흡을 맞출수록 오릅니다. 가이딩을 받을 때 폭주 게이지가 내려가는 양 +${bonus}%`;$('bondVal').textContent=`${gi.into} / ${gi.need}`;$('gBond').firstElementChild.style.width=Math.min(100,gi.into/gi.need*100)+'%';}
   {const cs=combatStats();$('stHp').textContent=cs.hp;$('stDef').textContent=cs.def;$('stDmg').textContent='+'+cs.dmg+'%';$('stCrit').textContent=cs.crit+'%';$('stSub').textContent=S.role==='guide'?'가이딩 증폭 +'+cs.amp+'%':'폭주 억제 +'+cs.calm+'%';$('stHeal').textContent=healLeft()>0?mmss(healLeft()):'양호'}
   $('stTotal').textContent=fmtMin(S.totalMin);$('stSess').textContent=S.sessions+'회';
   $('stToday').textContent=(S.todayDate===today()?S.todayCount:0)+'회';$('stClose').textContent=S.closedByMe+'개';
@@ -5628,7 +5843,7 @@ $('subBtn').addEventListener('click',()=>{if(S.phase==='focus'){gateGuide();retu
 $('sub2Btn').addEventListener('click',()=>{if(S.phase==='idle')startAuto();else if(S.phase==='break')endBreak(true)});
 $('repClose').addEventListener('click',()=>{$('report').hidden=true;$('mainBtn').focus()});
 $('stage').addEventListener('pointerdown',e=>{if(e.target.closest('button,.drawer,input'))return;if(S.phase==='break'&&!cine){e.preventDefault();tapGuide();return}if(S.phase==='focus'&&S.role==='guide'&&!cine&&S.curGate&&!S.curGate.train&&!S.curGate.report){e.preventDefault();gateGuide();return}
-  if(S.phase==='idle'&&mePos){const r=$('cv').getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;if(Math.abs(x-mePos.x)<12&&y>mePos.y-38&&y<mePos.y+2){meSay('poke',true);beep(1175,.05,'triangle',.03)}}});
+  if(S.phase==='idle'&&mePos){const r=$('cv').getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;if(Math.abs(x-mePos.x)<12&&y>mePos.y-30&&y<mePos.y+2){meSay('poke',true);beep(1175,.05,'triangle',.03);if(typeof inPairRoom==='function'&&inPairRoom()&&Math.random()<.6)setTimeout(()=>pairSpeak('poke'),1500)}}});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(!$('report').hidden){$('report').hidden=true;return}if(!$('settings').hidden){$('settings').hidden=true;return}if(curTab){closeDrawer();return}}
   if(e.code!=='Space'||S.phase!=='break')return;const a=document.activeElement;if(a&&(a.tagName==='INPUT'||a.tagName==='BUTTON'))return;e.preventDefault();tapGuide();
@@ -5975,7 +6190,7 @@ $('gateInfo').addEventListener('click',e=>{if(e.target.id==='dualBtn'){S.dualTra
 /* 공략 시간 단추: 화면이 자주 다시 그려져도 눌림이 사라지지 않도록 누르는 순간(pointerdown)에 처리합니다 */
 document.addEventListener('pointerdown',e=>{const l=e.target.closest('[data-glen]');if(!l||l.disabled||S.phase!=='idle')return;e.preventDefault();S.gLen=+l.dataset.glen;save();renderGateInfo();renderLenPick(true);updateUI(true);toast(`공략 시간을 ${l.textContent.trim()}으로 정했습니다.`)});
 function renderLenPick(force){const el=$('lenPick');if(!el)return;const sel=gateById(S.selGate),show=S.phase==='idle'&&S.view==='map'&&isNormalGate(sel)&&!gateLocked(sel)&&!cine;el.hidden=!show;if(!show)return;
-  const k=sel.id+'|'+lenOf(sel);if(!force&&el.dataset.k===k)return;el.dataset.k=k;el.innerHTML=`<span>공략 시간</span>${LEN_OPT.map(n=>`<button type="button" data-glen="${n}" aria-pressed="${lenOf(sel)===n}">${fmtMin(FOCUS_MIN[sel.g]*n)}</button>`).join('')}`}
+  const k=sel.id+'|'+lenOf(sel)+'|'+(sel.brk?1:0);if(!force&&el.dataset.k===k)return;el.dataset.k=k;el.innerHTML=`<span>공략 시간</span>${LEN_OPT.map(n=>`<button type="button" data-glen="${n}" aria-pressed="${lenOf(sel)===n}">${fmtMin(baseMinOf(sel)*n)}</button>`).join('')}`}
 
 (()=>{const box=$('cGrades');GRADES.forEach((g,i)=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=g;b.setAttribute('aria-pressed','false');b.addEventListener('click',()=>{cPrevG=cPrevG===i?null:i;box.querySelectorAll('button').forEach((x,j)=>x.setAttribute('aria-pressed',String(j===cPrevG)));$('cGradeDesc').textContent=cPrevG==null?'등급을 누르면 그 등급이 되었을 때의 모습을 미리 봅니다.':`${g}급: ${VIS_DESC[document.body.dataset.role==='guide'?'guide':'sentinel'][VTIER[i]]||'기본 모습입니다.'}`});box.appendChild(b)})})();
 
