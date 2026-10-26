@@ -935,6 +935,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .chatform input:focus{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .chatform .sbtn{border-radius:12px;padding:0 14px}
 .drawer .pane input,.drawer .pane select,.drawer .pane textarea{outline-offset:-2px}
+.mcodes{display:grid;gap:6px}.mcodes span{display:flex;align-items:center;gap:8px;background:var(--wash);border-radius:10px;padding:6px 10px}.mcodes code{flex:1;font-weight:700;letter-spacing:.08em;font-size:.95rem}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -3532,6 +3533,7 @@ function renderMail(){
     const what=[its.length?`아이템 ${its.length}개`:'',m.cr?`${+m.cr} 크레딧`:'',m.ap?`각성 포인트 ${+m.ap}`:''].filter(Boolean).join(' · ');
     return `<li class="mcard${m.claimed?' done':''}"><div class="mtop"><span class="gear-t" style="background:${m.src==='local'?'#21A574':'#8E6CF0'}">${esc((/^gm$/i.test(String(m.from||''))||!m.from?'센터 운영팀':String(m.from)).slice(0,12))}</span><b>${esc(String(m.title||'우편').slice(0,40))}</b></div>
       <p class="mbody">${esc(String(m.body||'').slice(0,400))}</p>
+      ${Array.isArray(m.codes)&&m.codes.length?`<div class="mcodes">${m.codes.slice(0,10).map(c=>`<span><code>${esc(String(c).slice(0,14))}</code><button type="button" class="sbtn" data-copycode="${esc(String(c).slice(0,14))}">복사</button></span>`).join('')}</div>`:''}
       <div class="mbot"><span class="muted">${new Date(+m.t||0).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})}${what?' · '+what:''}</span>${m.claimed?'<span class="muted">받음</span>':`<button type="button" class="sbtn buy" data-mail="${esc(m.id)}">${what?'받기':'읽음'}</button>`}</div></li>`}).join('')}</ul>`:'<p class="muted">받은 우편이 없습니다.</p>'}
   <p class="muted">점검 보상이나 이벤트처럼 전체 배포되는 아이템과 보상은 우편으로 지급됩니다. 받기를 눌러야 가방에 들어옵니다.</p>`;
 }
@@ -3633,6 +3635,7 @@ const pairAssistMul=()=>S.pairUid&&S.assist&&S.assist.suid===S.pairUid?2:1;
 /* 이벤트 */
 document.addEventListener('click',e=>{
   const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.copycode){try{navigator.clipboard.writeText(t.dataset.copycode);toast('초대 코드를 복사했습니다. 친구에게 건네주세요.')}catch(_){}return}
   if(t.id==='fCopy'){try{navigator.clipboard.writeText(S.fcode||NET.uid);toast('친구 코드를 복사했습니다.')}catch(_){}}
   else if(t.id==='fAdd')addFriend($('fCode').value);
   else if(t.dataset.facc)acceptFriend(t.dataset.facc);
@@ -3931,6 +3934,11 @@ function gmRender(soft){
       <div class="gmgrid"><label>만들 개수<input id="gmCn" type="number" min="1" max="50" value="1"></label><label>코드 하나당 사용 횟수<input id="gmCm" type="number" min="1" max="1000" value="1"></label>
       <label>유효 기간<select id="gmCe"><option value="0">무기한</option><option value="1">1일</option><option value="7">7일</option><option value="30">30일</option></select></label><label>메모<input id="gmCnote" maxlength="30" placeholder="예: 1차 테스터"></label></div>
       <button type="button" class="btn" data-gma="makeCodes">가입 코드 만들기</button>
+      <span class="eyebrow">우편으로 초대 코드 나눠주기</span>
+      <div class="gmgrid"><label>받는 사람<select id="gmCto"><option value="all">등록된 모든 요원 (${GMX.users.length}명)</option>${GMX.users.map(u=>`<option value="${esc(u.uid)}" ${GMX.sel===u.uid?'selected':''}>${esc(u.nick||'이름 없음')} (${esc(u.id||u.uid.slice(0,8))})</option>`).join('')}</select></label>
+      <label>한 사람당 코드 수<select id="gmCper"><option>1</option><option>2</option><option>3</option><option>5</option></select></label></div>
+      <p class="muted">코드마다 1회만 쓸 수 있습니다. 받은 요원은 우편함에서 코드를 복사해 친구에게 건넬 수 있습니다. 유효 기간은 위에서 고른 값을 따릅니다.</p>
+      <button type="button" class="btn ghost" data-gma="mailCodes">초대 코드 우편 보내기</button>
       <ul class="gmlist">${C.map(c=>{const exp=+c.exp&&+c.exp<gmT(),full=(+c.used||0)>=(+c.max||1);return `<li class="${c.off||exp||full?'off':''}"><b class="code">CG-${esc(c.id.slice(0,4))}-${esc(c.id.slice(4,8))}</b><span class="muted">${+c.used||0} / ${+c.max||1}회 사용${c.note?' · '+esc(c.note):''}${+c.exp?' · '+fmtT(c.exp)+'까지':''}${c.off?' · 중지됨':exp?' · 기간 지남':full?' · 다 씀':''}</span><button type="button" class="sbtn" data-gmcopy="CG-${esc(c.id.slice(0,4))}-${esc(c.id.slice(4,8))}">복사</button>${c.off?'':`<button type="button" class="sbtn del" data-gmcodeoff="${esc(c.id)}">중지</button>`}</li>`}).join('')||'<li class="muted">만든 가입 코드가 없습니다.</li>'}</ul>`}
   else if(t==='log'){h=`<ul class="gmlist">${GMX.logs.map(l=>`<li><b>${esc(String(l.act))}</b><span>${esc(String(l.detail||''))}</span><span class="muted">${esc(String(l.byNick||''))} · ${fmtT(l.t)}</span></li>`).join('')||'<li class="muted">기록이 없습니다.</li>'}</ul>`}
   b.innerHTML=h;
@@ -3954,6 +3962,14 @@ async function gmAct(a){
     for(let i=0;i<n;i++){let c='';const r=crypto.getRandomValues(new Uint32Array(8));for(let k=0;k<8;k++)c+=AL[r[k]%AL.length];
       await db.doc('invites/'+c).set({max,used:0,usedBy:{},note,exp:ed?gmT()+ed*864e5:0,off:false,by:NET.uid,t:gmT()});made.push('CG-'+c.slice(0,4)+'-'+c.slice(4))}
     gmLog('가입 코드 만들기','',`${n}개 · ${max}회씩${note?' · '+note:''}`);try{await navigator.clipboard.writeText(made.join('\n'))}catch(e){}toast(`가입 코드 ${n}개를 만들었습니다.${n?' 클립보드에 복사했습니다.':''}`)}
+  else if(a==='mailCodes'){const to=val('gmCto'),per=Math.max(1,Math.min(5,+val('gmCper')||1)),ed=+val('gmCe'),AL='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const targets=to==='all'?GMX.users.slice(0,300):GMX.users.filter(u=>u.uid===to);if(!targets.length){toast('받을 요원이 없습니다.');return}
+    toast(`초대 코드를 만드는 중입니다… (${targets.length}명 × ${per}개)`);let made=0;
+    for(const u of targets){const codes=[];
+      for(let i=0;i<per;i++){let c='';const r=crypto.getRandomValues(new Uint32Array(8));for(let k=0;k<8;k++)c+=AL[r[k]%AL.length];
+        await db.doc('invites/'+c).set({max:1,used:0,usedBy:{},note:'우편 배포 · '+String(u.nick||u.uid.slice(0,6)).slice(0,10),exp:ed?gmT()+ed*864e5:0,off:false,by:NET.uid,t:gmT(),owner:u.uid});codes.push('CG-'+c.slice(0,4)+'-'+c.slice(4));made++}
+      await db.doc('mail/'+gmId('m')).set({to:u.uid,from:'센터 운영팀',title:'친구 초대 코드',body:`함께할 친구에게 건넬 수 있는 일회용 가입 코드 ${codes.length}개를 보내 드립니다. 코드 하나로 한 명이 가입할 수 있습니다.${ed?` 코드는 ${ed}일 동안 쓸 수 있습니다.`:''}`,codes,items:[],cr:0,ap:0,t:gmT()})}
+    gmLog('초대 코드 우편 배포',to,`${targets.length}명 × ${per}개 = ${made}개`);toast(`${targets.length}명에게 초대 코드 ${made}개를 우편으로 보냈습니다.`)}
   else if(a==='mailTo'){GMX.tab='mail';gmRender()}
   else if(!u&&['patch','ban','unban','mute','unmute'].includes(a)){toast('먼저 유저 탭에서 요원을 선택해 주세요.')}
   else if(a==='patch'){const ops={cr:+val('gmPcr')||0,ap:+val('gmPap')||0,xp:+val('gmPxp')||0,heal:$('gmPheal').checked,runaway:$('gmPrw').checked};const g=val('gmPgr');if(g!=='')ops.grade=+g;const rl=val('gmProle');if(rl)ops.role=rl;

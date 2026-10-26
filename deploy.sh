@@ -5,7 +5,7 @@
 #  2) 이 폴더의 새 파일을 저장소에 덮어쓴다 (firebase-config.js는 그대로 둔다)
 #  3) setup-cloudshell.sh로 보안 규칙 게시 · 설정값 확인 · GitHub 올리기
 # 사용법: Cloud Shell에 zip을 올린 뒤
-#   unzip -o closegate-v35.1.zip && bash closegate-firebase/deploy.sh
+#   unzip -o closegate-v35.2.zip && bash closegate-firebase/deploy.sh
 # ─────────────────────────────────────────────────────────────
 set -uo pipefail
 REPO="https://github.com/CLOSEGATE/closegate.github.io.git"
