@@ -3,10 +3,10 @@
 ## 새 버전 올리기 (Cloud Shell, 가장 쉬운 방법)
 
 1. <https://console.cloud.google.com> 에서 프로젝트 **CLOSE-GATE-KR**을 고르고 오른쪽 위 **`>_`**(Cloud Shell)을 연다.
-2. Cloud Shell 창 오른쪽 위 **⋮ → 업로드**로 `closegate-v32.zip`을 올린다.
+2. Cloud Shell 창 오른쪽 위 **⋮ → 업로드**로 `closegate-v33.zip`을 올린다.
 3. 아래 한 줄을 붙여 넣고 Enter.
    ```
-   unzip -o closegate-v32.zip && bash closegate-firebase/deploy.sh
+   unzip -o closegate-v33.zip && bash closegate-firebase/deploy.sh
    ```
 4. 마지막에 GitHub 토큰을 붙여 넣으면 끝난다. 보안 규칙(장터 · 가이딩 요청 포함)도 함께 게시된다.
 5. 1~2분 뒤 사이트를 새로고침한다(Ctrl+Shift+R).

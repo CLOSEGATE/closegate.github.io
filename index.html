@@ -884,6 +884,31 @@ body.refined .sbtn{transition:background .15s,border-color .15s}
 body.refined .sbtn:focus-visible,body.refined .tab:focus-visible,body.refined .hp:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 body.refined .muted{line-height:1.55}
 .fcode code.fc{font-size:1.05rem;font-weight:700;letter-spacing:.18em;color:var(--ink)}
+/* 지갑 숫자가 커져도 가이딩 단추와 겹치지 않게: 넘치면 다음 줄로, 단추 글자는 잘리면 말줄임 */
+.dockmid{flex-wrap:wrap!important}
+.dockmid .subrow{min-width:220px!important;flex:1 1 220px!important}
+.dockmid .subrow .btn{overflow:hidden;text-overflow:ellipsis}
+.wallet{flex:1 1 auto;min-width:0}.wallet>span{min-width:0}
+/* 강조 메뉴(센터 출근 · 게이트 출동)의 설명 글자 대비 */
+body.refined :is(.homepick button:first-child,.centerpick .hp.main) span{color:rgba(255,255,255,.88)!important}
+/* 좁은 휴대폰: 관제 칸의 4칸 메뉴가 넘치지 않게 */
+.vnav button{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:400px){.vnav{gap:4px}.vnav button{padding:7px 2px!important;font-size:.86rem!important}.drawer .dr-body,.drawer>.pane-wrap{padding-left:10px;padding-right:10px}}
+.drawer .pane{min-width:0;overflow-x:hidden}.drawer .pane>*{max-width:100%;min-width:0}.drawer .gitem{min-width:0;max-width:100%}
+.gitem .n,.gitem b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 휴대폰에서도 접속 인원을 위쪽 단추 줄에 작게 표시 */
+@media (max-width:760px){.hud-tr #netPill{display:flex!important;padding:2px 9px!important;font-size:.78rem!important}.hud-tr #netText{display:inline!important}}
+/* 왼쪽 위 내 정보: 이름 · 칭호 · 레벨 사이 여백 */
+.hud-me{gap:9px!important;padding:6px 14px 6px 6px!important}
+.hud-me .hm-txt{gap:3px!important}
+.hud-me .hm-txt b{gap:7px!important;line-height:1.25!important}
+.hud-me .hm-txt>span:not(.hm-bar){font-size:.72rem!important;line-height:1.3;color:var(--ink-soft)}
+.hud-me .hm-bar{margin-top:2px}
+.htitle{padding:1px 8px!important;font-size:.64rem!important}
+#hudMe .hm-txt b#hudName{display:flex!important;align-items:center;gap:7px!important;min-width:0}
+#hudName .htitle{margin-left:1px;flex:none}
+@media (max-width:760px){#hudMe{max-width:calc(100% - 200px)!important}#hudName{font-size:.92rem!important}}
+@media (max-width:400px){#hudMe{max-width:calc(100% - 180px)!important}#hudName .htitle{display:none}.hud-tr{gap:5px!important}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -2023,7 +2048,7 @@ function pushPresence(){
 function peerInfo(p){
   const pr=p.presence||{};
   return {role:pr.role==='guide'?'guide':'sentinel',nick:typeof pr.nick==='string'?pr.nick.slice(0,10):'',look:normLook(pr.look,pr.role==='guide'?'guide':'sentinel'),
-    lv:Math.max(1,Math.min(99,Math.round(+pr.lv||1))),gr:clampI(pr.gr,7),uid:typeof pr.uid==='string'?pr.uid.slice(0,64):(typeof p.peer==='string'?p.peer:''),ptn:pr.ptn&&typeof pr.ptn==='object'?{role:pr.ptn.role==='sentinel'?'sentinel':'guide',look:normLook(pr.ptn.look,pr.ptn.role==='sentinel'?'sentinel':'guide'),gr:clampI(pr.ptn.gr,7),attrs:Array.isArray(pr.ptn.attrs)?pr.ptn.attrs.filter(x=>Number.isInteger(x)&&x>=0&&x<ATTRS.length).slice(0,3):[],nick:String(pr.ptn.nick||'').slice(0,10)}:null,attrs:Array.isArray(pr.attrs)?pr.attrs.filter(a=>Number.isInteger(a)&&a>=0&&a<ATTRS.length).slice(0,3):[],
+    lv:Math.max(1,Math.min(100,Math.round(+pr.lv||1))),gr:clampI(pr.gr,7),uid:typeof pr.uid==='string'?pr.uid.slice(0,64):(typeof p.peer==='string'?p.peer:''),ptn:pr.ptn&&typeof pr.ptn==='object'?{role:pr.ptn.role==='sentinel'?'sentinel':'guide',look:normLook(pr.ptn.look,pr.ptn.role==='sentinel'?'sentinel':'guide'),gr:clampI(pr.ptn.gr,7),attrs:Array.isArray(pr.ptn.attrs)?pr.ptn.attrs.filter(x=>Number.isInteger(x)&&x>=0&&x<ATTRS.length).slice(0,3):[],nick:String(pr.ptn.nick||'').slice(0,10)}:null,attrs:Array.isArray(pr.attrs)?pr.attrs.filter(a=>Number.isInteger(a)&&a>=0&&a<ATTRS.length).slice(0,3):[],
     phase:['idle','focus','break','auto'].includes(pr.phase)?pr.phase:'idle',pers:persIdx(pr.pers),sp:spIdx(pr.sp),wp:typeof pr.wp==='string'&&WTYPES.some(w=>w.id===pr.wp)?pr.wp:null,wa:Number.isInteger(pr.wa)&&pr.wa>=0&&pr.wa<ATTRS.length?pr.wa:null,party:typeof pr.party==='string'?pr.party.slice(0,8):null,title:typeof pr.title==='string'?achTitle(pr.title):'',gate:typeof pr.gate==='string'?pr.gate.slice(0,40):null,peer:p.peer};
 }
 const peersOn=id=>NET.peers.map(peerInfo).filter(p=>p.phase==='focus'&&p.gate===id);
@@ -2931,10 +2956,11 @@ function combatStats(){const lv=myLevel(),g=gearStats();
   return {hp:Math.round(100+lv*12+(g.hp||0)),def:r1(lv*1.5+(g.def||0)),dmg:r1(g.dmg||0),crit:r1(Math.min(90,5+(g.crit||0))),amp:r1(g.amp||0),calm:r1(g.calm||0)}}
 const myWeapon=()=>{const g=equipped('weapon');return g?(g.wt||'sword'):null};
 const myWeaponAttr=()=>{const g=equipped('weapon');return g&&g.attr!=null?g.attr:null};
-const itemKind=it=>it&&it.kind==='gear'?'gear':it&&it.kind==='potion'?'potion':'stone';
+const itemKind=it=>it&&it.kind==='gear'?'gear':it&&it.kind==='potion'?'potion':it&&it.kind==='ticket'?'ticket':'stone';
 const fits=g=>g&&attrFits(g.attr,S.attrs);
-const itemName=it=>itemKind(it)==='potion'?(POTS[it.p]||{n:'물약'}).n:itemKind(it)==='gear'?`${GEAR_T[it.tier]} ${it.name}${it.enh?' +'+it.enh:''} Lv.${it.lv||1}`:`${ATTRS[it.attr].n} 각성석`;
+const itemName=it=>itemKind(it)==='ticket'?'역할 변경권':itemKind(it)==='potion'?(POTS[it.p]||{n:'물약'}).n:itemKind(it)==='gear'?`${GEAR_T[it.tier]} ${it.name}${it.enh?' +'+it.enh:''} Lv.${it.lv||1}`:`${ATTRS[it.attr].n} 각성석`;
 function itemDesc(it){
+  if(itemKind(it)==='ticket')return `센티넬과 가이드를 서로 바꿉니다. 지금 ${S.role==='guide'?'가이드 → 센티넬':'센티넬 → 가이드'}. 등급 · 레벨 · 장비 · 아이템은 그대로이고, 파트너는 새로 배정됩니다. 페어가 있으면 먼저 해제해야 합니다.`;
   if(itemKind(it)==='potion')return (POTS[it.p]||{d:''}).d+(POTS[it.p]&&POTS[it.p].k==='hp'?` 지금 내 최대 HP 기준 ${potHeal(it.p,combatStats().hp)} 회복.`:'');
   if(itemKind(it)!=='gear')return `${ATTRS[it.attr].cat} 각성석. 속성을 얻거나 바꾸고, 장비에 바르면 장비 속성이 바뀝니다.`;
   normGear(it);const st=gearStatsOf(it),main=it.slot==='weapon'?['dmg']:it.slot==='armor'?['hp','def']:[];
@@ -2942,7 +2968,7 @@ function itemDesc(it){
   const roleNote=(it.sub||[]).some(x=>x.k==='role')?` (${S.role==='guide'?'센티넬이 끼면 폭주 억제':'가이드가 끼면 가이딩 증폭'})`:'';
   return `${SLOT_N[it.slot]} · ${it.attr!=null?ATTRS[it.attr].n+' 속성':'무속성'}${main.length?' · 주 능력치 '+main.map(k=>fmtStat(k,st[k])).join(', '):''} · 부가 능력치 ${subs.map(k=>fmtStat(k,st[k])).join(', ')}${roleNote}${fits(it)?' · 속성 일치 보정 1.5배':''}${it.attr!=null?` · 속성 강화 +${it.enh||0}/${ENH_MAX}`:''}`;
 }
-const sellPrice=it=>itemKind(it)==='potion'?Math.round(((POTS[it.p]||{cr:60}).cr)*.4):itemKind(it)==='gear'?Math.round([40,90,180,360][it.tier]*(1+(it.lv||1)/50)):40;
+const sellPrice=it=>itemKind(it)==='ticket'?200:itemKind(it)==='potion'?Math.round(((POTS[it.p]||{cr:60}).cr)*.4):itemKind(it)==='gear'?Math.round([40,90,180,360][it.tier]*(1+(it.lv||1)/50)):40;
 function equipped(slot){const id=(S.equip||{})[slot];return S.items.find(x=>x.id===id&&x.kind==='gear')||null}
 /* 장비 점수: 능력치를 한 기준으로 합쳐 더 좋은 장비를 고른다 */
 const GW={dmg:1,crit:1.2,xp:.6,hp:.15,def:1,calm:.8,amp:.8,cr:.4,ap:.4};
@@ -3032,11 +3058,16 @@ const SHOP=[
   {id:'pbox',n:'고급 장비 상자',d:'고급 이상 무기 · 방어구 · 장신구 한 개.',cr:480}
 ,
   {id:'pot:hp1',n:'소형 회복약',d:'최대 HP의 25%를 회복합니다.',cr:60},{id:'pot:hp2',n:'중형 회복약',d:'최대 HP의 45%를 회복합니다.',cr:140},{id:'pot:hp3',n:'고급 회복약',d:'최대 HP의 70%를 회복합니다.',cr:300},{id:'pot:df1',n:'방어 물약',d:'출동 동안 방어력 +25%.',cr:120},{id:'pot:df2',n:'강철 물약',d:'출동 동안 방어력 +50%.',cr:260},{id:'pot:at1',n:'힘의 물약',d:'출동 동안 대미지 +10%.',cr:150},{id:'pot:at2',n:'각성의 물약',d:'출동 동안 대미지 +20%.',cr:320}
+,
+  {id:'tk:role',n:'역할 변경권',d:'센티넬과 가이드를 서로 바꿉니다. 등급 · 레벨 · 장비는 그대로입니다.',ap:1000}
 ];
 function buyShop(id){
-  const s=SHOP.find(x=>x.id===id);if(!s)return;if(CR()<s.cr){toast(`크레딧이 ${s.cr-CR()} 부족합니다.`);return}
-  addCr(-s.cr);let it;
-  if(id.startsWith('pot:'))it=makePot(id.slice(4));
+  const s=SHOP.find(x=>x.id===id);if(!s)return;
+  if(s.ap){if((S.ap||0)<s.ap){toast(`각성 포인트가 ${s.ap-Math.floor(S.ap||0)} 부족합니다.`);return}S.ap=Math.round((S.ap-s.ap)*10)/10}
+  else{if(CR()<s.cr){toast(`크레딧이 ${s.cr-CR()} 부족합니다.`);return}addCr(-s.cr)}
+  let it;
+  if(id==='tk:role')it={id:'t'+Date.now().toString(36),kind:'ticket',t:'role'};
+  else if(id.startsWith('pot:'))it=makePot(id.slice(4));
   else if(id==='stone')it={id:'i'+Date.now().toString(36),attr:pick(STONE_ATTRS)};
   else it=makeGear(id==='wbox'?'weapon':id==='abox'?'armor':id==='cbox'?'acc':pick(['weapon','armor','acc']),id==='pbox'?1:0);
   S.items.push(it);toast(`${itemName(it)}을(를) 샀습니다. 가방에서 확인할 수 있습니다.`);beep(988,.08);beep(1318,.1,'square',.04,.08);save();updateUI(true);
@@ -3158,6 +3189,7 @@ function cleanItem(it){
   const id=(it.kind==='gear'?'g':'i')+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
   if(it.kind==='gear'){const g={id,kind:'gear',slot:fixSlot(it.slot),tier:clampI(+it.tier,4),lv:+it.lv||1,wt:WTYPES[wtIdx(it.wt)].id,sub:Array.isArray(it.sub)?it.sub.slice(0,3):null,enh:+it.enh||0};if(Number.isInteger(it.attr)&&it.attr>=0&&it.attr<ATTRS.length)g.attr=it.attr;if(g.slot!=='weapon')delete g.wt;return normGear(g)}
   if(it.kind==='potion')return POTS[it.p]?{id,kind:'potion',p:it.p}:null;
+  if(it.kind==='ticket')return {id,kind:'ticket',t:'role'};
   return {id,attr:clampI(+it.attr,ATTRS.length)};
 }
 async function listItem(id,price){
@@ -3201,12 +3233,12 @@ function crBar(){return `<div class="apbar"><span>크레딧 <b>${CR()} C</b></sp
 function renderShop(){
   const sell=S.items.filter(it=>!(S.equip&&Object.values(S.equip).includes(it.id)));
   $('shopBox').innerHTML=`${crBar()}
-  <span class="eyebrow">Buy</span><ul class="shop">${SHOP.map(s=>`<li>${shopIco(s)}<span class="tx"><b>${s.n}</b><span>${s.d}</span></span><button type="button" class="sbtn" data-shop="${s.id}" ${CR()<s.cr?'disabled':''}>${s.cr} C</button></li>`).join('')}</ul>
+  <span class="eyebrow">Buy</span><ul class="shop">${SHOP.map(s=>`<li>${shopIco(s)}<span class="tx"><b>${s.n}</b><span>${s.d}</span></span><button type="button" class="sbtn" data-shop="${s.id}" ${(s.ap?(S.ap||0)<s.ap:CR()<s.cr)?'disabled':''}>${s.ap?s.ap+' AP':s.cr+' C'}</button></li>`).join('')}</ul>
   <span class="eyebrow">Furniture</span><ul class="decor">${DECOR2.map(d=>{const own=(S.decor||[]).includes(d.id);return `<li><span class="tx"><b>${d.n}</b><span>${d.d}</span></span><button type="button" class="sbtn" data-pv="${d.id}">미리보기</button>${own?'<span class="muted">보유 중</span>':`<button type="button" class="sbtn" data-d2="${d.id}" ${CR()<d.cr?'disabled':''}>${d.cr} C</button>`}</li>`}).join('')}</ul>
   <span class="eyebrow">Sell</span>${sell.length?`<ul class="shop">${sell.map(it=>`<li>${itemIcon(it)}<span class="tx"><b>${itemName(it)}</b><span>${itemDesc(it)}</span></span><button type="button" class="sbtn" data-sell="${it.id}">${sellPrice(it)} C에 팔기</button></li>`).join('')}</ul>`:'<p class="muted">팔 수 있는 물건이 없습니다. 장착 중인 장비는 해제해야 팔 수 있습니다.</p>'}
   <p class="muted">크레딧은 게이트를 닫거나 센터에서 보고서를 쓰면 얻습니다. 가이드는 보고서로 두 배를 받습니다.</p>`;
 }
-function shopIco(s){const id=s.id;if(id.startsWith('pot:'))return itemIcon({kind:'potion',p:id.slice(4)});if(id==='stone')return itemIcon({attr:4});
+function shopIco(s){const id=s.id;if(id==='tk:role')return itemIcon({kind:'ticket'});if(id.startsWith('pot:'))return itemIcon({kind:'potion',p:id.slice(4)});if(id==='stone')return itemIcon({attr:4});
   return itemIcon({kind:'box',col:id==='wbox'?'#F2A07A':id==='abox'?'#7FA5FF':id==='cbox'?'#B48CFF':'#FFC23D'})}
 function renderMarket(){
   const box=$('marketBox');
@@ -3415,6 +3447,22 @@ function renderChat(keepInput){
 $('chatBox').addEventListener('click',e=>{const b=e.target.closest('[data-ch]');if(b){CHAT.ch=b.dataset.ch;renderChat()}});
 $('chatBox').addEventListener('submit',e=>{e.preventDefault();sendChat()});
 setInterval(()=>{try{watchChat();chatBadge()}catch(e){}},4000);
+
+/* ── 역할 바꾸기 (변경권 · GM 조정 공통) ── */
+function changeRole(to,src){
+  to=to==='guide'?'guide':'sentinel';if(!S.role||S.role===to)return false;
+  if(S.phase!=='idle'){toast('출동이나 가이딩 중에는 역할을 바꿀 수 없습니다.');return false}
+  if(src!=='gm'&&typeof pairActive==='function'&&pairActive()){toast('페어가 있으면 역할을 바꿀 수 없습니다. 먼저 두 사람의 동의로 페어를 해제해 주세요.');return false}
+  S.role=to;S.attrs=[...new Set((S.attrs||[]).map(a=>normAttr(a,to)))];S.look=normLook(S.look,to);S.runaway=0;
+  try{newPartner()}catch(e){}save();try{pushPresence()}catch(e){}updateUI(true);
+  toast(`${to==='guide'?'가이드':'센티넬'}로 역할을 바꿨습니다. 새 파트너가 배정되었습니다.`);return true;
+}
+let roleArm=0;
+function useRoleTicket(id){
+  const it=S.items.find(x=>x.id===id&&x.kind==='ticket');if(!it)return;
+  if(roleArm<Date.now()){roleArm=Date.now()+3500;toast(`한 번 더 누르면 ${S.role==='guide'?'센티넬':'가이드'}로 바뀝니다.`);return}
+  roleArm=0;if(changeRole(S.role==='guide'?'sentinel':'guide','ticket')){S.items=S.items.filter(x=>x.id!==id);save();updateUI(true)}
+}
 /* ═════════ 우편 · 친구 · 페어 ═════════ */
 const SOC={mailAll:[],mailMe:[],fr:{},pr:{},subs:false};
 const myNick=()=>(S.name||'요원').slice(0,10);
@@ -3699,6 +3747,7 @@ const ICO={
   acc3:['....G.......','....G.......','....GG......','.....A......','....AAA.....','...AAWAA....','....AAA.....','.....A......','............','.......G....','.......A....','......AAA...'],
   stone:['............','.....WW.....','....WAAA....','...WAAAAa...','..WAAAAAAa..','..AAAAAAAa..','..aAAAAAaa..','...aAAAaa...','....aaaa....','.....aa.....','............','............'],
   pot:['....bbbb....','.....WW.....','.....WW.....','....WWWW....','...W....W...','..W......W..','..WAAAAAAW..','..WAWAAAAW..','..WAAAAAAW..','..WAAAAAAW..','...WAAAAW...','....WWWW....'],
+  ticket:['................','..GGGGGGGGGGGG..','.GWWWWWWWWWWWWG.','.GWAAWWWWWWBBWG.','.GWAAWWWWWWBBWG.','.GWWWW>>>WWWWWG.','.GWWWWWW>>WWWWG.','.GWWWW>>>WWWWWG.','.GWBBWWWWWWAAWG.','.GWBBWWWWWWAAWG.','.GWWWWWWWWWWWWG.','..GGGGGGGGGGGG..','................','................','................','................'],
   box:['............','.bbbbbbbbbb.','.bGGGGGGGGb.','.bbbbbbbbbb.','.bCCCCCCCCb.','.bCCCGGCCCb.','.bCCCGGCCCb.','.bCCCCCCCCb.','.bCCCCCCCCb.','.bbbbbbbbbb.','............','............']
 };
 const icoCache=new Map();
@@ -3708,12 +3757,13 @@ function icoKey(it){
   if(it.kind==='gear'){const tc=GEAR_C[it.tier||0],ac=it.attr!=null&&ATTRS[it.attr]?ATTRS[it.attr].col:tc;
     if(it.slot==='weapon')return [it.wt||'sword',ac,tc];if(it.slot==='armor')return ['armor',ac,tc];return ['acc'+(it.tier||0),ac,tc]}
   if(it.kind==='box')return ['box',it.col||'#7FA5FF','#B98A62'];
+  if(it.kind==='ticket')return ['ticket','#2F5BEA','#FFB627'];
   return ['stone',(ATTRS[it.attr]||{col:'#9AA3C2'}).col,'#fff'];
 }
 function itemIcon(it,size){
   const [shape,a,t]=icoKey(it),key=shape+a+t;
   if(!icoCache.has(key)){
-    const pal={W:'#F4F7FF',l:'#B9C1DA',G:'#FFC23D',b:'#8A5E3C',s:'#E8E8F0',R:'#F0544F',A:a,a:shade(a,-.3),C:t,c:shade(t,-.3)};
+    const pal={W:'#F4F7FF',l:'#B9C1DA',G:'#FFC23D',b:'#8A5E3C',s:'#E8E8F0',R:'#F0544F',B:'#FFB627','>':'#5A3A26',A:a,a:shade(a,-.3),C:t,c:shade(t,-.3)};
     const N=ICO[shape].length,c=document.createElement('canvas');c.width=N+2;c.height=N+2;const g=c.getContext('2d');
     const P=[];ICO[shape].forEach((r,y)=>[...r].forEach((ch,x)=>{if(pal[ch])P.push([x+1,y+1,pal[ch]])}));
     const on=new Set(P.map(([x,y])=>x+','+y));
@@ -3773,6 +3823,7 @@ function applyPatch(id,p){
   if(+o.cr)addCr(+o.cr);if(+o.ap)S.ap=Math.max(0,Math.round(((S.ap||0)+(+o.ap))*10)/10);if(+o.xp)S.xp=Math.max(0,(S.xp||0)+(+o.xp));
   if(Number.isInteger(o.grade)&&o.grade>=0&&o.grade<=6)S.grade=o.grade;
   if(o.heal)S.healUntil=0;if(o.runaway)S.runaway=0;
+  if(o.role==='sentinel'||o.role==='guide'){if(S.phase!=='idle')S.gmRolePending=o.role;else changeRole(o.role,'gm')}
   S.gmApplied=[...(S.gmApplied||[]),id].slice(-50);save();updateUI(true);
   toast(`운영팀이 계정을 조정했습니다.${p.note?' '+String(p.note).slice(0,60):''}`);
   try{NET.db.doc('gmpatch/'+id).update({applied:true,appliedAt:gmT()})}catch(e){}
@@ -3830,6 +3881,7 @@ function gmRender(soft){
       h+=`<div class="gmuser"><b>${esc(u.nick||'이름 없음')}</b> <span class="muted">UID ${esc(u.uid)}</span>
         <div class="muted">${sv?`Lv.${levelOf(+sv.xp||0).lv} · ${GRADES[clampI(sv.grade,7)]}급 · 크레딧 ${Math.floor(+sv.cr||0)} · 각성 포인트 ${Math.floor(+sv.ap||0)} · 아이템 ${(sv.items||[]).length}개 · 폭주 ${Math.round(+sv.runaway||0)}`:'저장 기록을 불러오는 중이거나 없습니다.'}</div>
         <div class="gmgrid"><label>크레딧 ±<input id="gmPcr" type="number" value="0"></label><label>각성 포인트 ±<input id="gmPap" type="number" value="0"></label><label>경험치 ±<input id="gmPxp" type="number" value="0"></label>
+        <label>역할 변경<select id="gmProle"><option value="">그대로</option><option value="sentinel">센티넬로</option><option value="guide">가이드로</option></select></label>
         <label>등급 설정<select id="gmPgr"><option value="">그대로</option>${GRADES.map((g,i)=>`<option value="${i}">${g}급</option>`).join('')}</select></label>
         <label class="chk"><input type="checkbox" id="gmPheal"> 치료 대기 해제</label><label class="chk"><input type="checkbox" id="gmPrw"> 폭주 게이지 0</label>
         <label class="wide">안내 문구<input id="gmPnote" maxlength="60" placeholder="유저에게 함께 보여 줄 문구 (선택)"></label></div>
@@ -3876,8 +3928,8 @@ async function gmAct(a){
     gmLog('가입 코드 만들기','',`${n}개 · ${max}회씩${note?' · '+note:''}`);try{await navigator.clipboard.writeText(made.join('\n'))}catch(e){}toast(`가입 코드 ${n}개를 만들었습니다.${n?' 클립보드에 복사했습니다.':''}`)}
   else if(a==='mailTo'){GMX.tab='mail';gmRender()}
   else if(!u&&['patch','ban','unban','mute','unmute'].includes(a)){toast('먼저 유저 탭에서 요원을 선택해 주세요.')}
-  else if(a==='patch'){const ops={cr:+val('gmPcr')||0,ap:+val('gmPap')||0,xp:+val('gmPxp')||0,heal:$('gmPheal').checked,runaway:$('gmPrw').checked};const g=val('gmPgr');if(g!=='')ops.grade=+g;
-    await db.doc('gmpatch/'+gmId('p')).set({to:u.uid,ops,note:val('gmPnote').trim(),by:NET.uid,t:gmT(),applied:false});gmLog('계정 조정',u.uid,`${who} · `+[ops.cr&&`크레딧 ${ops.cr>0?'+':''}${ops.cr}`,ops.ap&&`각성 포인트 ${ops.ap>0?'+':''}${ops.ap}`,ops.xp&&`경험치 ${ops.xp>0?'+':''}${ops.xp}`,ops.grade!=null&&`등급 ${GRADES[ops.grade]}`,ops.heal&&'치료 해제',ops.runaway&&'폭주 0'].filter(Boolean).join(', '));toast(`${who} 요원에게 조정을 보냈습니다. 접속하면 바로 적용됩니다.`)}
+  else if(a==='patch'){const ops={cr:+val('gmPcr')||0,ap:+val('gmPap')||0,xp:+val('gmPxp')||0,heal:$('gmPheal').checked,runaway:$('gmPrw').checked};const g=val('gmPgr');if(g!=='')ops.grade=+g;const rl=val('gmProle');if(rl)ops.role=rl;
+    await db.doc('gmpatch/'+gmId('p')).set({to:u.uid,ops,note:val('gmPnote').trim(),by:NET.uid,t:gmT(),applied:false});gmLog('계정 조정',u.uid,`${who} · `+[ops.cr&&`크레딧 ${ops.cr>0?'+':''}${ops.cr}`,ops.ap&&`각성 포인트 ${ops.ap>0?'+':''}${ops.ap}`,ops.xp&&`경험치 ${ops.xp>0?'+':''}${ops.xp}`,ops.grade!=null&&`등급 ${GRADES[ops.grade]}`,ops.heal&&'치료 해제',ops.runaway&&'폭주 0',ops.role&&(ops.role==='guide'?'가이드로 변경':'센티넬로 변경')].filter(Boolean).join(', '));toast(`${who} 요원에게 조정을 보냈습니다. 접속하면 바로 적용됩니다.`)}
   else if(a==='ban'){const d=+val('gmBd'),until=gmT()+d*864e5,reason=val('gmBr').trim();await db.doc('bans/'+u.uid).set({until,reason,by:NET.uid,t:gmT()});gmLog('이용 정지',u.uid,`${who} · ${d>=99999?'영구':d+'일'} · ${reason}`);toast(`${who} 요원을 정지했습니다.`)}
   else if(a==='unban'){await db.doc('bans/'+u.uid).set({until:0,reason:'',by:NET.uid,t:gmT()});gmLog('정지 해제',u.uid,who);toast('정지를 해제했습니다.')}
   else if(a==='mute'){const hh=+val('gmMh');await db.doc('mutes/'+u.uid).set({until:gmT()+hh*36e5,reason:val('gmBr').trim(),by:NET.uid,t:gmT()});gmLog('채팅 금지',u.uid,`${who} · ${hh}시간`);toast('채팅을 금지했습니다.')}
@@ -3913,6 +3965,8 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{if(e.target.id==='gmQ'){GMX.q=e.target.value;const pos=e.target.selectionStart;gmRender();const q=$('gmQ');if(q){q.focus();q.setSelectionRange(pos,pos)}}});
 $('banOut').addEventListener('click',()=>{try{$('accOut').click()}catch(e){location.reload()}});
+
+setInterval(()=>{if(S.gmRolePending&&S.phase==='idle'){const r=S.gmRolePending;S.gmRolePending=null;changeRole(r,'gm')}},3000);
 /* ═════════ 타이틀 화면: 밤하늘 도시 위에 열린 거대 게이트 (320×180, 2배) ═════════ */
 const TW=320,TH=180,TCX=160,TCY=98,PK=.8;
 let tParts=[],tBolts=[],tBoltT=0;
@@ -4605,7 +4659,7 @@ function renderCrew(){
     return `<li><canvas width="48" height="48" data-i="${i}"></canvas><span class="who"><b></b>${p.title?`<em>${esc(p.title)}</em>`:''}<span>${p.role==='guide'?'가이드':'센티넬'} · Lv.${p.lv} · ${st}</span></span><span class="rkb" style="background:${GCOL[p.gr]}">${GRADES[p.gr]}</span>${p.uid&&online()&&!isFriend(p.uid)?`<button type="button" class="sbtn" data-fadd="${esc(p.uid)}" data-fnick="${esc(p.nick||'')}" data-frole="${p.role}">친구 신청</button>`:''}</li>`}).join('');
   ul.querySelectorAll('li').forEach((li,i)=>{const p=ps[i];li.querySelector('b').textContent=p.nick||'이름 없는 요원';const c=li.querySelector('canvas'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(buildDoll(p.look,'a',0),2,0,24,24,0,0,48,48)});
   const np=$('netPill');np.classList.toggle('solo',NET.mode!=='online');
-  $('netText').textContent=NET.mode==='online'?`온라인 · ${ps.length+1}명 접속`:'혼자 플레이';
+  $('netText').textContent=NET.mode==='online'?(matchMedia('(max-width:760px)').matches?`접속 ${ps.length+1}명`:`온라인 · ${ps.length+1}명 접속`):'혼자';
 }
 function renderLog(){
   const items=NET.mode==='online'?NET.log:(S.log||[]);
@@ -4622,6 +4676,7 @@ function renderBag(){
       const ec=it.attr!=null&&(it.enh||0)<ENH_MAX?enhCost(it):0,eh=it.attr!=null?(cnt[it.attr]||0):0;
       const enhBtn=it.attr==null?'':(it.enh||0)>=ENH_MAX?`<span class="enh max">속성 강화 +${ENH_MAX} 완료</span>`:`<button type="button" class="sbtn eq enhb" data-enh="${it.id}" ${eh<ec?'disabled':''}>속성 강화 +${(it.enh||0)+1} · ${ATTRS[it.attr].n} 각성석 ${eh}/${ec}</button>`;
       return `<li class="${isBetter(it)?'isbetter':''}"><span class="bt">${itemIcon(it)}${isBetter(it)?'<span class="better">▲ 더 좋음</span>':''}<span class="gear-t" style="background:${GEAR_C[it.tier]}">${GEAR_T[it.tier]}</span><b>${it.name}${it.enh?` <em class="plus">+${it.enh}</em>`:''} <small>Lv.${it.lv}</small></b>${it.attr!=null?`<span class="atag${fits(it)?' hit':''}"><i style="background:${ATTRS[it.attr].col}"></i>${ATTRS[it.attr].n}</span>`:''}</span><span class="muted">${itemDesc(it)}</span><span class="acts"><button type="button" class="sbtn eq" data-eq="${it.id}" ${!on&&it.lv>myLevel()?'disabled':''}>${on?'해제하기':it.lv>myLevel()?`Lv.${it.lv} 필요`:'장착하기'}</button>${on?'':`<button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button>`}${enhBtn}${opts?`<select class="anoint" data-g="${it.id}"><option value="">속성 바꾸기 (각성석 ${ac}개${it.enh?', 강화 초기화':''})</option>${opts}</select>`:''}</span></li>`}
+    if(it.kind==='ticket'){return `<li><span class="bt">${itemIcon(it)}<b>역할 변경권</b></span><span class="muted">${itemDesc(it)}</span><span class="acts"><button type="button" class="sbtn eq" data-roletk="${it.id}">사용하기</button><button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}
     if(isPot(it)){if(seenStone['p'+it.p])return '';seenStone['p'+it.p]=1;const P=POTS[it.p],n=potCount(it.p);
       const can=P.k==='hp'?inBattle():true;
       return `<li><span class="bt">${itemIcon(it)}<b>${P.n} <small>×${n}</small></b></span><span class="muted">${itemDesc(it)}${P.k!=='hp'&&!inBattle()?' 지금 마시면 다음 출동에 적용됩니다.':''}${P.k==='hp'?' 게이트 공략 중 HP가 30% 아래로 내려가면 자동으로 씁니다.':''}</span><span class="acts"><button type="button" class="sbtn eq" data-pot="${it.p}" ${can?'':'disabled'}>${P.k==='hp'&&!inBattle()?'공략 중에 사용':'사용하기'}</button><button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}
@@ -4656,7 +4711,7 @@ function renderPartner(){
 let armedEarly=0,armedReset=0;
 const ptCtx=$('ptCv').getContext('2d'),meCtx=$('meCv').getContext('2d');
 function drawSmall(ctx,kind,L,tier,attrs){const p=G;use2x(ctx);px(0,0,48,48,'#EEF3FF');px(0,40,48,8,'#DCE5F7');for(let x=0;x<48;x+=8)px(x+((x/8)%2)*4,40,4,8,'#CFDAF1');drawHero(kind,L,24,44,{tier,attrs,dx:0});G=p}
-function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){a.textContent=CR().toLocaleString('ko-KR');b.textContent=Math.floor(S.ap||0).toLocaleString('ko-KR')}}if(typeof renderPotBar==='function')renderPotBar();
+function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
   const role=S.role,t=now(),lvI=levelOf(S.xp),rw=liveRunaway();
   document.body.dataset.role=role||'sentinel';
   const sel=gateById(S.selGate);
@@ -4709,7 +4764,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){a.textContent=CR().to
   const dg=$('dockGate'),cg=S.phase==='focus'&&S.curGate?(gateById(S.curGate.id)||S.curGate):sel;
   if(S.assist)dg.innerHTML=`<b>${esc(S.assist.snick)}</b> 센티넬 가이딩 지원 중 · 맞춘 호흡 ${S.assist.taps}`;else if(S.phase==='break'||S.phase==='auto')dg.innerHTML=`<b>${esc(S.realGuide?S.realGuide.nick:S.partner?S.partner.name:'')}</b> ${S.realGuide?'가이드(플레이어)':'요원'}와 가이딩 중 · 폭주 ${Math.round(rw)}`;
   else if(cg)dg.innerHTML=`<b>${esc(gateName(cg))}</b>${cg.hp?` · 봉인 ${Math.floor(cg.sum||0)}/${cg.hp}분`:''}`;
-  else dg.innerHTML=S.view==='gym'?`훈련장 · <b>${Math.floor(S.ap||0)} AP</b>`:S.view==='office'?`보고서실 · <b>${CR()} C</b>`:S.view==='home'||S.view==='center'?`${S.view==='home'?'내 방':'센터 로비'} · <b>${CR()} C</b> · <b>${Math.floor(S.ap||0)} AP</b> · 접속 ${NET.peers.length+1}명`:'지도에서 게이트를 고릅니다';
+  else dg.innerHTML=S.view==='gym'?'훈련장 · 훈련을 고릅니다':S.view==='office'?'보고서실 · 보고서를 고릅니다':S.view==='home'||S.view==='center'?`${S.view==='home'?'내 방':'센터 로비'} · 접속 ${NET.peers.length+1}명`:'지도에서 게이트를 고릅니다';
   if(cg&&cg.train&&S.phase==='idle')dg.innerHTML=`<b>${esc(cg.name)}</b> · ${esc(cg.desc)}`;
   const gp=$('gymPick');gp.hidden=!(S.phase==='idle'&&S.view==='gym'&&!cine);
   const gk=S.selGate+'|'+S.trHours;
@@ -4718,7 +4773,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){a.textContent=CR().to
   if(!op.hidden&&op.dataset.sel!==S.selGate){op.dataset.sel=S.selGate;op.innerHTML=REPORTS.map(r=>`<button type="button" data-rp="${r.id}" aria-pressed="${S.selGate===r.id}"><b>${r.name}</b><span>${r.mins}분 · ${Math.round(r.mins*reportRate())} C</span></button>`).join('')}
   if(full){
     const bc=$('bagCount'),bn=betterCount();if(curTab==='bag'||(S.bagSeen||0)>S.items.length)S.bagSeen=S.items.length;const nw=Math.max(0,S.items.length-(S.bagSeen||0));bc.hidden=!bn&&!nw;bc.textContent=bn?'▲'+bn:nw;bc.classList.toggle('up',bn>0);bc.title=bn?`더 좋은 장비 ${bn}개`:'';
-    const cc=$('crewCount');cc.hidden=!NET.peers.length;cc.textContent=NET.peers.length;
+    const cc=$('crewCount'),fr=(S._socN||0);cc.hidden=!fr;cc.textContent=fr;/* 요원 탭 숫자: 받은 친구 · 페어 신청이 있을 때만 */
     {const c=$('hudFace'),g2=c.getContext('2d');g2.imageSmoothingEnabled=false;g2.clearRect(0,0,24,24);if(S.look)g2.drawImage(buildDoll(S.look,'a',0),2,0,24,24,0,0,24,24)}
     applyTheme();
     $('topbar').hidden=!role;
@@ -5063,7 +5118,7 @@ $('centerPick').addEventListener('click',e=>{const b=e.target.closest('[data-go]
 $('officePick').addEventListener('click',e=>{const b=e.target.closest('[data-rp]');if(!b||S.phase!=='idle')return;S.selGate=b.dataset.rp;save();updateUI(true)});
 $('backBtn').addEventListener('click',()=>{closeDrawer();setView('center')});
 $('bagList').addEventListener('change',e=>{const sl=e.target.closest('.anoint');if(sl&&sl.value)anointGear(sl.dataset.g,sl.value)});
-$('bagList').addEventListener('click',e=>{const c=e.target.closest('[data-cenh]');if(c&&!c.disabled){enhanceChar(c.dataset.cenh);return}const b=e.target.closest('[data-enh]');if(b&&!b.disabled)enhanceGear(b.dataset.enh)});
+$('bagList').addEventListener('click',e=>{const rt=e.target.closest('[data-roletk]');if(rt){useRoleTicket(rt.dataset.roletk);return}const c=e.target.closest('[data-cenh]');if(c&&!c.disabled){enhanceChar(c.dataset.cenh);return}const b=e.target.closest('[data-enh]');if(b&&!b.disabled)enhanceGear(b.dataset.enh)});
 $('bagList').addEventListener('click',e=>{const q=e.target.closest('[data-eq]');if(q){toggleEquip(q.dataset.eq);return}const s=e.target.closest('[data-tomarket]');if(s){openTab('market');setTimeout(()=>{const m=$('mItem');if(m)m.value=s.dataset.tomarket},50)}});
 setInterval(()=>{if(curTab==='guiding')renderGuiding();if(S.role==='guide')watchRequests();updateBadges()},5000);
 
