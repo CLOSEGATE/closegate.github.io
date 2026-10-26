@@ -1529,7 +1529,7 @@ const DEF={v:4,role:null,cr:0,equip:{},dualTrain:false,assist:null,realGuide:nul
   kills:0,midSaid:false,hotSaid:false,bossSaid:false,ringStart:0,lastCycle:-1,stableSaid:false,
   partner:null,selGate:null,curGate:null,localGates:[],items:[],netId:'',log:[]};
 function load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return null}}
-function save(){S.savedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}try{cloudDirty()}catch(e){}}
+function save(){if(window.__cgKicked)return;S.savedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}try{cloudDirty()}catch(e){}}
 let S=Object.assign({},DEF,load()||{});
 if(!S.attrV2){/* 속성 체계 개편 이전 기록을 옮긴다 */
   const mv=a=>Number.isInteger(a)&&a>=0&&a<6?OLD_ATTR[a]:a;
@@ -4721,8 +4721,30 @@ const authReady=()=>!!(NET.db&&AUTH());
 const cloudOK=()=>!!(authReady()&&NET.authed&&NET.uid&&AUTH().isMember());
 const cloudRef=()=>NET.db.doc('data/users/'+NET.uid+'/save');
 async function cloudGet(){const s=await cloudRef().get();return s.exists?s.data():null}
+/* 한 계정은 한 화면에서만: 다른 브라우저 · 기기에서 접속하면 먼저 있던 화면은 연결이 끊기고 더는 저장하지 않습니다.
+   서로 다른 화면이 번갈아 저장하면서 기록(측정 결과 · 능력치)이 덮어써지는 일을 막습니다. */
+const SID=Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+let sessSub=null;
+async function claimSession(){
+  const r=NET.db.doc('data/users/'+NET.uid+'/session');
+  await r.set({sid:SID,t:Date.now()});
+  try{if(sessSub)sessSub()}catch(e){}
+  sessSub=r.onSnapshot(sn=>{const d=sn.exists?sn.data():null;if(d&&d.sid&&d.sid!==SID)kickSession()},()=>{});
+}
+function kickSession(){
+  if(ACC.kicked)return;ACC.kicked=true;window.__cgKicked=true;ACC.dirty=false;
+  const el=document.createElement('div');el.className='banscreen';el.setAttribute('role','alertdialog');
+  el.innerHTML='<div class="card"><h2>다른 곳에서 접속했습니다</h2><p class="muted">같은 계정으로 다른 브라우저나 기기에서 접속해, 이 화면의 연결을 끊었습니다. 기록이 서로 덮어써지지 않도록 이 화면에서는 더 이상 저장하지 않습니다.</p><button class="btn" type="button">이 화면에서 다시 접속</button></div>';
+  el.querySelector('button').addEventListener('click',()=>location.reload());document.body.appendChild(el);
+}
+/* 중요한 순간(측정 결과 등)에는 기다렸다가 바로 클라우드에 올립니다 */
+async function cloudCommit(){
+  save();if(!(S.acct&&S.acct.mode==='cloud'))return true;
+  for(let i=0;i<50&&ACC.pushing;i++)await new Promise(r=>setTimeout(r,100));
+  return await cloudPut();
+}
 async function cloudPut(){
-  if(!cloudOK()||ACC.pushing)return false;ACC.pushing=true;
+  if(!cloudOK()||ACC.pushing||ACC.kicked)return false;ACC.pushing=true;
   try{await cloudRef().set({json:JSON.stringify(S),at:Date.now(),name:(S.name||'').slice(0,10),lv:myLevel()});ACC.dirty=false;ACC.lastPush=Date.now();renderAcc();return true}
   catch(e){return false}finally{ACC.pushing=false}
 }
@@ -4855,8 +4877,10 @@ async function accOnNet(){
     showAccount();return;
   }
   try{
+    try{await claimSession()}catch(e){}
     const ex=await cloudGet();
-    if(ex&&typeof ex.json==='string'&&(+ex.at||0)>BOOT_SAVED_AT+3000&&S.phase==='idle'){
+    /* 클라우드 기록이 이 화면의 기록보다 새로우면 언제나 클라우드 기록을 씁니다(출동 중이어도) */
+    if(ex&&typeof ex.json==='string'&&(+ex.at||0)>BOOT_SAVED_AT+1000){
       const data=JSON.parse(ex.json);data.acct=S.acct||{mode:'cloud',since:Date.now(),id:AUTH().name()};data.savedAt=+ex.at;
       try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
       location.reload();return;
@@ -5203,7 +5227,7 @@ function drawAttrIcon(a){
 }
 
 function showGacha(mode){
-  showScreen('gacha');roll=null;rerollLeft=mode==='new'?3:Math.max(0,3-(+S.rerolled||0));
+  showScreen('gacha');roll=null;rerollLeft=mode==='new'?(S.pendingReroll!=null?Math.max(0,Math.min(3,+S.pendingReroll)):3):Math.max(0,3-(+S.rerolled||0));
   const role=picked||S.role;document.body.dataset.role=role;
   $('gcAttrLab').textContent=role==='guide'?'Wave':'Ability';
   $('gTitle').textContent=role==='guide'?'가이드 파장 검사':'센티넬 각성 검사';
@@ -5211,7 +5235,9 @@ function showGacha(mode){
   $('gcGradeL').textContent='?';$('gcGradeL').style.background='';$('gcGradeName').textContent='측정 전';$('gcGradeOdds').textContent='';
   $('gOdds').innerHTML='<span>등장 확률</span>'+GRADES.map((g,i)=>`<span>${g} ${GRADE_W[i]}%</span>`).join('');
   $('gRoll').hidden=false;$('gReroll').hidden=true;$('gNext').hidden=true;drawAttrIcon(null);$('wpField').hidden=true;wpPicked=false;
-  if(S.pendingRoll&&S.pendingRole===role){roll={...S.pendingRoll};rerollLeft=Math.max(0,Math.min(3,+S.pendingReroll||0));showRollResult(roll,role,false)}
+  /* 역할마다 처음 측정 한 번, 다시 측정은 두 역할을 합쳐 3번까지입니다. 역할을 바꿔도 횟수가 돌아오지 않습니다 */
+  const pr=(S.pendingRolls||{})[role]||(S.pendingRoll&&S.pendingRole===role?S.pendingRoll:null);
+  if(pr){roll={...pr};showRollResult(roll,role,false)}
 }
 function showRollResult(res,role,fresh){
   ['gcAttr','gcGrade'].forEach(id=>{$(id).classList.remove('rolling');$(id).classList.add('reveal')});
@@ -5222,25 +5248,34 @@ function showRollResult(res,role,fresh){
   {const need=!S.items.some(x=>x.kind==='gear'&&x.slot==='weapon');$('wpField').hidden=!need;wpPicked=need;if(need)buildWp()}
   $('gRoll').hidden=true;$('gReroll').hidden=rerollLeft<=0;$('gReroll').textContent=`다시 측정하기 (남은 횟수 ${rerollLeft})`;$('gNext').hidden=false;
   /* 측정 결과는 바로 저장해 두어, 타이틀로 나갔다 와도 그대로 남습니다 */
-  S.pendingRole=role;S.pendingRoll={grade:res.grade,attr:res.attr};S.pendingReroll=rerollLeft;save();
+  S.pendingRole=role;S.pendingRoll={grade:res.grade,attr:res.attr};S.pendingReroll=rerollLeft;S.pendingRolls={...(S.pendingRolls||{}),[role]:{grade:res.grade,attr:res.attr}};save();
 }
-function doRoll(){
-  const role=picked||S.role;
-  $('gRoll').hidden=true;$('gReroll').hidden=true;$('gNext').hidden=true;
+/* 측정 결과는 애니메이션을 보여 주기 전에 먼저 정해서 저장합니다(클라우드까지).
+   새로고침하거나 다른 브라우저로 들어와도 같은 결과가 그대로 보이고, 다시 뽑을 수 없습니다. */
+let rolling=false;
+async function doRoll(isRe){
+  if(rolling)return;const role=picked||S.role;
+  if(isRe&&rerollLeft<=0)return;
+  rolling=true;$('gRoll').hidden=true;$('gReroll').hidden=true;$('gNext').hidden=true;
+  const prev={r:S.pendingRoll,role:S.pendingRole,n:S.pendingReroll,left:rerollLeft};
+  const res={grade:rollGrade(),attr:rollAttr(role)};if(isRe)rerollLeft--;
+  const prevMap=S.pendingRolls?{...S.pendingRolls}:null;S.pendingRole=role;S.pendingRoll={grade:res.grade,attr:res.attr};S.pendingReroll=rerollLeft;S.pendingRolls={...(S.pendingRolls||{}),[role]:{grade:res.grade,attr:res.attr}};
+  const ok=await cloudCommit();
+  if(!ok){Object.assign(S,{pendingRoll:prev.r,pendingRole:prev.role,pendingReroll:prev.n,pendingRolls:prevMap});rerollLeft=prev.left;save();rolling=false;
+    if(roll)showRollResult(roll,role,false);else{$('gRoll').hidden=false}
+    toast('측정 결과를 서버에 저장하지 못해 측정을 멈췄습니다. 인터넷 연결을 확인한 뒤 다시 시도할 수 있습니다.');return}
   ['gcAttr','gcGrade'].forEach(id=>{$(id).classList.remove('reveal');$(id).classList.add('rolling')});$('wpField').hidden=true;
   ac();let i=0;const t0=now();
-  const res={grade:rollGrade(),attr:rollAttr(role)};
   const iv=setInterval(()=>{
     i++;const pool=role==='guide'?G_ATTRS:S_ATTRS,a=pool[i%pool.length],g=i%GRADES.length;drawAttrIcon(a);$('gcAttrName').textContent=ATTRS[a].n;$('gcGradeL').textContent=GRADES[g];$('gcGradeL').style.background=GCOL[g];beep(400+g*80,.03,'square',.02);
-    if(now()-t0>1300){clearInterval(iv);roll=res;showRollResult(res,role,true);
-    }
+    if(now()-t0>1300){clearInterval(iv);roll=res;rolling=false;showRollResult(res,role,true)}
   },70);
 }
-$('gRoll').addEventListener('click',doRoll);
-$('gReroll').addEventListener('click',()=>{if(rerollLeft<=0)return;rerollLeft--;doRoll()});
+$('gRoll').addEventListener('click',()=>doRoll(false));
+$('gReroll').addEventListener('click',()=>doRoll(true));
 $('gNext').addEventListener('click',()=>{
-  if(!roll)return;S.grade=roll.grade;S.attrs=[roll.attr];S.rerolled=3-rerollLeft;S.pendingRoll=null;
-  picked=picked||S.role;save();showCustom(S.role?'role':'new');
+  if(!roll||rolling)return;S.grade=roll.grade;S.attrs=[roll.attr];S.rerolled=3-rerollLeft;S.pendingRoll=null;S.pendingRolls=null;S.pendingReroll=null;
+  picked=picked||S.role;cloudCommit();showCustom(S.role?'role':'new');
 });
 function showCustom(mode){
   customMode=mode;
