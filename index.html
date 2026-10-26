@@ -3518,7 +3518,7 @@ function mailList(){
 }
 const mailUnread=()=>mailList().filter(m=>!m.claimed).length;
 function mailBadge(){const n=mailUnread(),b=$('mailBadge');if(b){b.textContent=n;b.hidden=!n}if(curTab==='mail')renderMail()}
-function mailItems(m){return (Array.isArray(m.items)?m.items:[]).slice(0,20).map(it=>{if(it&&(it.kind==='gear'||it.kind==='potion'))return cleanItem(it);const a=Number.isInteger(it&&it.attr)&&it.attr>=0&&it.attr<ATTRS.length?it.attr:pick(STONE_ATTRS);return {id:'i'+Date.now().toString(36)+Math.floor(Math.random()*1e5).toString(36),attr:a}}).filter(Boolean)}
+function mailItems(m){return (Array.isArray(m.items)?m.items:[]).slice(0,20).map(it=>{if(it&&(it.kind==='gear'||it.kind==='potion'||it.kind==='ticket'))return cleanItem(it);const a=Number.isInteger(it&&it.attr)&&it.attr>=0&&it.attr<ATTRS.length?it.attr:pick(STONE_ATTRS);return {id:'i'+Date.now().toString(36)+Math.floor(Math.random()*1e5).toString(36),attr:a}}).filter(Boolean)}
 async function claimMail(id){
   const m=mailList().find(x=>x.id===id);if(!m||m.claimed)return;
   S.mailGot=S.mailGot||{};S.mailGot[id]=1;
@@ -3875,7 +3875,7 @@ function gmSubs(){
 }
 const GM_TABS=[['stats','통계'],['notice','공지'],['mail','우편'],['codes','가입 코드'],['users','유저'],['gates','게이트 · 레이드'],['mod','채팅 · 장터'],['log','기록']];
 const fmtT=t=>new Date(+t||0).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
-function gmItemLabel(it){return it.kind==='potion'?POTS[it.p].n:it.kind==='gear'?`${GEAR_T[it.tier]} ${SLOT_N[it.slot]} Lv.${it.lv}`:it.attr<0?'무작위 각성석':ATTRS[it.attr].n+' 각성석'}
+function gmItemLabel(it){return it.kind==='ticket'?'역할 변경권':it.kind==='potion'?POTS[it.p].n:it.kind==='gear'?`${GEAR_T[it.tier]} ${SLOT_N[it.slot]} Lv.${it.lv}`:it.attr<0?'무작위 각성석':ATTRS[it.attr].n+' 각성석'}
 function gmKeepMail(){if(!$('gmMtitle'))return;GMX.mf={to:val('gmMto'),from:val('gmMfrom'),title:val('gmMtitle'),body:val('gmMbody'),cr:val('gmMcr'),ap:val('gmMap')}}
 function gmRender(soft){
   if($('gmModal').hidden)return;
@@ -3895,7 +3895,7 @@ function gmRender(soft){
       <label class="wide">제목<input id="gmMtitle" maxlength="40" placeholder="예: 점검 보상" value="${esc(F.title||'')}"></label>
       <label class="wide">내용<textarea id="gmMbody" maxlength="400" rows="3">${esc(F.body||'')}</textarea></label>
       <label>크레딧<input id="gmMcr" type="number" min="0" value="${esc(F.cr||'0')}"></label><label>각성 포인트<input id="gmMap" type="number" min="0" value="${esc(F.ap||'0')}"></label></div>
-      <span class="flab">아이템</span><div class="gmrow"><select id="gmIk"><option value="stone">각성석</option><option value="potion">물약</option><option value="gear">장비</option></select>
+      <span class="flab">아이템</span><div class="gmrow"><select id="gmIk"><option value="stone">각성석</option><option value="potion">물약</option><option value="gear">장비</option><option value="ticket">역할 변경권</option></select>
       <select id="gmIa">${[-1,...S_ATTRS].map(a=>`<option value="${a}">${a<0?'무작위 속성':ATTRS[a].n}</option>`).join('')}</select>
       <select id="gmIp">${POT_IDS.map(p=>`<option value="${p}">${POTS[p].n}</option>`).join('')}</select>
       <select id="gmIs"><option value="weapon">무기</option><option value="armor">방어구</option><option value="acc">장신구</option></select>
@@ -3951,7 +3951,7 @@ async function gmAct(a){
   if(a==='noticeOn'){const text=val('gmNtx').trim();if(!text){toast('공지 내용을 입력해 주세요.');return}const level=(document.querySelector('[name=gmNl]:checked')||{}).value||'info';await db.doc('notices/main').set({text,level,on:true,t:gmT(),by:NET.uid});gmLog('공지 띄우기','',text);toast('공지를 띄웠습니다.')}
   else if(a==='noticeOff'){await db.doc('notices/main').update({on:false,t:gmT()});gmLog('공지 내리기','','');toast('공지를 내렸습니다.')}
   else if(a==='addItem'){gmKeepMail();const k=val('gmIk'),n=Math.max(1,Math.min(20,+val('gmIn')||1));for(let i=0;i<n;i++){
-      if(k==='stone')GMX.draft.push({attr:+val('gmIa')});else if(k==='potion')GMX.draft.push({kind:'potion',p:val('gmIp')});
+      if(k==='ticket')GMX.draft.push({kind:'ticket',t:'role'});else if(k==='stone')GMX.draft.push({attr:+val('gmIa')});else if(k==='potion')GMX.draft.push({kind:'potion',p:val('gmIp')});
       else GMX.draft.push({kind:'gear',slot:val('gmIs'),tier:+val('gmIt'),lv:Math.max(1,Math.min(100,+val('gmIl')||1)),wt:pick(WTYPES).id})}
     GMX.draft=GMX.draft.slice(0,20);gmRender()}
   else if(a==='sendMail'){const to=val('gmMto'),title=val('gmMtitle').trim();if(!title){toast('제목을 입력해 주세요.');return}
@@ -4011,6 +4011,12 @@ document.addEventListener('input',e=>{if(e.target.id==='gmQ'){GMX.q=e.target.val
 $('banOut').addEventListener('click',()=>{try{$('accOut').click()}catch(e){location.reload()}});
 
 setInterval(()=>{if(S.gmRolePending&&S.phase==='idle'){const r=S.gmRolePending;S.gmRolePending=null;changeRole(r,'gm')}},3000);
+
+/* 아이템 종류에 맞는 칸만 보이기 */
+function gmSyncItemKind(){const k=val('gmIk');const show=(id,on)=>{const e=$(id);if(e)e.hidden=!on};
+  show('gmIa',k==='stone');show('gmIp',k==='potion');['gmIs','gmIt','gmIl'].forEach(id=>show(id,k==='gear'))}
+document.addEventListener('change',e=>{if(e.target.id==='gmIk')gmSyncItemKind()});
+new MutationObserver(()=>{if($('gmIk')&&!$('gmIk').dataset.sync){$('gmIk').dataset.sync=1;gmSyncItemKind()}}).observe(document.body,{childList:true,subtree:true});
 /* ═════════ 타이틀 화면: 밤하늘 도시 위에 열린 거대 게이트 (320×180, 2배) ═════════ */
 const TW=320,TH=180,TCX=160,TCY=98,PK=.8;
 let tParts=[],tBolts=[],tBoltT=0;
