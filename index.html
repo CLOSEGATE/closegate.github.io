@@ -1072,6 +1072,10 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .ebox .bar2{display:block;height:8px;border-radius:99px;background:var(--wash);overflow:hidden}.ebox .bar2 i{display:block;height:100%;background:#FF6B8A}
 #examQuit.armed{background:#F0544F;color:#fff}
 .logbrk span{color:#B0203A;font-weight:700}
+/* v35.49 알림: 처음부터 가운데에서 나타나게 합니다(가운데 맞춤 이동값을 애니메이션에도 넣음) */
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,6px)}to{opacity:1;transform:translate(-50%,0)}}
+@media (max-width:760px){@keyframes toastIn{from{opacity:0;transform:translate(-50%,-6px)}to{opacity:1;transform:translate(-50%,0)}}}
+.toast{animation:toastIn .22s ease!important;transform:translateX(-50%)!important}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1093,7 +1097,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.48</span>
+      <span class="title-ver" id="titleVer">v35.49</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
