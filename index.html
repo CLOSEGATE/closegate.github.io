@@ -1076,6 +1076,9 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,6px)}to{opacity:1;transform:translate(-50%,0)}}
 @media (max-width:760px){@keyframes toastIn{from{opacity:0;transform:translate(-50%,-6px)}to{opacity:1;transform:translate(-50%,0)}}}
 .toast{animation:toastIn .22s ease!important;transform:translateX(-50%)!important}
+/* v35.51 공략 시간 단추: 시간 + 짧은 설명 */
+[data-glen]{display:inline-grid!important;justify-items:center;line-height:1.15}
+[data-glen] small{font-size:.66rem;opacity:.75;font-weight:600}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1097,7 +1100,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.49</span>
+      <span class="title-ver" id="titleVer">v35.53</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -1384,7 +1387,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
       <p><b>역할 차이</b>: 센티넬은 HP가 15% 더 높고 더 빠르게 공격합니다. 가이드는 앞의 센티넬이 공격을 대신 받아 주어 받는 피해가 20% 적고, 보스 스킬 중 처음 1~2번은 센티넬이 대신 막아 줍니다. 가이드의 게이트 안 가이딩은 같은 게이트의 모든 플레이어와 NPC 센티넬의 HP를 회복합니다.</p>
       <p>HP가 0이 되어도 죽지 않습니다. <b>10분 뒤에 부활</b>해서 공략을 이어 가지만, 쓰러져 있던 시간은 경험치와 봉인 기여에 들어가지 않습니다. 쓰러진 채로 공략이 끝나면 <b>30분 동안 치료</b>를 받으며, 그동안 게이트에는 출동할 수 없습니다. 훈련과 보고서 작성은 할 수 있습니다.</p></details>
     <details id="gb5"><summary><span class="gbno">5</span><span class="gbt">속성과 상성</span></summary>
-      <p>센티넬 속성은 자연계(물 · 불 · 바람 · 땅 · 빛 · 어둠), 물리계(신체 강화 · 강철 피부 · 초가속), 정신계(염력 · 염동력 · 정신 공격)로 나뉩니다. 가이드 파장은 물 · 불 · 바람 · 땅 · 빛 · 어둠 · 물리 · 정신입니다. 가이드의 물리는 물리계 전체와, 정신은 정신계 전체와 맞습니다.</p>
+      <p>센티넬 속성은 자연계(물 · 불 · 바람 · 땅 · 빛 · 어둠), 물리계(신체 강화 · 강철 피부 · 초가속), 정신계(예지 · 염동력 · 환각)로 나뉩니다. 가이드 파장은 물 · 불 · 바람 · 땅 · 빛 · 어둠 · 육체 공명 · 정신 공명입니다. 육체 공명은 물리계 전체와, 정신 공명은 정신계 전체와 맞습니다. 가이드가 물리계 · 정신계 각성석을 쓰면 육체 공명 · 정신 공명으로 얻고, 강화 재료로도 씁니다.</p>
       <p>게이트마다 <b>약점 속성 2개</b>와 <b>강한 속성 1개</b>가 있습니다. 내 공격 속성(무기 속성, 없으면 내 첫 속성)이 약점이면 기여와 대미지가 늘고 받는 피해가 줄어듭니다. 강한 속성에 막히면 반대로 손해를 봅니다.</p></details>
     <details id="gb6"><summary><span class="gbno">6</span><span class="gbt">폭주와 가이딩</span></summary>
       <p>센티넬은 출동할수록 <b>폭주 게이지</b>가 찹니다. 출동이 끝나면 가이드와 함께 가이딩을 받아 게이지를 낮춥니다.</p>
@@ -1477,7 +1480,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 <!-- 보고서 -->
 <div class="modal" id="report" hidden role="dialog" aria-modal="true" aria-labelledby="repTitle">
   <div class="sheet card">
-    <span class="eyebrow">Gate report</span>
+    <span class="eyebrow" id="repEye">Gate report</span>
     <h2 id="repTitle">출동 보고서</h2>
     <dl class="rep" id="repList"></dl>
     <p class="muted" id="repNote"></p>
@@ -1571,11 +1574,11 @@ const ATTRS=[
   {n:'신체 강화',cat:'물리계',sym:'力',col:'#FF8A9E',col2:'#FFFFFF',skill:'근력 폭발',gskill:''},
   {n:'강철 피부',cat:'물리계',sym:'鋼',col:'#8E9AB8',col2:'#E3E8F2',skill:'강철 방벽',gskill:''},
   {n:'초가속',cat:'물리계',sym:'速',col:'#FFB627',col2:'#FFF3C2',skill:'순간 가속',gskill:''},
-  {n:'염력',cat:'정신계',sym:'念',col:'#A97DFF',col2:'#E6D9FF',skill:'염력 파동',gskill:''},
-  {n:'염동력',cat:'정신계',sym:'動',col:'#C77DFF',col2:'#F2E2FF',skill:'물체 조종',gskill:''},
-  {n:'정신 공격',cat:'정신계',sym:'心',col:'#FF6FB5',col2:'#FFE0F0',skill:'정신 붕괴',gskill:''},
-  {n:'물리',cat:'물리계',sym:'力',col:'#FF8A9E',col2:'#FFFFFF',skill:'',gskill:'신체 안정 파장'},
-  {n:'정신',cat:'정신계',sym:'心',col:'#A97DFF',col2:'#E6D9FF',skill:'',gskill:'정신 안정 파장'}
+  {n:'예지',cat:'정신계',sym:'視',col:'#22B8C9',col2:'#D3F7FB',skill:'예지 회피',gskill:''},
+  {n:'염동력',cat:'정신계',sym:'動',col:'#B06CFF',col2:'#EFE0FF',skill:'물체 조종',gskill:''},
+  {n:'환각',cat:'정신계',sym:'幻',col:'#FF5FC8',col2:'#FFE0F4',skill:'환각 유도',gskill:''},
+  {n:'육체 공명',cat:'물리계',sym:'脈',col:'#E05A5A',col2:'#FFD6D6',skill:'',gskill:'육체 공명 파장'},
+  {n:'정신 공명',cat:'정신계',sym:'波',col:'#8FD14F',col2:'#E9F9D6',skill:'',gskill:'정신 공명 파장'}
 ];
 /* 센티넬: 자연계 6 · 물리계 3 · 정신계 3 / 가이드: 자연계 6 · 물리 · 정신 */
 const S_ATTRS=[0,1,2,3,4,5,6,7,8,9,10,11],G_ATTRS=[0,1,2,3,4,5,12,13],STONE_ATTRS=S_ATTRS;
@@ -2852,7 +2855,7 @@ function drawWeapon(w,hx,hy,a,at,bob,berserk){
     else{dag(hx,y);dag(b2,y)}}
 }
 /* ═════════ 속성 이펙트: 캐릭터 둘레에 속성별 작은 효과(설정에서 끄고 켤 수 있음) ═════════ */
-const ATTR_FXK=['water','fire','wind','earth','light','dark','body','steel','speed','psy','psy','mind','body','psy'];
+const ATTR_FXK=['water','fire','wind','earth','light','dark','body','steel','speed','fore','psy','illus','pulse','wave'];
 function attrFx(x,fy,a,lv,bob){
   const A=ATTRS[a];if(!A)return;const k=ATTR_FXK[a]||'light',c1=A.col,c2=A.col2||shade(A.col,.4),n=2+Math.min(5,lv||0),t=T;
   for(let i=0;i<n;i++){const ph=(t*.6+i/n)%1,sx=x+Math.sin(i*2.7+t*.3)*11;
@@ -2867,6 +2870,10 @@ function attrFx(x,fy,a,lv,bob){
     else if(k==='speed'){const y=fy-6-((i*7)%24);G.globalAlpha=.7*(1-ph);px(x-14-ph*8,y,5,1,c1)}
     else if(k==='psy'){const a2=t*1.5+i/n*Math.PI*2;G.globalAlpha=.9;disc(x+Math.cos(a2)*12,fy-18+Math.sin(a2*2)*4,1,c1)}
     else if(k==='mind'){G.globalAlpha=(1-ph)*.6;circle(x,fy-16,4+ph*12,c1)}
+    else if(k==='fore'){/* 예지: 몸 옆에 잔상이 남았다가 사라지고, 가끔 머리 위 눈이 번쩍 */G.globalAlpha=(1-ph)*.5;px(x+(i%2?1:-1)*(6+ph*8),fy-10-((i*5)%14),1,3,c1);if(i===0&&Math.floor(t*1.3)%4===0){G.globalAlpha=.95;px(x-2,fy-31,5,1,c1);px(x-1,fy-32,3,3,c2);px(x,fy-31,1,1,INK)}}
+    else if(k==='illus'){/* 환각: 분홍빛 일렁임이 소용돌이치며 커집니다 */const a2=t*2.2+i/n*Math.PI*2,r=6+ph*12;G.globalAlpha=(1-ph)*.85;px(x+Math.cos(a2+ph*3)*r,fy-15+Math.sin(a2+ph*3)*r*.6,1,1,i%2?c1:c2)}
+    else if(k==='pulse'){/* 육체 공명: 심장 박동처럼 두 번씩 뛰는 붉은 고리 */if(i===0){const b=(t*1.1)%1,bt=b<.12?b/.12:b>.22&&b<.34?(b-.22)/.12:-1;if(bt>=0){G.globalAlpha=(1-bt)*.7;circle(x,fy-12,5+bt*9,c1)}}else if(Math.floor(t*4+i)%5===0){G.globalAlpha=.8;px(x+(i%2?8:-9),fy-18+((i*3)%8),2,1,c1);px(x+(i%2?8:-9)+(i%2?0:1),fy-17+((i*3)%8),1,1,c1)}}
+    else if(k==='wave'){/* 정신 공명: 부드러운 물결선이 몸을 감싸고 흐릅니다 */const yy=fy-6-((i*6)%22);G.globalAlpha=.75;for(let j=-6;j<=6;j+=2)px(x+j+Math.sin(t*2+i)*2,yy+Math.round(Math.sin(t*3+j*.6+i)*1.5),1,1,j%4?c1:c2)}
   }
   G.globalAlpha=1;
 }
@@ -3167,13 +3174,14 @@ function attrGlyph(g,a,cx,cy,s,col){
     case 3: P();g.moveTo(-10,8);g.lineTo(-3,-6);g.lineTo(1,0);g.lineTo(4,-3);g.lineTo(10,8);g.closePath();F();break; // 땅: 산
     case 4: P();g.arc(0,0,4.5,0,Math.PI*2);F();for(let i=0;i<8;i++){const r=i*Math.PI/4;P();g.moveTo(Math.cos(r)*6.5,Math.sin(r)*6.5);g.lineTo(Math.cos(r)*9.5,Math.sin(r)*9.5);St(2)}break; // 빛: 해
     case 5: P();g.arc(0,0,8,0,Math.PI*2);g.arc(4,-3,7,0,Math.PI*2,true);g.fill('evenodd');break; // 어둠: 초승달
-    case 6: case 12: P();g.roundRect?g.roundRect(-7,-3,14,11,3):g.rect(-7,-3,14,11);F();for(let i=0;i<4;i++){P();g.roundRect?g.roundRect(-7+i*3.6,-8,3,6,1.5):g.rect(-7+i*3.6,-8,3,6);F()}P();g.roundRect?g.roundRect(-10,-1,4,7,2):g.rect(-10,-1,4,7);F();break; // 신체 강화 · 물리: 주먹
+    case 6: P();g.roundRect?g.roundRect(-7,-3,14,11,3):g.rect(-7,-3,14,11);F();for(let i=0;i<4;i++){P();g.roundRect?g.roundRect(-7+i*3.6,-8,3,6,1.5):g.rect(-7+i*3.6,-8,3,6);F()}P();g.roundRect?g.roundRect(-10,-1,4,7,2):g.rect(-10,-1,4,7);F();break; // 신체 강화 · 물리: 주먹
+    case 12: P();g.moveTo(0,9);g.bezierCurveTo(-11,1,-8,-9,0,-4);g.bezierCurveTo(8,-9,11,1,0,9);F();break; // 육체 공명: 심장
     case 7: P();g.moveTo(0,-9);g.lineTo(8,-6);g.lineTo(7,2);g.bezierCurveTo(6,6,3,8,0,10);g.bezierCurveTo(-3,8,-6,6,-7,2);g.lineTo(-8,-6);g.closePath();F();break; // 강철 피부: 방패
     case 8: P();g.moveTo(2,-10);g.lineTo(-6,1);g.lineTo(0,1);g.lineTo(-2,10);g.lineTo(7,-2);g.lineTo(1,-2);g.closePath();F();break; // 초가속: 번개
-    case 9: P();g.arc(0,0,3.2,0,Math.PI*2);F();[6,9.5].forEach(r=>{P();g.arc(0,0,r,-Math.PI*0.8,-Math.PI*0.2);St(1.8);P();g.arc(0,0,r,Math.PI*0.2,Math.PI*0.8);St(1.8)});break; // 염력: 퍼지는 파동
+    case 9: P();g.moveTo(-10,0);g.quadraticCurveTo(0,-9,10,0);g.quadraticCurveTo(0,9,-10,0);St(2.2);P();g.arc(0,0,3.4,0,Math.PI*2);F();break; // 예지: 눈동
     case 10: P();g.rect(-4,-4,8,8);F();[[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx,dy])=>{P();g.moveTo(dx*7,dy*7);g.lineTo(dx*10,dy*10);St(2);P();g.moveTo(dx*10+dy*2,dy*10+dx*2);g.lineTo(dx*10,dy*10);g.lineTo(dx*10-dy*2,dy*10-dx*2);St(2)});break; // 염동력: 움직이는 상자
     case 11: P();for(let t=0;t<=Math.PI*4.2;t+=.15){const r=1+t*.65;const x=Math.cos(t)*r,y=Math.sin(t)*r;t?g.lineTo(x,y):g.moveTo(x,y)}St(2);break; // 정신 공격: 소용돌이
-    case 13: P();for(let i=0;i<4;i++){const r=i*Math.PI/2;g.lineTo(Math.cos(r)*10,Math.sin(r)*10);g.lineTo(Math.cos(r+Math.PI/4)*3,Math.sin(r+Math.PI/4)*3)}g.closePath();F();break; // 정신(가이드): 반짝임
+    case 13: [-5,0,5].forEach(yy=>{P();for(let x2=-10;x2<=10;x2+=1){const y2=yy+Math.sin(x2*.6)*2.4;x2===-10?g.moveTo(x2,y2):g.lineTo(x2,y2)}St(2)});break; // 정신(가이드): 반짝임
     default: P();g.arc(0,0,5,0,Math.PI*2);F();
   }
   g.restore();
@@ -3517,10 +3525,13 @@ function toggleEquip(id){const it=S.items.find(x=>x.id===id);if(!it||it.kind!=='
    속성 바꾸기: 그 속성 각성석을 여러 개 씁니다. 등급과 레벨이 높을수록 더 듭니다. 바꾸면 속성 강화는 0으로 돌아갑니다.
    속성 강화: 장비와 같은 속성 각성석으로 +1~+10까지 올립니다. 단계가 오를수록 훨씬 많이 듭니다. */
 const ENH_MAX=10;
+/* 각성석 짝 맞추기: 가이드의 물리 · 정신은 전용 각성석이 없으므로, 같은 계열(물리계 · 정신계) 각성석을 그 속성의 각성석으로 셉니다 */
+const stoneKey=x=>normAttr(x,S.role);
 const stonesOf=a=>S.items.filter(x=>!x.kind&&x.attr===a);
+const famStones=a=>S.items.filter(x=>!x.kind&&stoneKey(x.attr)===a);
 const anointCost=g=>1+(g.tier||0)+Math.floor((g.lv||1)/25);
 const enhCost=g=>{const k=(g.enh||0)+1;return Math.max(1,Math.round((1+k*k*.3)*(1+(g.tier||0)*.3)*(1+(g.lv||1)/100)))};
-function useStones(a,n){let left=n;S.items=S.items.filter(x=>{if(left>0&&!x.kind&&x.attr===a){left--;return false}return true})}
+function useStones(a,n,fam){let left=n;S.items=S.items.filter(x=>{if(left>0&&!x.kind&&(fam?stoneKey(x.attr):x.attr)===a){left--;return false}return true})}
 function anointGear(gid,a){
   const g=S.items.find(x=>x.id===gid&&x.kind==='gear');a=+a;if(!g||!ATTRS[a])return;
   if(g.attr===a){toast('이미 그 속성입니다.');return}
@@ -3548,8 +3559,8 @@ function enhOrbs(a){const lv=charEnh(a),col=ATTRS[a]?ATTRS[a].col:'#8E6CF0';
 function enhanceChar(a){
   a=+a;if(!(S.attrs||[]).includes(a)){toast('내가 가진 속성만 강화할 수 있습니다.');return}
   if(charEnh(a)>=CENH_MAX){toast(`이미 최대 강화(+${CENH_MAX})입니다.`);return}
-  const c=charEnhCost(a),have=stonesOf(a).length;if(have<c){toast(`${ATTRS[a].n} 각성석이 ${c-have}개 부족합니다.`);return}
-  useStones(a,c);S.attrEnh=S.attrEnh||{};S.attrEnh[a]=charEnh(a)+1;
+  const c=charEnhCost(a),have=famStones(a).length;if(have<c){toast(`${ATTRS[a].n} 각성석이 ${c-have}개 부족합니다.`);return}
+  useStones(a,c,true);S.attrEnh=S.attrEnh||{};S.attrEnh[a]=charEnh(a)+1;
   toast(`내 ${ATTRS[a].n} 속성이 +${S.attrEnh[a]}로 강화되었습니다.`);beep(1047,.08);beep(1568,.14,'square',.04,.08);if(S.attrEnh[a]>=CENH_MAX)try{fanfare()}catch(e){}
   save();pushPresence();updateUI(true);
 }
@@ -4510,7 +4521,7 @@ function glyph(g,rows,ox,oy,col,edge,shadeOn){const set=new Set();rows.forEach((
     /* shade: 위 · 왼쪽이 비면 밝게, 아래 · 오른쪽이 비면 어둡게 칠해 입체감을 줍니다 */
     g.fillStyle=shadeOn?(!set.has(x+','+(y-1))||!set.has((x-1)+','+y)?shade(col,.42):!set.has(x+','+(y+1))||!set.has((x+1)+','+y)?shade(col,-.18):col):col;g.fillRect(x,y,1,1)})}
 
-/* 속성 문양 14종(물 · 불 · 바람 · 땅 · 빛 · 어둠 · 신체 강화 · 강철 피부 · 초가속 · 염력 · 염동력 · 정신 공격 · 물리 · 정신) */
+/* 속성 문양 14종(물 · 불 · 바람 · 땅 · 빛 · 어둠 · 신체 강화 · 강철 피부 · 초가속 · 예지 · 염동력 · 환각 · 육체 공명 · 정신 공명) */
 const ATTR_GLYPH=[
  '...XX... ...XX... ..XXXX.. .XXXXXX. .XXXXXX. .XXXXXX. ..XXXX.. ........',
  '...X.... ..XX..X. ..XXX.X. .XXXXXX. XXXXXXXX XXXXXXXX .XXXXXX. ..XXXX..',
@@ -4521,11 +4532,11 @@ const ATTR_GLYPH=[
  '........ XX....XX XX....XX XXXXXXXX XXXXXXXX XX....XX XX....XX ........',
  'XXXXXXX. X..X..X. X..X..X. XXXXXXX. X..X..X. .X.X.X.. ..XXX... ...X....',
  '....XX.. ...XX... ..XX.... .XXXXX.. ...XX... ..XX.... .XX..... .X......',
- 'X....... ...XX... ..XXXX.. .XXXXXX. ..XXXX.. ...XX... .......X X..X....',
- 'XXXXXX.. X....X.. X.XX.X.. X.X..X.. X.XXXX.. X....... XXXXXXX. ........',
  '........ ..XXXX.. .X....X. X..XX..X X..XX..X .X....X. ..XXXX.. ........',
- 'X.....X. .X...X.. ..X.X... ...X.... ..X.X... .X...X.. XX...XX. XX...XX.',
- '...X.... ...X.... ..XXX... XXXXXXX. ..XXX... ...X.... ...X.... ........'].map(PX8);
+ '...XX... ..XXXX.. ..XXXX.. ...XX... ........ .X.XX.X. X......X .X....X.',
+ '..XXXX.. .X....X. X..XX..X X.X..X.X X.X.XX.X X..X...X .X..XXX. ..XX....',
+ '.XX..XX. XXXXXXXX XXXXXXXX .XXXXXX. ..XXXX.. ...XX... ........ ........',
+ '.XX..XX. X..XX..X ........ .XX..XX. X..XX..X ........ .XX..XX. X..XX..X'].map(PX8);
 function attrDot(a){const A=ATTRS[a];if(!A)return '<i></i>';
   const u=pxIcon('ad2'+a,10,10,g=>glyph(g,ATTR_GLYPH[a]||ATTR_GLYPH[13],1,1,A.col,shade(A.col,-.5),true));
   return `<img class="adot" src="${u}" alt="" width="14" height="14">`}
@@ -4884,20 +4895,25 @@ const fmtAway=ms=>{const s=Math.round(ms/1000);return s<60?`${s}초`:`${Math.rou
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
 
 /* ═════════ 게이트 수치 ═════════ */
-const gateName=g=>g.brk?`${DIST[g.d].name} 브레이크 게이트 (${GRADES[g.g]}급)`:g.raid?`균열 레이드 · ${g.boss}`:g.exam?`승급 시험장 (${GRADES[myGrade()]} → ${GRADES[Math.min(6,myGrade()+1)]})`:g.train?(g.name||'훈련'):`${DIST[g.d].name} ${GRADES[g.g]}급 게이트`;
-const gateLocked=g=>g.brk?false:g.raid?!raidOpenNow():!g.train&&!g.exam&&!g.raid&&g.g>=6&&myLevel()+3<REC_LV[g.g];
+/* 훈련 데이터의 brk는 '쉬는 시간'이라, 브레이크 게이트 여부는 이 함수로만 판단합니다 */
+const isBrk=g=>!!g&&!!g.brk&&!g.train&&!g.report;
+const gateName=g=>g.brk&&!g.train&&!g.report?`${DIST[g.d].name} 브레이크 게이트 (${GRADES[g.g]}급)`:g.raid?`균열 레이드 · ${g.boss}`:g.exam?`승급 시험장 (${GRADES[myGrade()]} → ${GRADES[Math.min(6,myGrade()+1)]})`:g.train?(g.name||'훈련'):`${DIST[g.d].name} ${GRADES[g.g]}급 게이트`;
+const gateLocked=g=>isBrk(g)?false:g.raid?!raidOpenNow():!g.train&&!g.exam&&!g.raid&&g.g>=6&&myLevel()+3<REC_LV[g.g];
 /* 일반 게이트는 공략 시간을 기본의 1~4배로 고를 수 있습니다. 길게 머물수록 봉인에 많이 쌓여 혼자서도 닫을 수 있습니다 */
-const LEN_OPT=[1,2,3,4];
+/* v35.51 공략 시간: 등급별 배수 대신, 누구나 알아보기 쉬운 고정 시간 4개에서 고릅니다(게이트 최소 시간보다 짧은 칸은 빼고 한 칸씩 밀림) */
+const LEN_SET=[15,25,50,90,120,180],LEN_TAG=['짧게','보통','길게','오래'];
+const lenSetOf=g=>{const b=baseMinOf(g);const s=LEN_SET.filter(m=>m>=b);return s.slice(0,4)};
+const lenMinOf=g=>{const s=lenSetOf(g),want=+S.gMin||(S.gLen?baseMinOf(g)*S.gLen:s[0]);return s.reduce((a,m)=>Math.abs(m-want)<Math.abs(a-want)?m:a,s[0])};
 const isNormalGate=g=>g&&!g.raid&&!g.train&&!g.exam&&!g.report;
-const lenOf=g=>isNormalGate(g)?(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id&&S.curGate.len?S.curGate.len:Math.max(1,Math.min(4,+S.gLen||1))):1;
-const baseMinOf=g=>g.brk?Math.max(50,FOCUS_MIN[g.g]*2):FOCUS_MIN[g.g];
-const focusMsOf=g=>g.raid?25*60e3:g.train?(g.mins||1)*60e3:g.exam?25*60e3:(g.brk?Math.max(50,FOCUS_MIN[g.g]*2):FOCUS_MIN[g.g])*60e3*lenOf(g);
-const brkMsOf=g=>g.raid?5*60e3:g.train?(g.brk||20e3):g.exam?5*60e3:BREAK_MIN[g.g]*60e3*(1+.5*(lenOf(g)-1));
-const multOf=g=>g.raid?1.3:g.train?.6:g.exam?1:1+.12*g.g+(g.brk?.5:0);
+const lenOf=g=>isNormalGate(g)?(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id&&S.curGate.len?S.curGate.len:lenMinOf(g)/baseMinOf(g)):1;
+const baseMinOf=g=>isBrk(g)?Math.max(50,FOCUS_MIN[g.g]*2):FOCUS_MIN[g.g];
+const focusMsOf=g=>g.raid?25*60e3:g.train?(g.mins||1)*60e3:g.exam?25*60e3:(isBrk(g)?Math.max(50,FOCUS_MIN[g.g]*2):FOCUS_MIN[g.g])*60e3*lenOf(g);
+const brkMsOf=g=>g.raid?5*60e3:g.train?(g.brk||20e3):g.exam?5*60e3:BREAK_MIN[g.g]*60e3*(1+.5*(Math.min(4,lenOf(g))-1));
+const multOf=g=>g.raid?1.3:g.train?.6:g.exam?1:1+.12*g.g+(isBrk(g)?.5:0);
 /* 속성 숙련: 강화 1단계마다 효율 +1.2% (불 하나 = 5단계 = +6%, 최대 25단계 = +30%) */
 const myMast=()=>1+.012*(S.attrs||[]).reduce((a,x)=>a+mastStep(x),0);
-const gainOf=g=>Math.min(95,(1-gearCalm())*(S.role==='guide'?40:60)*(g.raid?.9:g.train?.4:g.exam?1:.7+.1*g.g+(g.brk?.2:0))*(matchN()>0?.85:1)*(1+.2*(lenOf(g)-1)));
-const gcolOf=g=>g.brk?'#B0203A':g.raid?'#B48CFF':g.exam?'#FF8FA3':g.train?'#6FDCEB':GCOL[g.g];
+const gainOf=g=>Math.min(95,(1-gearCalm())*(S.role==='guide'?40:60)*(g.raid?.9:g.train?.4:g.exam?1:.7+.1*g.g+(isBrk(g)?.2:0))*(matchN()>0?.85:1)*(1+.2*(Math.min(4,lenOf(g))-1)));
+const gcolOf=g=>isBrk(g)?'#B0203A':g.raid?'#B48CFF':g.exam?'#FF8FA3':g.train?'#6FDCEB':GCOL[g.g];
 const SEVERE=80;
 /* ═════════ HP · 쓰러짐 · 치료 ═════════
    게이트에서 받는 피해와 회복을 분당으로 계산합니다. HP가 0이 되면 10분 뒤 부활해 공략을 이어 갑니다.
@@ -4906,9 +4922,9 @@ const DOWN_MIN=10,HEAL_MIN=30;
 function hpPlan(g,defBuf){
   const cs=combatStats(),lv=myLevel();
   if(g.train||g.report)return {max:cs.hp,net:0};
-  const gr=g.raid?5:g.exam?myGrade():g.brk?Math.min(6,g.g+1):g.g,rec=REC_LV[gr]||1,def=cs.def*(1+(defBuf||0));
+  const gr=g.raid?5:g.exam?myGrade():isBrk(g)?Math.min(6,g.g+1):g.g,rec=REC_LV[gr]||1,def=cs.def*(1+(defBuf||0));
   /* 가이드는 앞의 센티넬이 공격을 대신 받아 주므로 받는 피해가 20% 적습니다 */
-  const dmg=(3+gr*4)*(g.brk?Math.min(1.6,1+Math.max(0,rec-lv)*.15):1+Math.max(0,rec-lv)*.15)*(g.raid?1.6:g.exam?1.2:g.brk?1.3:1)*100/(100+def*2)*(S.role==='guide'?.8:1);
+  const dmg=(3+gr*4)*(isBrk(g)?Math.min(1.6,1+Math.max(0,rec-lv)*.15):1+Math.max(0,rec-lv)*.15)*(g.raid?1.6:g.exam?1.2:isBrk(g)?1.3:1)*100/(100+def*2)*(S.role==='guide'?.8:1);
   const heal=(S.role==='guide'?5*gMastMul():4)*(1+cs.amp/100)*(matchN()>0?1.2:1);
   const am=affMul(g).m,dm=am>1?.85:am<1?1.15:1;
   return {max:cs.hp,net:Math.round((dmg*dm-heal)*100)/100,dmg:dmg*dm};
@@ -5150,7 +5166,12 @@ function elemHit(a,x,y){
   else if(k==='light'){for(let i=0;i<8;i++){const an=i/8*Math.PI*2;P(Math.cos(an)*28,Math.sin(an)*28,i%2?'#FFFFFF':c1,0,.35)}bfx.push({k:'ring',x,y,r:1,c:'#FFFFFF',t:.3})}
   else if(k==='dark'){bfx.push({k:'ring',x,y,r:2,c:c1,t:.5});for(let i=0;i<6;i++)P((Math.random()-.5)*12,-6-Math.random()*10,c2,-4,.7)}
   else if(k==='speed'){for(let i=0;i<5;i++)P(-50-Math.random()*20,(Math.random()-.5)*8,c1,0,.25)}
-  else if(k==='psy'||k==='mind'){bfx.push({k:'ring',x,y,r:1,c:c1,t:.45});bfx.push({k:'ring',x,y,r:1,c:c2,t:.45,d:.12})}
+  else if(k==='psy'){for(let i=0;i<6;i++){const an=Math.random()*Math.PI*2;P(Math.cos(an)*14,-18-Math.random()*12,i%2?c1:shade(c1,-.3),70,.7)}bfx.push({k:'ring',x,y,r:1,c:c1,t:.4})}
+  else if(k==='fore'){bfx.push({k:'ring',x,y,r:1,c:'#FFFFFF',t:.25});for(let i=0;i<3;i++)P(-14-i*8,0,c1,0,.25+i*.08)}
+  else if(k==='illus'){for(let i=0;i<10;i++){const an=i/10*Math.PI*2;P(Math.cos(an)*18-Math.sin(an)*14,Math.sin(an)*18+Math.cos(an)*14,i%2?c1:c2,0,.55)}}
+  else if(k==='pulse'){bfx.push({k:'ring',x,y,r:2,c:c1,t:.25});bfx.push({k:'ring',x,y,r:2,c:c1,t:.25,d:.14})}
+  else if(k==='wave'){for(let i=0;i<8;i++)P(-20+i*6,Math.sin(i)*12,i%2?c1:c2,0,.45)}
+  else if(k==='mind'){bfx.push({k:'ring',x,y,r:1,c:c1,t:.45});bfx.push({k:'ring',x,y,r:1,c:c2,t:.45,d:.12})}
   else{for(let i=0;i<6;i++){const an=i/6*Math.PI*2;P(Math.cos(an)*22,Math.sin(an)*22,i%2?c1:c2,0,.3)}}
 }
 function heroLooks(){
@@ -5222,7 +5243,7 @@ function drawBattle(dt){
   if(!cine&&shake>0&&!reduce)G.translate(Math.round(Math.random()*2-1),Math.round(Math.random()*2-1));
   if(gate.report){drawOffice(dt,true);G.restore();return}
   if(gate.train&&['train','tr10','tr15','tr25','trall'].includes(gate.id)&&!cine){drawTraining(gate.id,dt);G.restore();return}
-  G.drawImage(gate.train||gate.exam||gate.raid?themeBg(theme):gateBg(theme,gate.g,gate.id),0,0);themeAnim(theme,dt);if(gate.brk)brkOverlay(dt);
+  G.drawImage(gate.train||gate.exam||gate.raid?themeBg(theme):gateBg(theme,gate.g,gate.id),0,0);themeAnim(theme,dt);if(isBrk(gate))brkOverlay(dt);
   let k=1;
   if(cine){cine.t+=dt;const t=cine.t;k=cine.seal?(t<.5?1:Math.max(0,1-(t-.5)/1.1)):(t<.4?1:Math.max(.55,1-(t-.4)))+(t>1.2?Math.min(.45,(t-1.2)*.6):0);
     if(!cine.burst){cine.burst=true;burst(150,70,[gcolOf(gate),'#FFFFFF','#FFE27A'],40,50,20)}
@@ -5328,12 +5349,14 @@ function quitExam(){const b=$('examQuit');if(!examRun())return;
 function startFocus(){
   if(S.phase!=='idle')return;
   const g=gateById(S.selGate);if(!g||gateLocked(g))return;
+  /* 화면과 고른 대상이 다르면 시작하지 않습니다(훈련장에서 게이트로 출동하는 일 방지) */
+  if((S.view==='gym'&&!g.train)||(S.view==='office'&&!g.report)){S.selGate=null;updateUI(true);toast(S.view==='gym'?'훈련 프로그램을 먼저 고릅니다.':'보고서를 먼저 고릅니다.');return}
   if(!g.train&&!g.report&&!g.raid&&peersOn(g.id).length>=GATE_MAX-1){toast(`이 게이트는 이미 ${GATE_MAX}명이 공략 중입니다. 다른 게이트를 골라 주세요.`);return}
   if(!g.train&&!g.report&&healLeft()>0){toast(`치료 중입니다. ${mmss(healLeft())} 뒤에 게이트에 출동할 수 있습니다. 훈련과 보고서 작성은 할 수 있습니다.`);return}
   if(g.exam){const c=EXAM_AP[myGrade()]||0;if((S.ap||0)<c){toast(`각성 포인트가 ${c-Math.floor(S.ap||0)} 부족합니다. 훈련장에서 모을 수 있습니다.`);return}S.ap=Math.round((S.ap-c)*10)/10}
   ac();ensurePartner();
   Object.assign(S,{phase:'focus',phaseStart:now(),phaseEnd:now()+focusMsOf(g),awayMs:0,awayPen:0,hiddenAt:null,
-    runawayStart:S.runaway,gain:gainOf(g),brkMs:brkMsOf(g),curGate:{id:g.id,party:!!(S.party&&partySize()>1&&!g.train&&!g.exam),report:!!g.report,mins:g.mins||0,dual:!!(S.dualTrain&&!g.train&&!g.exam),d:g.d,g:g.g,raid:!!g.raid,brk:!!g.brk,len:lenOf(g),gen:g.gen||1,day:g.day||'',train:!!g.train,exam:!!g.exam,boss:g.boss,name:g.name||'',ap:g.ap||0},kills:0,midSaid:false,hotSaid:false,bossSaid:false});
+    runawayStart:S.runaway,gain:gainOf(g),brkMs:brkMsOf(g),curGate:{id:g.id,party:!!(S.party&&partySize()>1&&!g.train&&!g.exam),report:!!g.report,mins:g.mins||0,dual:!!(S.dualTrain&&!g.train&&!g.exam),d:g.d,g:g.g,raid:!!g.raid,brk:!!(g.brk&&!g.train&&!g.report),len:lenOf(g),gen:g.gen||1,day:g.day||'',train:!!g.train,exam:!!g.exam,boss:g.boss,name:g.name||'',ap:g.ap||0},kills:0,midSaid:false,hotSaid:false,bossSaid:false});
   {const nb=(g.train||g.report)?{}:(S.nextBuff||{});const hp=hpPlan(g,nb.def||0),cs=combatStats();S.curGate.hpMax=hp.max;S.curGate.hpNet=hp.net;S.curGate.defBuf=nb.def||0;S.curGate.atkBuf=nb.atk||0;if(!g.train&&!g.report&&(nb.def||nb.atk)){S.nextBuff=null;toast('준비해 둔 물약 효과가 이번 출동에 적용됩니다.')}S.curGate.dmg=cs.dmg+(S.curGate.atkBuf||0);S.curGate.crit=cs.crit;S.curGate.aff=affMul(g).m}
   resetBattle();try{sortieStart()}catch(e){}if(typeof closeDrawer==='function')closeDrawer();reqWake();say(matchN()>0?'match':'focusStart');beep(392,.1);beep(523,.14,'square',.045,.1);save();pushPresence();updateUI(true);
 }
@@ -5358,7 +5381,7 @@ async function completeFocus(early){
   const xb=(!early&&!gate.train&&!gate.report&&S.xpBoost)?S.xpBoost:1;if(xb>1){S.xpBoost=0;toastLater('경험치 부스터가 적용되었습니다. 경험치 1.5배!')}
   const xp=pm*(1+gearXp())*effMin*mult*(gate.party?1.1:1)*(gate.dual?.9:1)*(gate.report?.5:1)*xb;S.xp+=xp;S.totalMin+=effMin;
   const apGain=gate.report?0:Math.round(pm*(1+gearAp())*effMin*(gate.train?(gate.ap||1):.3+(gate.dual?.5:0))*pen*10)/10;S.ap=Math.round(((S.ap||0)+apGain)*10)/10;
-  const crGain=Math.round(pm*(1+gearCr())*effMin*(gate.report?reportRate():gate.train||gate.exam?0:1.2*(gate.raid?1.5:1))*pen*(gate.brk?1.5:1));addCr(crGain);if(!gate.train&&!gate.exam)S.lastGate=gate.id;
+  const crGain=Math.round(pm*(1+gearCr())*effMin*(gate.report?reportRate():gate.train||gate.exam?0:1.2*(gate.raid?1.5:1))*pen*(isBrk(gate)?1.5:1));addCr(crGain);if(!gate.train&&!gate.exam)S.lastGate=gate.id;
   S.totalKills=(S.totalKills||0)+(S.kills||0);if(hs&&hs.deaths&&!(hs.down))S.downs=(S.downs||0)+1;if(!early&&!gate.train&&!gate.report){if(gate.party)S.partyN=(S.partyN||0)+1;if(aff&&aff.kind==='weak')S.weakN=(S.weakN||0)+1;if(isNight())S.nightN=(S.nightN||0)+1}
   if(!early){S.sessions++;const d=today();if(S.todayDate!==d){S.todayDate=d;S.todayCount=0}S.todayCount++}
   S.runaway=Math.min(100,rw+(early&&!gate.train?10:0));
@@ -5966,7 +5989,7 @@ function toast(m){const el=$('toast');el.textContent=m;el.hidden=false;clearTime
 function pop(m,k){const el=$('pop');el.hidden=true;el.className='pop '+k;el.textContent=m;void el.offsetWidth;el.hidden=false}
 function showRankUp(letter,title,desc){$('ruLetter').textContent=letter;$('rankup').querySelector('strong').textContent=title;$('ruDesc').textContent=desc;const el=$('rankup');el.hidden=true;void el.offsetWidth;el.hidden=false;setTimeout(()=>el.hidden=true,3400)}
 function showReport(r){
-  const rows=[[r.early?'출동한 게이트':'공략한 게이트',gateName(r.gate)],['집중 기록','+'+fmtMin(r.effMin)+(r.early?' (긴급 귀환)':'')],['경험치','+'+Math.round(r.xp)]];
+  const tg=r.gate.train,rp=r.gate.report;const rows=[[tg?'훈련':rp?'작성한 보고서':r.early?'출동한 게이트':'공략한 게이트',tg||rp?(r.gate.name||gateName(r.gate)):gateName(r.gate)],['집중 기록','+'+fmtMin(r.effMin)+(r.early?(tg?' (중간에 마침)':rp?' (중간에 멈춤)':' (긴급 귀환)'):'')],['경험치','+'+Math.round(r.xp)]];
   if(r.apGain)rows.push(['각성 포인트','+'+r.apGain]);
   if(r.crGain)rows.push(['크레딧','+'+r.crGain+' C']);
   if(r.gear)rows.push(['장비 획득',`${GEAR_T[r.gear.tier]} ${r.gear.name}`]);
@@ -5981,7 +6004,7 @@ function showReport(r){
   if(r.item)rows.push(['획득',`${ATTRS[r.item.attr].n} 각성석`]);
   if(S.partner)rows.push(['파트너',`${S.partner.name} · 파장 일치 ${r.n}개`]);
   $('repList').innerHTML=rows.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
-  $('repTitle').textContent=r.gate.exam?'승급 시험 결과':r.early?'긴급 귀환 보고서':'출동 보고서';
+  try{$('repEye').textContent=r.gate.train?'Training report':r.gate.report?'Office report':'Gate report'}catch(e){}$('repTitle').textContent=r.gate.exam?'승급 시험 결과':r.gate.train?(r.early?'훈련 중간 보고':'훈련 결과'):r.gate.report?'보고서 작성 결과':r.early?'긴급 귀환 보고서':'출동 보고서';
   $('repNote').textContent=note||(r.rw>=40?'폭주 게이지가 높습니다. 휴식 시간에 가이딩이 필요합니다.':'파장이 안정적입니다. 휴식 시간에는 편하게 쉬어도 됩니다.');
   $('report').hidden=false;if(!document.hidden)setTimeout(()=>$('repClose').focus(),50);
 }
@@ -6013,9 +6036,9 @@ function renderGateInfo(){
   const fm=fmtMin(focusMsOf(g)/60000),bm='상태에 따라 1~3분',on=peersOn(g.id).length;
   const seal=g.train||g.exam||g.hp==null?'':`<div class="seal"><div class="lbl"><b>봉인 진행</b><span>${Math.floor(g.sum||0)} / ${g.hp}분 · ${g.n||0}명 참여</span></div><div class="bar2"><i style="width:${Math.min(100,(g.sum||0)/g.hp*100)}%"></i></div></div>`;
   box.innerHTML=`<div class="ghead"><span class="gchip" style="background:${lk?'#DDE2EF':gcolOf(g)}">${g.raid?'R':g.train?'TR':g.exam?'EX':GRADES[g.g]}</span><div><b>${esc(gateName(g))}</b><span class="muted">${g.raid?'매일 저녁 7시~11시에 열리는 거대 균열입니다. 서버의 모든 요원이 레벨 제한 없이 함께 닫습니다.'+(on?` · 지금 ${on}명 공략 중`:''):g.train?'출동 흐름을 연습하는 짧은 게이트입니다.':g.exam?'폭주하지 않고 끝까지 버티면 합격입니다.':'권장 레벨 '+REC_LV[g.g]+` · 공략 인원 ${Math.min(GATE_MAX,on+(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id?1:0))}/${GATE_MAX}명`+(on>=GATE_MAX-1&&!(S.curGate&&S.curGate.id===g.id)?' · 가득 참':'')}</span></div></div>
-  ${g.brk?'<p class="brkline"><b>게이트 브레이크</b> · 오래 방치되어 폭주한 특수 게이트입니다. 공략 시간이 길고 강하지만, 등급과 상관없이 누구나 들어갈 수 있습니다. 경험치 · 크레딧 보상이 커집니다.</p>':brkWarn(g)?'<p class="warnline">⚠ 오래 방치되어 곧 게이트 브레이크가 일어납니다. 그 전에 닫으면 브레이크를 막을 수 있습니다.</p>':''}${affHtml(g)}${seal}<dl class="gdl"><dt>보스</dt><dd>${esc(g.boss)}</dd>${!g.train&&!g.report?`<dt>보스 스킬</dt><dd class="sklist">${(BOSS_SK[bossTypeOf(g,g.exam?5:DIST[g.d]?DIST[g.d].mon[0]:0)]||[]).map(([n,k])=>`<span title="${SK_DMG[k]?'피해 '+SK_DMG[k]+'배':'피해 없음'}">${n}<em>${SK_DMG[k]?(SK_DMG[k]>=1.5?'강':SK_DMG[k]>=1?'중':'약'):k==='guard'?'방어':'소환'}</em></span>`).join('')}</dd>`:''}<dt>집중 · 휴식</dt><dd>${fm} · ${bm}</dd><dt>경험치 배율</dt><dd>×${multOf(g).toFixed(2)}</dd><dt>폭주 위험</dt><dd>+${Math.round(gainOf(g))}</dd></dl>
+  ${isBrk(g)?'<p class="brkline"><b>게이트 브레이크</b> · 오래 방치되어 폭주한 특수 게이트입니다. 공략 시간이 길고 강하지만, 등급과 상관없이 누구나 들어갈 수 있습니다. 경험치 · 크레딧 보상이 커집니다.</p>':brkWarn(g)?'<p class="warnline">⚠ 오래 방치되어 곧 게이트 브레이크가 일어납니다. 그 전에 닫으면 브레이크를 막을 수 있습니다.</p>':''}${affHtml(g)}${seal}<dl class="gdl"><dt>보스</dt><dd>${esc(g.boss)}</dd>${!g.train&&!g.report?`<dt>보스 스킬</dt><dd class="sklist">${(BOSS_SK[bossTypeOf(g,g.exam?5:DIST[g.d]?DIST[g.d].mon[0]:0)]||[]).map(([n,k])=>`<span title="${SK_DMG[k]?'피해 '+SK_DMG[k]+'배':'피해 없음'}">${n}<em>${SK_DMG[k]?(SK_DMG[k]>=1.5?'강':SK_DMG[k]>=1?'중':'약'):k==='guard'?'방어':'소환'}</em></span>`).join('')}</dd>`:''}<dt>집중 · 휴식</dt><dd>${fm} · ${bm}</dd><dt>경험치 배율</dt><dd>×${multOf(g).toFixed(2)}</dd><dt>폭주 위험</dt><dd>+${Math.round(gainOf(g))}</dd></dl>
   ${g.raid?`<p class="raidwhen">${raidWhen()}</p><span class="eyebrow">지난 레이드 결과</span>${raidResultsHtml(5)}`:''}
-  ${isNormalGate(g)?`<div class="lenrow"><span><b>공략 시간</b> · 길게 머물수록 봉인에 많이 쌓입니다. 폭주 위험도 함께 늘어납니다.</span><div class="hours" role="group" aria-label="공략 시간">${LEN_OPT.map(k=>`<button type="button" data-glen="${k}" aria-pressed="${lenOf(g)===k}" ${S.phase!=='idle'?'disabled':''}>${fmtMin(baseMinOf(g)*k)}</button>`).join('')}</div>${g.hp?`<span class="muted">혼자라면 약 ${Math.max(1,Math.ceil(Math.max(0,g.hp-(g.sum||0))/(baseMinOf(g)*lenOf(g))))}번 출동하면 닫힙니다.</span>`:''}</div>`:''}
+  ${isNormalGate(g)?`<div class="lenrow"><span><b>공략 시간</b> · 길게 머물수록 봉인에 많이 쌓입니다. 폭주 위험도 함께 늘어납니다.</span><div class="hours" role="group" aria-label="공략 시간">${lenSetOf(g).map((m,i)=>`<button type="button" data-glen="${m}" aria-pressed="${lenMinOf(g)===m}" ${S.phase!=='idle'?'disabled':''}>${fmtMin(m)}<small>${LEN_TAG[i]}</small></button>`).join('')}</div>${g.hp?`<span class="muted">혼자라면 약 ${Math.max(1,Math.ceil(Math.max(0,g.hp-(g.sum||0))/lenMinOf(g)))}번 출동하면 닫힙니다.</span>`:''}</div>`:''}
   ${!g.train&&!g.exam?`<div class="dualrow"><span><b>병행 훈련</b> · 출동하면서 훈련도 합니다. 각성 포인트 1분에 +0.5, 경험치 ×0.9</span><button type="button" class="sbtn" id="dualBtn">${S.dualTrain?'켜짐':'꺼짐'}</button></div>`:''}
   ${lk&&!g.raid?`<p class="warnline">레벨이 부족합니다. Lv.${REC_LV[g.g]-3} 이상이 되면 도전할 수 있습니다.</p>`:''}`;
 }
@@ -6049,9 +6072,9 @@ function renderBag(){
       const can=P.k==='hp'?inBattle():true;
       return `<li><span class="bt">${itemIcon(it)}<b>${P.n} <small>×${n}</small></b></span><span class="muted">${itemDesc(it)}${(P.k==='def'||P.k==='atk')&&!inBattle()?' 지금 마시면 다음 출동에 적용됩니다.':''}${P.k==='hp'?' 게이트 공략 중 HP가 30% 아래로 내려가면 자동으로 씁니다.':''}</span><span class="acts"><button type="button" class="sbtn eq" data-pot="${it.p}" ${can?'':'disabled'}>${P.k==='hp'&&!inBattle()?'공략 중에 사용':'사용하기'}</button><button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}
     if(seenStone[it.attr])return '';seenStone[it.attr]=1;const n=S.items.filter(x=>!x.kind&&x.attr===it.attr).length;
-    const a=ATTRS[it.attr],has=mine.includes(it.attr);
+    const a=ATTRS[it.attr],my=stoneKey(it.attr),has=mine.includes(my),nAll=famStones(my).length;
     const rep=mine.map((m,i)=>`<button type="button" class="sbtn" data-id="${it.id}" data-slot="${i}" ${has?'disabled':''}>${ATTRS[m].n} 대신</button>`).join('');
-    return `<li><span class="bt">${itemIcon(it)}<span class="atag">${attrDot(it.attr)}${a.n}</span><b>${a.n} 각성석 <small>×${n}</small></b></span><span class="muted">${has?`내 속성입니다. 캐릭터 속성 강화 +${charEnh(it.attr)}/${CENH_MAX}`:'속성을 추가하거나 기존 속성과 바꿀 수 있습니다.'}</span><span class="acts">${has?(charEnh(it.attr)>=CENH_MAX?'<span class="enh max">캐릭터 속성 강화 완료</span>':`${enhOrbs(it.attr)}<button type="button" class="sbtn eq enhb" data-cenh="${it.attr}" ${n<charEnhCost(it.attr)?'disabled':''}>+${charEnh(it.attr)+1} 강화 · 각성석 ${n}/${charEnhCost(it.attr)}</button>`):''}${has?'':`<button type="button" class="sbtn" data-id="${it.id}" ${mine.length>=MAX_ATTR?'disabled':''}>추가하기 (${mine.length}/${MAX_ATTR})</button>${rep}`}<button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}).join('');
+    return `<li><span class="bt">${itemIcon(it)}<span class="atag">${attrDot(it.attr)}${a.n}</span><b>${a.n} 각성석 <small>×${n}</small></b></span><span class="muted">${has?(my!==it.attr?`내 ${ATTRS[my].n} 속성의 각성석으로 쓰입니다. 캐릭터 속성 강화 +${charEnh(my)}/${CENH_MAX}`:`내 속성입니다. 캐릭터 속성 강화 +${charEnh(my)}/${CENH_MAX}`):S.role==='guide'&&my!==it.attr?`쓰면 가이드 속성 ${ATTRS[my].n}으로 얻습니다.`:'속성을 추가하거나 기존 속성과 바꿀 수 있습니다.'}</span><span class="acts">${has?(charEnh(my)>=CENH_MAX?'<span class="enh max">캐릭터 속성 강화 완료</span>':`${enhOrbs(my)}<button type="button" class="sbtn eq enhb" data-cenh="${my}" ${nAll<charEnhCost(my)?'disabled':''}>+${charEnh(my)+1} 강화 · 각성석 ${nAll}/${charEnhCost(my)}</button>`):''}${has?'':`<button type="button" class="sbtn" data-id="${it.id}" ${mine.length>=MAX_ATTR?'disabled':''}>추가하기 (${mine.length}/${MAX_ATTR})</button>${rep}`}<button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}).join('');
 }
 $('bagList').addEventListener('click',e=>{const b=e.target.closest('.sbtn');if(!b||b.disabled||b.classList.contains('eq'))return;useItem(b.dataset.id,b.dataset.slot==null?null:+b.dataset.slot)});
 function renderExam(){
@@ -6099,7 +6122,7 @@ let lastResume='';
 function rememberSpot(){try{if(typeof resumeTab!=='undefined'&&resumeTab)return;const g=$('game');if(!g||g.hidden)return;
   const k=JSON.stringify({scr:'game',view:S.view,sel:S.selGate||null,tab:(typeof curTab!=='undefined'&&curTab)||null});if(k!==lastResume){lastResume=k;sessionStorage.setItem('cg-resume',k)}}catch(e){}}
 function rememberTitle(){try{lastResume='';sessionStorage.setItem('cg-resume',JSON.stringify({scr:'title',view:S.view,sel:S.selGate||null}))}catch(e){}}
-function updateUI(full){try{const et=$('examTag'),X=examRun();if(et){et.hidden=!X;if(X)et.innerHTML=`<b>승급 시험 중</b><span>${Math.floor(examMin())}/${EXAM_NEED}분</span><i style="width:${Math.min(100,examMin()/EXAM_NEED*100)}%"></i>`}}catch(e){}try{const st=$('stage');if(st&&st.dataset.view!==S.view)st.dataset.view=S.view;rememberSpot();}catch(e){}{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
+function updateUI(full){if(S.phase!=='focus'){const sg=S.selGate&&gateById(S.selGate);if(sg&&((S.view==='gym'&&!sg.train)||(S.view==='office'&&!sg.report)||(S.view==='map'&&(sg.train||sg.report))||((S.view==='home'||S.view==='center')&&(sg.train||sg.report))))S.selGate=null}try{const et=$('examTag'),X=examRun();if(et){et.hidden=!X;if(X)et.innerHTML=`<b>승급 시험 중</b><span>${Math.floor(examMin())}/${EXAM_NEED}분</span><i style="width:${Math.min(100,examMin()/EXAM_NEED*100)}%"></i>`}}catch(e){}try{const st=$('stage');if(st&&st.dataset.view!==S.view)st.dataset.view=S.view;rememberSpot();}catch(e){}{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
   const role=S.role,t=now(),lvI=levelOf(S.xp),rw=liveRunaway();
   document.body.dataset.role=role||'sentinel';
   const sel=gateById(S.selGate);
@@ -6157,7 +6180,7 @@ function updateUI(full){try{const et=$('examTag'),X=examRun();if(et){et.hidden=!
   if(cg&&cg.train&&S.phase==='idle')dg.innerHTML=`<b>${esc(cg.name)}</b> · ${esc(cg.desc)}`;
   dg.hidden=!dg.innerHTML;
   renderLenPick();
-  const gp=$('gymPick');gp.hidden=!(S.phase==='idle'&&S.view==='gym'&&!cine);
+  const gp=$('gymPick');gp.hidden=!(S.phase!=='focus'&&S.view==='gym'&&!cine);
   const gk=S.selGate+'|'+S.trHours;
   if(!gp.hidden&&gp.dataset.sel!==gk){gp.dataset.sel=gk;gp.innerHTML=TRAININGS.map(t=>`<button type="button" class="${t.id==='trall'?'wide':''}" data-tr="${t.id}" aria-pressed="${S.selGate===t.id}"><b>${t.name}</b><span>${t.id==='trall'?`${S.trHours||1}시간 · 1~8시간 중 선택`:t.mins+'분'} · AP ×${t.ap}</span></button>`).join('')+(S.selGate==='trall'?`<div class="hours" role="group" aria-label="종합 훈련 시간">${[1,2,3,4,5,6,7,8].map(h=>`<button type="button" data-h="${h}" aria-pressed="${(S.trHours||1)===h}">${h}시간</button>`).join('')}</div>`:'')}
   const op=$('officePick');op.hidden=!(S.phase==='idle'&&S.view==='office'&&!cine);
@@ -6248,7 +6271,7 @@ function renderGym(){
     <p class="muted">훈련은 게이트 봉인에 쌓이지 않는 대신 1분에 각성 포인트를 1 이상 얻습니다. 경험치는 게이트의 0.6배입니다. 승급 시험에도 각성 포인트가 듭니다.</p>`;
 }
 $('gymBox').addEventListener('click',e=>{
-  const tr=e.target.closest('[data-tr]');if(tr){if(S.phase!=='idle')return;S.selGate=tr.dataset.tr;ensurePartner();save();updateUI(true);return}
+  const tr=e.target.closest('[data-tr]');if(tr){if(S.phase==='focus')return;S.selGate=tr.dataset.tr;ensurePartner();save();updateUI(true);return}
   const m=e.target.closest('[data-mast]');if(m&&!m.disabled){fillMastOrb(m.dataset.mast);return}
   const st=e.target.closest('[data-buy]');if(st&&!st.disabled){if((S.ap||0)<STONE_AP)return;S.ap=Math.round((S.ap-STONE_AP)*10)/10;
     const it={id:'i'+Date.now().toString(36),attr:pick(STONE_ATTRS)};S.items.push(it);toast(`${ATTRS[it.attr].n} 각성석을 받았습니다. 가방에서 쓸 수 있습니다.`);save();updateUI(true)}
@@ -6523,7 +6546,7 @@ function frame(n){
 }
 requestAnimationFrame(frame);
 
-$('gymPick').addEventListener('click',e=>{const h=e.target.closest('[data-h]');if(h){if(S.phase!=='idle')return;S.trHours=+h.dataset.h;save();updateUI(true);return}const b=e.target.closest('[data-tr]');if(!b||S.phase!=='idle')return;S.selGate=b.dataset.tr;ensurePartner();save();updateUI(true)});
+$('gymPick').addEventListener('click',e=>{const h=e.target.closest('[data-h]');if(h){if(S.phase==='focus')return;S.trHours=+h.dataset.h;save();updateUI(true);return}const b=e.target.closest('[data-tr]');if(!b||S.phase==='focus')return;S.selGate=b.dataset.tr;ensurePartner();save();updateUI(true)});
 
 document.querySelectorAll('#homePick .hp').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.view==='decor'){setView('home');openTab('ctl');setTimeout(()=>{const h=$('decorHead');if(h)h.scrollIntoView({block:'start',behavior:'smooth'})},60)}else setView(b.dataset.view)}));
 $('homeBox').addEventListener('click',e=>{const rt=e.target.closest('[data-rth]');if(rt){S.roomTh=+rt.dataset.rth;save();toast(`방 테마를 ${ROOM_TH[S.roomTh].n}${roJosa(ROOM_TH[S.roomTh].n)} 바꿨습니다.`);updateUI(true);return}const b=e.target.closest('[data-db]');if(b&&!b.disabled){buyDecor(b.dataset.db);return}const t=e.target.closest('[data-dt]');if(t)toggleDecor(t.dataset.dt)});
@@ -6540,7 +6563,7 @@ $('titleList').addEventListener('click',e=>{const b=e.target.closest('[data-titl
 $('centerPick').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b||S.phase!=='idle')return;const g=b.dataset.go;
   if(g==='shop'||g==='market'||g==='guiding'||g==='party'){openTab(g);return}
   setView(g);if(g==='map')openTab('ctl')});
-$('officePick').addEventListener('click',e=>{const b=e.target.closest('[data-rp]');if(!b||S.phase!=='idle')return;S.selGate=b.dataset.rp;save();updateUI(true)});
+$('officePick').addEventListener('click',e=>{const b=e.target.closest('[data-rp]');if(!b||S.phase==='focus')return;S.selGate=b.dataset.rp;save();updateUI(true)});
 $('backBtn').addEventListener('click',()=>{closeDrawer();setView('center')});
 $('bagList').addEventListener('change',e=>{const sl=e.target.closest('.anoint');if(sl&&sl.value)anointGear(sl.dataset.g,sl.value)});
 $('bagList').addEventListener('click',e=>{const rg=e.target.closest('[data-regrade]');if(rg){useRegrade(rg.dataset.regrade);return}const rt=e.target.closest('[data-roletk]');if(rt){useRoleTicket(rt.dataset.roletk);return}const c=e.target.closest('[data-cenh]');if(c&&!c.disabled){enhanceChar(c.dataset.cenh);return}const b=e.target.closest('[data-enh]');if(b&&!b.disabled)enhanceGear(b.dataset.enh)});
@@ -6549,9 +6572,9 @@ setInterval(()=>{if(curTab==='guiding'&&!document.hidden)renderGuiding();if(S.ro
 
 $('gateInfo').addEventListener('click',e=>{if(e.target.id==='dualBtn'){S.dualTrain=!S.dualTrain;save();renderGateInfo()}});
 /* 공략 시간 단추: 화면이 자주 다시 그려져도 눌림이 사라지지 않도록 누르는 순간(pointerdown)에 처리합니다 */
-document.addEventListener('pointerdown',e=>{const l=e.target.closest('[data-glen]');if(!l||l.disabled||S.phase!=='idle')return;e.preventDefault();S.gLen=+l.dataset.glen;save();renderGateInfo();renderLenPick(true);updateUI(true);toast(`공략 시간을 ${l.textContent.trim()}으로 정했습니다.`)});
+document.addEventListener('pointerdown',e=>{const l=e.target.closest('[data-glen]');if(!l||l.disabled||S.phase!=='idle')return;e.preventDefault();S.gMin=+l.dataset.glen;delete S.gLen;save();renderGateInfo();renderLenPick(true);updateUI(true);toast(`공략 시간을 ${fmtMin(+l.dataset.glen)}${roJosa(fmtMin(+l.dataset.glen))} 정했습니다.`)});
 function renderLenPick(force){const el=$('lenPick');if(!el)return;const sel=gateById(S.selGate),show=S.phase==='idle'&&S.view==='map'&&isNormalGate(sel)&&!gateLocked(sel)&&!cine;el.hidden=!show;if(!show)return;
-  const k=sel.id+'|'+lenOf(sel)+'|'+(sel.brk?1:0);if(!force&&el.dataset.k===k)return;el.dataset.k=k;el.innerHTML=`<span>공략 시간</span>${LEN_OPT.map(n=>`<button type="button" data-glen="${n}" aria-pressed="${lenOf(sel)===n}">${fmtMin(baseMinOf(sel)*n)}</button>`).join('')}`}
+  const k=sel.id+'|'+lenMinOf(sel)+'|'+(sel.brk?1:0);if(!force&&el.dataset.k===k)return;el.dataset.k=k;el.innerHTML=`<span>공략 시간</span>${lenSetOf(sel).map((m,i)=>`<button type="button" data-glen="${m}" aria-pressed="${lenMinOf(sel)===m}">${fmtMin(m)}<small>${LEN_TAG[i]}</small></button>`).join('')}`}
 
 (()=>{const box=$('cGrades');GRADES.forEach((g,i)=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=g;b.setAttribute('aria-pressed','false');b.addEventListener('click',()=>{cPrevG=cPrevG===i?null:i;box.querySelectorAll('button').forEach((x,j)=>x.setAttribute('aria-pressed',String(j===cPrevG)));$('cGradeDesc').textContent=cPrevG==null?'등급을 누르면 그 등급이 되었을 때의 모습을 미리 봅니다.':`${g}급: ${VIS_DESC[document.body.dataset.role==='guide'?'guide':'sentinel'][VTIER[i]]||'기본 모습입니다.'}`});box.appendChild(b)})})();
 
