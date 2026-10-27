@@ -1051,6 +1051,17 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 #stage[data-view="map"] .hud-me{padding:4px!important;opacity:.92}
 #stage[data-view="map"] #mapLayer{z-index:6;pointer-events:none}
 #stage[data-view="map"] #mapLayer .gbtn{pointer-events:auto}
+/* v35.42 속성 강화(다이아몬드) · 속성 숙련(동그라미) 표시 */
+.orbs i{position:relative;overflow:hidden}
+.orbs i.part{background:linear-gradient(to top,color-mix(in srgb,var(--oc) 45%,transparent) var(--pp),var(--wash) var(--pp))}
+.orbs .ostep{font-size:.68rem;color:var(--ink-soft);margin-left:3px;font-variant-numeric:tabular-nums}
+.orbs.dia{gap:5px}
+.orbs.dia i{width:9px;height:9px;border-radius:1px;transform:rotate(45deg);margin:0 1px;image-rendering:pixelated;border-width:1.5px}
+.orbs.dia i.on{background:linear-gradient(135deg,#fff 0 22%,var(--oc) 24% 70%,color-mix(in srgb,var(--oc) 60%,#1C2440) 72%);box-shadow:0 0 6px color-mix(in srgb,var(--oc) 70%,transparent)}
+#myAttrs{flex-wrap:wrap;align-items:center}
+.enhtbl{flex:0 0 100%;width:100%;display:grid;grid-template-columns:auto auto auto;justify-content:start;align-items:center;gap:5px 16px;font-size:.8rem;margin:6px 0 2px}
+.enhtbl em{font-style:normal;font-size:.7rem;color:var(--ink-soft);font-weight:700}
+.enhtbl>b{font-weight:600;white-space:nowrap}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1072,7 +1083,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.40</span>
+      <span class="title-ver" id="titleVer">v35.42</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -3517,8 +3528,9 @@ function enhanceGear(gid){
 const CENH_MAX=5,ORB_N=5;
 const charEnh=a=>Math.max(0,Math.min(CENH_MAX,+((S.attrEnh||{})[a])||0));
 const charEnhCost=a=>{const k=charEnh(a)+1;return Math.ceil(3+k*k*1.5)};
+/* 속성 강화 표시: 각성석과 같은 다이아몬드 칸 5개, 단계마다 하나씩 불이 들어옵니다 */
 function enhOrbs(a){const lv=charEnh(a),col=ATTRS[a]?ATTRS[a].col:'#8E6CF0';
-  return `<span class="orbs" title="속성 강화 +${lv}/${CENH_MAX}"><b>+${lv}</b>${Array.from({length:CENH_MAX},(_,i)=>`<i class="${i<lv?'on':''}" style="--oc:${col}"></i>`).join('')}</span>`}
+  return `<span class="orbs dia" title="속성 강화 +${lv}/${CENH_MAX}"><b>+${lv}</b>${Array.from({length:CENH_MAX},(_,i)=>`<i class="${i<lv?'on':''}" style="--oc:${col}"></i>`).join('')}</span>`}
 function enhanceChar(a){
   a=+a;if(!(S.attrs||[]).includes(a)){toast('내가 가진 속성만 강화할 수 있습니다.');return}
   if(charEnh(a)>=CENH_MAX){toast(`이미 최대 강화(+${CENH_MAX})입니다.`);return}
@@ -3540,14 +3552,15 @@ setInterval(()=>{try{if(S&&S.role&&(typeof cloudOK!=='function'||!cloudOK()||ACC
 const mastLv=a=>Math.max(0,Math.min(MAST_MAX,+((S.mast||{})[a])||0));
 const mastOrb=a=>mastLv(a)>=MAST_MAX?0:Math.max(0,Math.min(ORB_N-1,+((S.mastOrb||{})[a])||0));
 const mastOrbCost=a=>Math.max(1,Math.round(mastCost(mastLv(a))/ORB_N));
-function mastOrbs(a){const lv=mastLv(a),o=mastOrb(a),col=ATTRS[a]?ATTRS[a].col:'#8E6CF0';
-  return `<span class="orbs" title="속성 숙련 +${lv}/${MAST_MAX} · 구슬 ${lv>=MAST_MAX?ORB_N:o}/${ORB_N}"><b>+${lv}</b>${Array.from({length:ORB_N},(_,i)=>`<i class="${lv>=MAST_MAX||i<o?'on':''}" style="--oc:${col}"></i>`).join('')}</span>`}
+/* 속성 숙련 표시: 동그라미 5개가 숙련 단계입니다. 강화 5번(5칸)마다 동그라미 하나에 불이 들어오고, 채우는 중인 칸 수를 옆에 작게 보여 줍니다 */
+function mastOrbs(a,noStep){const lv=mastLv(a),o=mastOrb(a),col=ATTRS[a]?ATTRS[a].col:'#8E6CF0';
+  return `<span class="orbs" title="속성 숙련 +${lv}/${MAST_MAX}${lv<MAST_MAX?` · 다음 단계까지 ${o}/${ORB_N}`:''}"><b>+${lv}</b>${Array.from({length:MAST_MAX},(_,i)=>`<i class="${i<lv?'on':i===lv&&o?'part':''}" style="--oc:${col};--pp:${i===lv?o/ORB_N*100:0}%"></i>`).join('')}${!noStep&&lv<MAST_MAX?`<small class="ostep">${o}/${ORB_N}</small>`:''}</span>`}
 function fillMastOrb(a){
   a=+a;if(!(S.attrs||[]).includes(a))return;if(mastLv(a)>=MAST_MAX){toast(`이미 최고 숙련(+${MAST_MAX})입니다.`);return}
   const c=mastOrbCost(a);if((S.ap||0)<c){toast(`각성 포인트가 ${Math.ceil(c-(S.ap||0))} 부족합니다.`);return}
   S.ap=Math.round((S.ap-c)*10)/10;S.mast=S.mast||{};S.mastOrb=S.mastOrb||{};const o=mastOrb(a)+1;
-  if(o>=ORB_N){S.mastOrb[a]=0;S.mast[a]=mastLv(a)+1;checkAch();toast(`구슬 ${ORB_N}개가 모였습니다! ${ATTRS[a].n} 숙련이 +${S.mast[a]}가 되었습니다.`);beep(988,.08);beep(1318,.12,'square',.04,.08);try{fanfare()}catch(e){}}
-  else{S.mastOrb[a]=o;toast(`${ATTRS[a].n} 숙련 구슬을 채웠습니다. (${o}/${ORB_N}) 다 모이면 숙련 +${mastLv(a)+1}이 됩니다.`);beep(988,.06)}
+  if(o>=ORB_N){S.mastOrb[a]=0;S.mast[a]=mastLv(a)+1;checkAch();toast(`${ATTRS[a].n} 숙련이 +${S.mast[a]}가 되었습니다!`);beep(988,.08);beep(1318,.12,'square',.04,.08);try{fanfare()}catch(e){}}
+  else{S.mastOrb[a]=o;toast(`${ATTRS[a].n} 숙련을 강화했습니다. (${o}/${ORB_N}) 5번 채우면 숙련 +${mastLv(a)+1}이 됩니다.`);beep(988,.06)}
   save();updateUI(true);
 }
 /* ── 게이트 속성 상성 ──
@@ -5947,7 +5960,8 @@ function setTimer(t){
   for(const ch of t){const f=DIGF[ch]||DIGF['0'];for(let yy=0;yy<7;yy++)for(let xx=0;xx<f[yy].length;xx++)if(f[yy][xx]==='1'){g.fillStyle='rgba(28,36,64,.22)';g.fillRect((x+xx)*u,yy*u+dpr,u,u);g.fillStyle=ink;g.fillRect((x+xx)*u,yy*u,u,u)}x+=f[0].length+1}
 }
 addEventListener('resize',()=>{timerLast=''});
-function updateUI(full){try{const st=$('stage');if(st&&st.dataset.view!==S.view)st.dataset.view=S.view}catch(e){}{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
+let lastResume='';
+function updateUI(full){try{const st=$('stage');if(st&&st.dataset.view!==S.view)st.dataset.view=S.view;const k=JSON.stringify({view:S.view,sel:S.selGate||null,tab:curTab||null});if(k!==lastResume){lastResume=k;sessionStorage.setItem('cg-resume',k)}}catch(e){}{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
   const role=S.role,t=now(),lvI=levelOf(S.xp),rw=liveRunaway();
   document.body.dataset.role=role||'sentinel';
   const sel=gateById(S.selGate);
@@ -6017,7 +6031,7 @@ function updateUI(full){try{const st=$('stage');if(st&&st.dataset.view!==S.view)
     applyTheme();
     $('topbar').hidden=!role;
     $('who').innerHTML=`<span>${esc(S.name||'이름 없음')}</span><span class="muted">Lv.${lvI.lv}</span><span class="rk">${GRADES[gr]}</span>`;
-    $('myAttrs').innerHTML=attrTags(S.attrs||[],S.partner?(S.attrs||[]).filter(a=>S.partner.attrs.includes(a)):[])+((S.attrs||[]).length?`<span class="orbrow">${(S.attrs||[]).map(a=>`<span class="orbitem">${ATTRS[a].n} ${mastOrbs(a)}</span>`).join('')}</span>`:'')+((S.attrs||[]).length?`<button type="button" class="sbtn awkgo" data-awk="1">AP로 속성 숙련 강화</button>`:'');
+    $('myAttrs').innerHTML=attrTags(S.attrs||[],S.partner?(S.attrs||[]).filter(a=>S.partner.attrs.includes(a)):[])+((S.attrs||[]).length?`<div class="enhtbl"><span></span><em>속성 강화</em><em>속성 숙련</em>${(S.attrs||[]).map(a=>`<b style="--oc:${ATTRS[a].col}">${ATTRS[a].n}</b>${enhOrbs(a)}${mastOrbs(a,true)}`).join('')}</div>`:'')+((S.attrs||[]).length?`<button type="button" class="sbtn awkgo" data-awk="1">AP로 속성 숙련 강화</button>`:'');
     $('tip').textContent=S.phase==='break'?'금색 고리에 파란 고리가 겹칠 때 화면이나 버튼을 누릅니다. 자동 가이딩은 효율이 낮은 대신 손을 대지 않아도 됩니다.'
       :S.phase==='auto'?'자동 가이딩은 폭주 게이지에 따라 정해진 시간 동안 천천히 진행됩니다. 탭을 닫아도 괜찮습니다.'
       :S.phase==='focus'?(S.awayCheck?'엄격 모드입니다. 다른 탭이나 앱으로 가면 연결이 흔들리고 그 시간은 기록되지 않습니다.':'이 탭을 닫거나 다른 일을 해도 괜찮습니다. 출동은 계속되고, 돌아오면 보고서로 결과를 알려 줍니다.')
@@ -6086,10 +6100,10 @@ function renderGym(){
   const ap=Math.floor(S.ap||0),mine=S.attrs||[];S.mast=S.mast||{};
   const prog=TRAININGS.map(t=>`<button type="button" class="gitem" data-tr="${t.id}" aria-pressed="${S.selGate===t.id}"><span class="gc" style="background:#6FDCEB">${t.mins}</span><span class="n">${t.name}<br><small>${t.desc}</small></span><small>${t.id==='trall'?(S.trHours||1)+'시간':t.mins+'분'}</small></button>`).join('');
   const mast=mine.map(a=>{const cost=mastOrbCost(a),max=mastLv(a)>=MAST_MAX;
-    return `<li><span class="atag"><i style="background:${ATTRS[a].col}"></i>${ATTRS[a].n}</span><span class="tx"><b>${ATTRS[a].n} 숙련</b>${mastOrbs(a)}</span><button type="button" class="sbtn" data-mast="${a}" ${max||ap<cost?'disabled':''}>${max?'최고 단계':'구슬 채우기 · '+cost+' AP'}</button></li>`}).join('');
+    return `<li><span class="atag"><i style="background:${ATTRS[a].col}"></i>${ATTRS[a].n}</span><span class="tx"><b>${ATTRS[a].n} 숙련</b>${mastOrbs(a)}</span><button type="button" class="sbtn" data-mast="${a}" ${max||ap<cost?'disabled':''}>${max?'최고 단계':'강화 · '+cost+' AP'}</button></li>`}).join('');
   $('gymBox').innerHTML=`<div class="apbar"><span>각성 포인트</span><b>${ap} AP</b></div>
     <section class="awk" id="awk"><h3>속성 숙련 강화 <small>각성 포인트(AP) 사용</small></h3>
-    <p class="muted">각성 포인트로 구슬을 채우고, 구슬 5개가 모이면 숙련이 +1 오릅니다(최대 +5). 숙련 1단계마다 그 속성으로 싸우거나 가이딩할 때 효율이 6%씩 오릅니다.</p>
+    <p class="muted">각성 포인트로 5번 강화하면 동그라미 하나에 불이 들어오며 숙련이 +1 오릅니다(최대 +5). 숙련 1단계마다 그 속성으로 싸우거나 가이딩할 때 효율이 6%씩 오릅니다.</p>
     <ul class="shop">${mast||'<li><span class="tx"><span>먼저 속성을 얻어야 숙련을 올릴 수 있습니다.</span></span></li>'}
       <li><span class="tx"><b>각성석 교환</b><span>속성 하나가 담긴 각성석을 무작위로 받습니다.</span></span><button type="button" class="sbtn" data-buy="stone" ${ap<STONE_AP?'disabled':''}>${STONE_AP} AP</button></li></ul></section>
     <span class="eyebrow">Training</span><div class="glist" id="trList">${prog}</div>
@@ -6124,7 +6138,7 @@ function showScreen(id){['account','onboard','gacha','custom','game'].forEach(k=
 const TAB_T={mail:'우편함',chat:'채팅',party:'파티',shop:'상점',market:'장터',guiding:'가이딩실',ach:'업적과 칭호',ctl:'출동 관제',me:'내 캐릭터',partner:'파트너 상태',bag:'가방',crew:'요원과 친구'};
 let curTab=null;
 function openTab(t){curTab=t;if(t==='bag'){S.bagSeen=S.items.length;save()}if(t==='mail')renderMail();if(t==='crew')renderFriends();if(t==='partner')renderPair();if(t==='shop')renderShop();if(t==='market')renderMarket();if(t==='guiding')renderGuiding();if(t==='party')renderParty();if(t==='chat')chatLast.ch=null;$('drawer').hidden=false;$('drawer').classList.toggle('chatmode',t==='chat');$('drawerTitle').textContent=TAB_T[t];document.querySelectorAll('.pane[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==t);if(t==='chat')renderChat('open');document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===t)))}
-function closeDrawer(){curTab=null;$('drawer').hidden=true;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed','false'))}
+function closeDrawer(){curTab=null;try{const k=JSON.stringify({view:S.view,sel:S.selGate||null,tab:null});lastResume=k;sessionStorage.setItem('cg-resume',k)}catch(e){}$('drawer').hidden=true;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed','false'))}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{if(curTab===b.dataset.tab)closeDrawer();else openTab(b.dataset.tab)}));
 $('drawerClose').addEventListener('click',closeDrawer);
 $('hudMe').addEventListener('click',()=>{if(curTab==='me')closeDrawer();else openTab('me')});
@@ -6329,7 +6343,11 @@ if(S.phase==='focus'&&now()<S.phaseEnd)reqWake();
 if(S.phase==='break'&&now()>=S.phaseEnd){S.phase='idle';if(S.partner)partnerLeaves()}
 if(S.phase==='auto'&&now()>=S.phaseEnd)endAuto(false);
 if(S.selGate&&!gateById(S.selGate))S.selGate=null;
-if(S.phase==='idle'){S.view='home';S.selGate=null}
+/* 새로고침하면 보던 장면 · 고른 게이트 · 열어 둔 메뉴로 돌아갑니다(같은 탭 안에서만, 새로 접속하면 내 방에서 시작) */
+let resumeTab=null;
+if(S.phase==='idle'){let r=null;try{r=JSON.parse(sessionStorage.getItem('cg-resume')||'null')}catch(e){}
+  S.view=r&&['home','center','gym','office','map'].includes(r.view)?r.view:'home';S.selGate=r&&typeof r.sel==='string'?r.sel:null;resumeTab=r&&typeof r.tab==='string'&&TAB_T[r.tab]?r.tab:null}
+setTimeout(()=>{try{if(resumeTab&&!$('game').hidden&&!curTab)openTab(resumeTab);resumeTab=null}catch(e){}},700);
 if(!S.acct)showAccount();
 else afterAccount();
 setTimeout(()=>{try{checkAch()}catch(e){}},1200);
