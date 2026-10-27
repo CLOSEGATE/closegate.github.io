@@ -857,7 +857,7 @@ body.hasNotice{padding-top:calc(14px + 36px)!important}
 .pmood{display:grid;gap:6px;border:1px dashed color-mix(in srgb,var(--pink) 60%,transparent);border-radius:12px;padding:10px 12px}
 .gmlist b.code{font-family:var(--f-pixel,monospace);letter-spacing:.06em}
 /* PC: 게임 화면을 조금 줄여 아래 대화 · 메뉴 · 탭이 스크롤 없이 한 화면에 들어오게 한다 */
-@media (min-width:761px){body.refined{padding-bottom:12px}.hudgame{--dockH:300px;--sw:min(100%,1120px,max(760px,calc((100dvh - var(--dockH) - 40px) * 16 / 9)))}
+@media (min-width:761px){body.refined{padding-bottom:12px}.hudgame{--dockH:300px;--sw:min(100%,1120px,max(680px,calc((100dvh - var(--dockH) - 40px) * 16 / 9)))}
   .hudgame .stage,.hudgame .dock{min-width:min(100%,520px)!important}}
 /* 아래 영역: 왼쪽에 대화 · 지갑과 가이딩 단추 · 탭, 오른쪽에 메뉴 */
 .dock{grid-template-areas:"talk act" "mid act" "tabs act"!important}
@@ -926,23 +926,6 @@ body.refined :is(.homepick button:first-child,.centerpick .hp.main) span{color:r
 /* 페이지 오른쪽 스크롤 막대 숨기기 (스크롤은 그대로 됨) */
 html,body{scrollbar-width:none;-ms-overflow-style:none}
 html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
-/* 가로로 넓고 세로가 짧은 창: 게임 화면 옆에 메뉴를 세로로 붙여 탭이 숨지 않게 */
-@media (min-width:1000px) and (max-height:720px){
-  .hudgame{grid-template-columns:auto 380px!important;justify-content:center;align-items:start;--sw:min(calc(100vw - 440px),calc((100dvh - 30px) * 16 / 9))!important}
-  .hudgame .viewport{grid-column:1}
-  .hudgame .dock{grid-column:2;width:380px!important;min-width:0!important;grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"act" "mid" "talk" "tabs"!important;max-height:calc(100dvh - 24px);overflow:auto;scrollbar-width:none}
-  .hudgame .stage{min-width:0!important}
-}
-@media (min-width:761px) and (max-width:999px){
-  .hudgame .stage,.hudgame .dock{min-width:min(100%,440px)!important}
-  .dock{grid-template-columns:minmax(0,1fr) minmax(220px,300px)!important}
-  .dock .talk .tip{display:none}
-}
-@media (min-width:761px) and (max-width:999px) and (max-height:820px){
-  .hudgame .tabs{position:fixed!important;left:0;right:0;bottom:0;z-index:20;border-radius:0!important;margin:0}
-  body.refined{padding-bottom:70px!important}
-  .toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
-}
 /* 채팅 입력칸: 테두리와 포커스 표시가 잘리지 않게 안쪽 여백과 안쪽 포커스 */
 .chatform{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;padding:4px 3px 6px;margin:0}
 .chatform input{min-width:0;font:inherit;font-size:.92rem;border:1px solid var(--line2,#C7D2EF);border-radius:12px;padding:10px 12px;background:var(--panel);color:var(--ink);outline:none}
@@ -1022,6 +1005,39 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .rgcard:hover,.rgcard:focus-visible{border-color:var(--accent);box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 25%,transparent)}
 .rgl{font-size:.75rem;color:var(--ink-soft)}.rgb{font-family:var(--f-pixel);font-weight:700;font-size:2rem;width:64px;height:64px;display:grid;place-items:center;border-radius:12px;color:#1C2440;border:2px solid #1C2440}
 .rgcard small{color:var(--ink-soft);font-size:.72rem}
+/* v35.38 PC 화면 배치(하나로 정리).
+   넓은 창(1100px 이상): 왼쪽 게임 화면 + 오른쪽 메뉴 기둥. 게임 화면은 창 높이와 남은 폭 중 작은 쪽에 맞춥니다.
+   중간 창(761~1099px): 게임 화면은 폭 전체, 아래 영역은 반반, 탭은 화면 맨 아래 고정.
+   크기는 CSS만으로 정해져 창을 줄였다 늘려도 바로 제자리로 돌아옵니다. */
+@media (min-width:1100px){
+  body.ingame{padding-block:12px!important}
+  .hudgame{grid-template-columns:var(--sw) 360px!important;justify-content:center;align-items:start;column-gap:16px!important;
+    --sw:min(1120px,calc(100vw - 360px - 64px),calc((100dvh - 24px) * 16 / 9))!important}
+  .hudgame .viewport{grid-column:1;grid-row:1}
+  .hudgame .stage{width:var(--sw)!important;min-width:0!important}
+  .hudgame .dock{grid-column:2;grid-row:1;width:360px!important;min-width:0!important;grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:"tabs" "act" "mid" "talk"!important;max-height:calc(100dvh - 24px);overflow:auto;scrollbar-width:none;align-content:start}
+  .hudgame .dock .tabs{position:static!important;width:100%}
+  .dock .talk .tip{display:block}
+}
+@media (min-width:761px) and (max-width:1099px){
+  body.refined{padding-bottom:74px!important}
+  .hudgame{--sw:min(100%,max(560px,calc((100dvh - 250px) * 16 / 9)))!important}
+  .hudgame .stage,.hudgame .dock{width:var(--sw)!important;min-width:0!important}
+  .hudgame .dock{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"talk act" "mid act"!important}
+  .hudgame .tabs{position:fixed!important;left:0;right:0;bottom:0;z-index:20;border-radius:0!important;margin:0}
+  .toast{bottom:calc(80px + env(safe-area-inset-bottom,0px))!important}
+  .dockmid{flex-wrap:wrap}.dockmid .subrow{flex-basis:100%}.wallet{flex:1}.wallet>span{flex:1;padding:6px 10px}
+}
+/* 서랍(출동 관제 등): 넓은 창에서는 게임 화면 오른쪽 안에 넉넉하게, 중간 창에서는 창 오른쪽에 띄워 어느 크기에서도 잘리지 않습니다 */
+@media (min-width:1100px){.drawer{position:fixed!important;top:12px!important;bottom:12px!important;right:auto!important;left:calc((100vw - var(--sw) - 376px) / 2 + var(--sw) + 16px)!important;width:360px!important;max-height:none!important;z-index:30!important;border-radius:18px!important}}
+@media (min-width:761px) and (max-width:1099px){
+  .drawer{position:fixed!important;top:16px!important;right:16px!important;bottom:84px!important;left:auto!important;width:min(420px,calc(100vw - 32px))!important;max-height:none!important;z-index:30!important;border-radius:18px!important}
+}
+@media (min-width:1100px){
+  .hudgame .dock .tabs{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding:6px!important}
+  .hudgame .dock .tabs>*{min-width:0!important;padding-inline:0!important;font-size:.74rem!important;white-space:nowrap}
+}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -2415,11 +2431,14 @@ function cleanGate(id,d){
   const contrib={};let sum=0,n=0;
   if(d.contrib&&typeof d.contrib==='object')for(const k in d.contrib){const v=Math.max(0,Math.min(600,+d.contrib[k]||0));if(v>0){contrib[k]=v;sum+=v;n++}}
   sum=Math.max(0,sum+(Number.isFinite(+d.adj)?+d.adj:0));  // GM이 조정한 봉인 진행
-  return {id,slot,gen:+d.gen||1,d:slot,g,x,y,boss:String(d.boss||'').slice(0,20)||DIST[slot].boss[0],hp:Math.max(1,+d.hp||HP_ONLINE[g]),contrib,sum,n,status:d.status==='closed'?'closed':'open',openedAt:+d.openedAt||0,brk:!!d.brk,brkAt:+d.brkAt||0};
+  return {id,slot,gen:+d.gen||1,d:slot,g,x,y,boss:String(d.boss||'').slice(0,20)||DIST[slot].boss[0],hp:Math.max(1,+d.hp||HP_ONLINE[g]),contrib,sum,n,status:d.status==='closed'?'closed':'open',openedAt:+d.openedAt||0,brk:!!d.brk,brkAt:+d.brkAt||0,bv:+d.bv||0,clr:Array.isArray(d.clr)?d.clr.filter(x=>typeof x==='string').slice(0,40):[]};
 }
 /* 온라인 게이트의 봉인 진행에는 아직 끝나지 않은 출동(탭을 닫은 요원 포함)이 지금까지 쌓았을 몫을 더해 보여 줍니다 */
 const withProj=g=>{if(typeof projOf!=='function')return g;const p=projOf(g.id);return p.m>0?{...g,sum:g.sum+p.m,proj:p.m}:g};
 const allGates=()=>NET.mode==='online'?NET.gates.map(withProj):S.localGates.map(x=>cleanGate(x.id,x)).filter(Boolean);
+/* 봉인 진행(진행 중 출동 몫 포함)이 다 찬 게이트는 공략 완료로 보고 지도에서 바로 감춥니다. 내가 지금 공략 중인 게이트만 남겨 둡니다 */
+const gateCleared=g=>!!g&&!g.train&&!g.raid&&!g.exam&&g.hp>0&&g.sum>=g.hp;
+const mapGates=()=>allGates().filter(g=>!gateCleared(g)||(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id));
 function gateById(id){if(id==='raid')return curRaid();const rp=REPORTS.find(r=>r.id===id);if(rp)return rp;const tr=TRAININGS.find(t=>t.id===id);if(tr)return tr.id==='trall'?{...tr,mins:(S.trHours||1)*60}:tr;if(id==='exam')return EXAM;return allGates().find(g=>g.id===id)||null}
 function ensureLocalGates(){
   for(let s=0;s<6;s++){if(!S.localGates.some(g=>g.slot===s&&g.status==='open')){const gen=(S.localGates.filter(g=>g.slot===s).reduce((m,g)=>Math.max(m,g.gen||0),0))+1;
@@ -2517,7 +2536,8 @@ async function closeOnline(ref,d,n,npc){
   try{const l=await ref.acquire({holder:NET.uid,ttlMs:6000});if(l&&!l.acquired)return false}catch(e){}
   try{
     const fresh=cleanGate(d.id,(await ref.get()).data());if(!fresh||fresh.status!=='open')return false;slotClosedAt[fresh.slot]=Date.now();
-    await ref.update({status:'closed',closedAt:Date.now(),...(npc?{closedBy:'npc'}:{})});
+    const clr=npc?[]:[...new Set([...Object.keys(fresh.contrib),...(typeof SORTIE!=='undefined'?SORTIE.list.filter(x=>x.gate===fresh.id).map(x=>x.uid):[]),NET.uid])].filter(Boolean).slice(0,40);
+    await ref.update({status:'closed',closedAt:Date.now(),...(npc?{closedBy:'npc'}:{clr})});
     const gen=(fresh.gen||1)+1;
     await NET.db.doc(`gates/s${fresh.slot}-g${gen}-${fresh.id.slice(-4)}`).set(makeGate(fresh.slot,gen,true,NET.gates.filter(g=>g.g<=1&&g.id!==fresh.id).length<2));
     pushLog(fresh.d,fresh.g,n,npc?{npc:1,brk:fresh.brk?1:0}:(fresh.brk?{brk:1}:null));return true;
@@ -5105,7 +5125,7 @@ function drawMap(dt){
   mapLabels();
   if(Math.floor(T*2)%2)px(100,53,2,1,'#F0544F');
   {const r=curRaid()||{x:128,y:50};{const op=raidOpenNow(),k=op?1+.12*Math.sin(T*2):.7;portal(r.x,r.y-8,6*k,9*k,op?'#B48CFF':'#C9C2E0');if(S.selGate==='raid'&&Math.floor(T*3)%2){px(r.x-9,r.y-19,3,1,INK);px(r.x+7,r.y-19,3,1,INK);px(r.x-9,r.y+2,3,1,INK);px(r.x+7,r.y+2,3,1,INK)}}}
-  for(const g of allGates()){
+  for(const g of mapGates()){
     const lk=gateLocked(g),col=lk?'#C9CEDB':gcolOf(g);
     portal(g.x,g.y-6,3,5,col);
     if(g.id===S.selGate&&Math.floor(T*3)%2){const x=g.x,y=g.y-6;[[-6,-8],[5,-8],[-6,7],[5,7]].forEach(([ox,oy])=>{px(x+ox,y+oy,2,1,INK);px(x+ox+(ox<0?0:1),y+oy+(oy<0?0:-1),1,2,INK)})}
@@ -5180,7 +5200,10 @@ async function completeFocus(early){
   S.curGate=null;save();pushPresence();updateUI(true);
   const was=await sortieFinish();/* 탭을 닫아 둔 사이 다른 요원이 이미 정산했다면 봉인에는 다시 넣지 않습니다 */
   const res=early?{skip:true}:gate.raid?await contributeRaid(effMin*powMul,gate.day):await contribute(gate,was==='settled'||was==='expired'?0:effMin*powMul);
-  if(was==='settled'&&!early)toastLater('자리를 비운 사이 다른 요원이 이번 출동의 봉인 기여를 대신 정산해 두었습니다.');
+  /* 공략 중에 봉인 진행이 다 차서 게이트가 먼저 닫혔다면, 참여한 요원에게 공략 완료로 안내합니다 */
+  const cleared=!early&&res&&res.other&&res.g&&Array.isArray(res.g.clr)&&res.g.clr.includes(NET.uid);
+  if(cleared){res.other=false;res.closed=true;res.cleared=true;res.n=Math.max(res.g.n||0,res.g.clr.length);toastLater(`참여한 ${gateName(gate)}의 공략이 완료되었습니다. 게이트는 닫혔고, 공략 보상이 반영되었습니다.`)}
+  else if(was==='settled'&&!early)toastLater('자리를 비운 사이 다른 요원이 이번 출동의 봉인 기여를 대신 정산해 두었습니다.');
   checkAch();
   if(res&&res.closed)S.closedByMe++;
   if(!early&&!gate.report&&(res.closed||examResult||Math.random()<(gate.train?.1:.25+(gate.g>=3?.15:0)))){item={id:'i'+Date.now().toString(36),attr:pick(STONE_ATTRS)};S.items.push(item)}
@@ -5446,18 +5469,35 @@ setInterval(()=>{
 },2000);
 /* ═════════ 게이트 수명 · 게이트 브레이크 ═════════
    - 닫히지 않은 일반 게이트는 열린 뒤 2~6시간 사이 무작위 시점에 NPC 요원들이 처리합니다(오래된 것부터 사라지고 새 게이트가 열립니다).
-   - 아주 드물게(약 0.3%) 열린 뒤 2~4시간 사이에 '게이트 브레이크'가 일어나 특수 게이트로 바뀝니다.
+   - 아주 드물게(약 0.1%) 열린 뒤 2~4시간 사이에 '게이트 브레이크'가 일어나 특수 게이트로 바뀝니다.
      브레이크 30분 전부터 경고가 뜨고, 브레이크 게이트는 공략 시간이 길고 강하지만 등급과 상관없이 누구나 들어갈 수 있습니다.
      브레이크 게이트도 6시간 안에 닫히지 않으면 NPC 특수 부대가 처리합니다.
    어느 요원 화면이든 1분마다 확인하고, 잠금을 걸어 한 화면만 처리합니다. */
 const GL_LIFE=6*3600e3,GL_WARN=30*60e3;
 const glHash=(id,salt)=>{let h=2166136261;const s=String(id)+'|'+salt;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0)/4294967296};
-const canBreak=g=>!!g&&!g.train&&!g.raid&&!g.exam&&glHash(g.id,'brk')<.003;/* 약 0.3%의 게이트만 브레이크 */
+const canBreak=g=>!!g&&!g.train&&!g.raid&&!g.exam&&glHash(g.id,'brk')<.001;/* 약 0.1%의 게이트만 브레이크 */
 /* 일반 게이트는 열린 뒤 2~6시간 사이 무작위 시점에 NPC 요원들이 처리합니다(브레이크될 게이트는 6시간) */
 const lifeOf=g=>canBreak(g)?GL_LIFE:2*3600e3+glHash(g.id,'life')*4*3600e3;
 const breakAtOf=g=>(+g.openedAt||0)+2*3600e3+glHash(g.id,'at')*2*3600e3;
 function brkWarn(g){if(!g||g.brk||!canBreak(g)||!g.openedAt)return false;const t=now(),b=breakAtOf(g);return t>=b-GL_WARN&&t<b}
 const GL={busy:false,seenBrk:new Set(),seenWarn:new Set(),boot:true};
+/* 봉인 진행이 다 찬 게이트를 바로 닫습니다. 아직 진행 중인 출동은 지금까지 쌓은 몫으로 정산하고,
+   참여한 요원 명단(clr)을 남겨 각자 출동이 끝날 때 '공략 완료' 결과를 안내받게 합니다 */
+async function clearGateNow(ref,g){
+  try{const l=await ref.acquire({holder:NET.uid,ttlMs:8000});if(l&&!l.acquired)return}catch(e){}
+  try{
+    const fs=await ref.get();const f=fs.exists?cleanGate(g.id,fs.data()):null;if(!f||f.status!=='open')return;
+    const t=now(),act=SORTIE.list.filter(x=>x.gate===f.id&&+x.startAt<t),add={};
+    for(const x of act)add[x.uid]=Math.max(0,(Math.min(t,+x.endAt)-+x.startAt)/60000*(+x.mpm||1));
+    if(S.phase==='focus'&&S.curGate&&S.curGate.id===f.id&&!act.some(x=>x.uid===NET.uid))add[NET.uid]=Math.max(0,(Math.min(t,S.phaseEnd)-S.phaseStart)/60000*sealMulOf(S.curGate));
+    const contrib={};let sum=f.sum,n=f.n;
+    for(const u in add){const old=f.contrib[u]||0,v=Math.min(600,Math.round((old+add[u])*100)/100);contrib[u]=v;sum+=v-old;if(!old)n++}
+    if(sum<f.hp)return;/* 실제로 아직 덜 찼으면 기다립니다 */
+    if(Object.keys(contrib).length)await ref.update({contrib,lastAt:t});
+    for(const x of act){if(x.uid===NET.uid&&S.phase==='focus')continue;await NET.db.doc('sorties/'+x.id).update({status:'settled',settledBy:NET.uid,settledAt:t,settledMins:Math.round(add[x.uid]*100)/100}).catch(()=>{})}
+    await closeOnline(ref,{...f,contrib:{...f.contrib,...contrib}},n);
+  }catch(e){}
+}
 async function gateMaint(){
   if(GL.busy)return;GL.busy=true;
   try{
@@ -5466,24 +5506,25 @@ async function gateMaint(){
       for(const g of NET.gates.slice().sort((a,b)=>(a.openedAt||0)-(b.openedAt||0))){
         if(g.status!=='open')continue;const ref=NET.db.doc('gates/'+g.id);
         if(!g.openedAt){await ref.update({openedAt:t}).catch(()=>{});continue}
-        /* 예전 확률(약 50%)로 브레이크된 게이트는, 아무도 공략 중이 아니면 일반 게이트로 되돌립니다 */
-        if(g.brk&&!canBreak(g)&&!peersOn(g.id).length&&!SORTIE.list.some(x=>x.gate===g.id&&+x.endAt>t)&&!(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id)){await ref.update({brk:false,brkAt:0,hp:Math.max(1,Math.round(g.hp/2))}).catch(()=>{});continue}
+        if(!g.train&&g.sum+(typeof projOf==='function'?projOf(g.id).m:0)>=g.hp){await clearGateNow(ref,g);continue}
+        /* v35.38 이전에 브레이크된 게이트(bv 표시 없음)는, 아무도 공략 중이 아니면 모두 일반 게이트로 되돌립니다 */
+        if(g.brk&&(g.bv!==2||!canBreak(g))&&!peersOn(g.id).length&&!SORTIE.list.some(x=>x.gate===g.id&&+x.endAt>t)&&!(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id)){await ref.update({brk:false,brkAt:0,hp:Math.max(1,Math.round(g.hp/2))}).catch(()=>{});continue}
         const npc=g.brk?(g.brkAt&&t-g.brkAt>=GL_LIFE):(t-g.openedAt>=lifeOf(g)),brk=!g.brk&&canBreak(g)&&t>=breakAtOf(g);
         if(!npc&&!brk)continue;
         if(npc&&(peersOn(g.id).length||SORTIE.list.some(x=>x.gate===g.id&&+x.endAt>t)||(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id)))continue;/* 누가 공략 중이면 NPC가 가로채지 않습니다 */
         try{const l=await ref.acquire({holder:NET.uid,ttlMs:8000});if(l&&!l.acquired)continue}catch(e){}
         const fs=await ref.get();const f=fs.exists?cleanGate(g.id,fs.data()):null;if(!f||f.status!=='open')continue;
         if(npc)await closeOnline(ref,f,f.n,true);
-        else{await ref.update({brk:true,brkAt:t,hp:Math.round(f.hp*2)});pushLog(f.d,f.g,0,{brk:1,warnBrk:1})}
+        else{await ref.update({brk:true,bv:2,brkAt:t,hp:Math.round(f.hp*2)});pushLog(f.d,f.g,0,{brk:1,warnBrk:1})}
       }
     }else if(Array.isArray(S.localGates)){
       let ch=false;
       for(const lg of S.localGates){
         if(lg.status!=='open')continue;if(!lg.openedAt){lg.openedAt=t;ch=true;continue}
         const g=cleanGate(lg.id,lg);
-        if(lg.brk&&!canBreak(g)&&!(S.phase==='focus'&&S.curGate&&S.curGate.id===lg.id)){lg.brk=false;lg.brkAt=0;lg.hp=Math.max(1,Math.round((lg.hp||2)/2));ch=true;continue}
+        if(lg.brk&&(lg.bv!==2||!canBreak(g))&&!(S.phase==='focus'&&S.curGate&&S.curGate.id===lg.id)){lg.brk=false;lg.brkAt=0;lg.hp=Math.max(1,Math.round((lg.hp||2)/2));ch=true;continue}
         if(g.brk?(lg.brkAt&&t-lg.brkAt>=GL_LIFE):(t-lg.openedAt>=lifeOf(g))){if(S.phase==='focus'&&S.curGate&&S.curGate.id===lg.id)continue;lg.status='closed';pushLog(lg.d,lg.g,0,{npc:1,brk:lg.brk?1:0});ch=true}
-        else if(!lg.brk&&canBreak(g)&&t>=breakAtOf(g)){lg.brk=true;lg.brkAt=t;lg.hp=Math.round((lg.hp||1)*2);pushLog(lg.d,lg.g,0,{brk:1,warnBrk:1});ch=true}
+        else if(!lg.brk&&canBreak(g)&&t>=breakAtOf(g)){lg.brk=true;lg.bv=2;lg.brkAt=t;lg.hp=Math.round((lg.hp||1)*2);pushLog(lg.d,lg.g,0,{brk:1,warnBrk:1});ch=true}
       }
       if(ch){ensureLocalGates();save();try{onWorldChange()}catch(e){}}
     }
@@ -5754,7 +5795,7 @@ function showReport(r){
   rows.push(['레벨',r.lvAfter>r.lvBefore?`Lv.${r.lvBefore} → Lv.${r.lvAfter}`:'Lv.'+r.lvAfter],['처치',r.kills+'마리'],['폭주 게이지',Math.round(r.rw)+' / 100']);
   const res=r.res||{};let note='';
   if(r.gate.exam)note=r.early?'시험을 중간에 포기했습니다. 조건을 채운 상태라면 언제든 다시 볼 수 있습니다.':r.examResult?`합격입니다. 이제 ${GRADES[myGrade()]}급 요원입니다.`:'폭주 상태로 시험이 끝나 불합격입니다. 폭주 게이지를 낮춘 뒤 다시 도전할 수 있습니다.';
-  else if(res.closed){rows.push(['봉인','마지막 일격으로 봉인 완료']);note=r.gate.raid?`요원 ${res.n}명이 함께 거대 균열을 봉인했습니다. 참여한 모두에게 보상이 지급되고, 새 균열이 열렸습니다.`:`함께한 요원 ${res.n}명의 힘으로 게이트가 닫혔습니다. 지도에 새 게이트가 열렸습니다.`}
+  else if(res.closed){rows.push(['봉인',res.cleared?'공략 완료 · 게이트 닫힘':'마지막 일격으로 봉인 완료']);note=r.gate.raid?`요원 ${res.n}명이 함께 거대 균열을 봉인했습니다. 참여한 모두에게 보상이 지급되고, 새 균열이 열렸습니다.`:`함께한 요원 ${res.n}명의 힘으로 게이트가 닫혔습니다. 지도에 새 게이트가 열렸습니다.`}
   else if(res.ended)note='이번 균열 레이드는 이미 정산이 끝났습니다. 결과는 업적 탭의 레이드 기록에서 볼 수 있습니다.';
   else if(res.other)note='다른 요원들이 먼저 이 게이트를 봉인했습니다. 집중 기록과 경험치는 그대로 남습니다.';
   else if(res.sum!=null){rows.push(['봉인 진행',`${Math.floor(res.sum)} / ${res.hp}분 · ${res.n}명 참여`])}
@@ -5772,7 +5813,7 @@ function selectGate(id){
 }
 function onWorldChange(){if(!$('game').hidden)updateUI(true)}
 function renderGates(){
-  const lay=$('mapLayer'),list=$('gateList'),all=allGates();
+  const lay=$('mapLayer'),list=$('gateList'),all=mapGates();
   let h='';
   h+=all.map(g=>{const lk=gateLocked(g),on=peersOn(g.id).length,pr=g.hp?Math.min(100,g.sum/g.hp*100):0;
     return `<button type="button" class="gbtn${lk?' locked':''}${g.brk?' brk':brkWarn(g)?' warn':''}" data-id="${g.id}" aria-pressed="${g.id===S.selGate}" aria-label="${esc(gateName(g))}${lk?', 레벨 부족':''}" style="left:${(g.x+(Math.abs(g.y-50)<14&&Math.abs(g.x-128)<17?(g.x<128?-1:1)*(17-Math.abs(g.x-128)):0))/W*100}%;top:${(g.y-6)/H*100}%"><span class="gl" style="background:${lk?'#DDE2EF':gcolOf(g)}">${g.train?'TR':g.brk?'BR':GRADES[g.g]}${on?`<em>${on}</em>`:''}</span>${g.train?'':`<span class="gp"><i style="width:${pr}%"></i></span>`}</button>`}).join('');
@@ -5926,8 +5967,9 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
   const dg=$('dockGate'),cg=S.phase==='focus'&&S.curGate?(gateById(S.curGate.id)||S.curGate):sel;
   if(S.assist)dg.innerHTML=`<b>${esc(S.assist.snick)}</b> 센티넬 가이딩 지원 중 · 맞춘 호흡 ${S.assist.taps}${gAutoNote()}`;else if(S.phase==='break'||S.phase==='auto')dg.innerHTML=`<b>${esc(S.realGuide?S.realGuide.nick:S.partner?S.partner.name:'')}</b> ${S.realGuide?'가이드(플레이어)':'요원'}와 가이딩 중 · 폭주 ${Math.round(rw)}${S.phase==='break'?gAutoNote():''}`;
   else if(cg)dg.innerHTML=`<b>${esc(gateName(cg))}</b>${cg.hp?` · 봉인 ${Math.floor(cg.sum||0)}/${cg.hp}분`:''}`;
-  else dg.innerHTML=S.view==='gym'?'훈련장 · 훈련을 고릅니다':S.view==='office'?'보고서실 · 보고서를 고릅니다':S.view==='home'||S.view==='center'?`${S.view==='home'?'내 방':'센터 로비'} · 접속 ${NET.peers.length+1}명`:'지도에서 게이트를 고릅니다';
+  else dg.innerHTML=S.view==='gym'?'훈련장 · 훈련을 고릅니다':S.view==='office'?'보고서실 · 보고서를 고릅니다':S.view==='home'||S.view==='center'?'':'지도에서 게이트를 고릅니다';/* 내 방 · 센터 위치와 접속 인원은 화면 위쪽에 이미 보이므로 여기서는 쓰지 않습니다 */
   if(cg&&cg.train&&S.phase==='idle')dg.innerHTML=`<b>${esc(cg.name)}</b> · ${esc(cg.desc)}`;
+  dg.hidden=!dg.innerHTML;
   renderLenPick();
   const gp=$('gymPick');gp.hidden=!(S.phase==='idle'&&S.view==='gym'&&!cine);
   const gk=S.selGate+'|'+S.trHours;
@@ -5995,7 +6037,7 @@ function renderCtl(){
   if(!idle&&S.phase==='focus'&&S.curGate&&S.curGate.train){$('gymBox').hidden=false;$('homeBox').hidden=true;$('mapBox').hidden=true}
   if(v==='home'||v==='center'||v==='office')$('homeBox').innerHTML=`${crBar()}
     <p class="muted">아침에는 내 방에서 출발해 <b>센터</b>로 출근합니다. 센터에서 <b>게이트 출동</b>, <b>훈련</b>, <b>보고서 작성</b>을 하고, <b>상점</b>과 <b>장터</b>에서 물건을 사고팝니다.</p>
-    <div class="stats"><div class="stat"><span>오늘 출동</span><b>${S.todayDate===today()?S.todayCount:0}회</b></div><div class="stat"><span>열린 게이트</span><b>${allGates().length}개</b></div></div>
+    <div class="stats"><div class="stat"><span>오늘 출동</span><b>${S.todayDate===today()?S.todayCount:0}회</b></div><div class="stat"><span>열린 게이트</span><b>${mapGates().length}개</b></div></div>
     ${v==='home'?`<span class="eyebrow">Room theme</span><div class="roomth">${ROOM_TH.map((t,i)=>`<button type="button" data-rth="${i}" aria-pressed="${roomTheme(S.role)===i}" title="${t.n}"><i style="background:${t.w}"></i><i style="background:${t.a}"></i><i style="background:${t.f}"></i><span>${t.n}</span></button>`).join('')}</div>`:''}<span class="eyebrow" id="decorHead">Room decor</span><ul class="decor">${DECOR2.filter(d=>(S.decor||[]).includes(d.id)).map(d=>{const on=(S.decorOn||{})[d.id]!==false;return `<li><span class="tx"><b>${d.n}</b><span>${d.d}</span></span><button type="button" class="sbtn" data-dt="${d.id}">${on?'치우기':'놓기'}</button></li>`}).join('')}${DECOR.map(d=>{const own=(S.decor||[]).includes(d.id),on=own&&(S.decorOn||{})[d.id]!==false;
       return `<li><span class="tx"><b>${d.n}</b><span>${d.d}</span></span>${own?'':`<button type="button" class="sbtn" data-pv="${d.id}">미리보기</button>`}${own?`<button type="button" class="sbtn" data-dt="${d.id}">${on?'치우기':'놓기'}</button>`:d.src?`<span class="muted">${d.src==='raid'?'레이드 보상':'업적 보상'}</span>`:`<button type="button" class="sbtn" data-db="${d.id}" ${(S.ap||0)<d.ap?'disabled':''}>${d.ap} AP</button>`}</li>`}).join('')}</ul><p class="muted">더 많은 가구는 센터 상점에서 크레딧으로 살 수 있습니다.</p>`;
   if(v==='gym'||(S.phase==='focus'&&S.curGate&&S.curGate.train))renderGym();
@@ -6347,24 +6389,10 @@ function roJosa(w){const c=w.charCodeAt(w.length-1)-0xAC00;if(c<0||c>11171)retur
 let fitBusy=false;
 const dockKey=()=>'cg-dockmax2-'+innerWidth+'x'+innerHeight;
 let dockMax=(()=>{try{return +localStorage.getItem(dockKey())||0}catch(e){return 0}})();
-function fitStage(){
-  if(fitBusy)return;const g=$('game'),d=document.querySelector('.hudgame .dock');if(!g||g.hidden||!d)return;
-  if(matchMedia('(max-width:760px)').matches||matchMedia('(min-width:1000px) and (max-height:720px)').matches){g.style.removeProperty('--dockH');return}
-  fitBusy=true;
-  /* 처음 한 번: 메뉴가 가장 높은 장면(센터 · 훈련장)의 높이를 그리기 전에 몰래 재 둡니다. 화면이 깜빡이지 않습니다 */
-  if(!dockMax&&S.phase==='idle'&&!cine&&S.role){const v0=S.view,s0=S.selGate;let m=0;
-    for(const v of ['center','gym','office','home','map']){S.view=v;try{updateUI(true)}catch(e){}m=Math.max(m,Math.ceil(d.getBoundingClientRect().height))}
-    S.view=v0;S.selGate=s0;try{updateUI(true)}catch(e){}
-    const tb0=document.querySelector('.hudgame .tabs'),ft0=tb0&&getComputedStyle(tb0).position==='fixed'?Math.ceil(tb0.getBoundingClientRect().height)+6:0;
-    dockMax=Math.min(Math.round(innerHeight*.4),m+8+ft0);try{localStorage.setItem(dockKey(),String(dockMax))}catch(e){}}
-  const tb=document.querySelector('.hudgame .tabs'),fixedTabs=tb&&getComputedStyle(tb).position==='fixed'?Math.ceil(tb.getBoundingClientRect().height)+6:0;
-  /* 장면마다 아래 메뉴 높이가 달라 게임 화면(배경) 크기가 바뀌지 않도록, 지금 창 크기에서 가장 높았던 메뉴 높이에 맞춰 둡니다 */
-  for(let i=0;i<4;i++){const want=Math.min(Math.round(innerHeight*.4),Math.max(dockMax,Math.ceil(d.getBoundingClientRect().height)+8+fixedTabs));/* 메뉴 자리는 창 높이의 40%까지만 잡아, 게임 화면이 지나치게 작아지지 않게 합니다 */if(want>dockMax){dockMax=want;try{localStorage.setItem(dockKey(),String(want))}catch(e){}}const cur=parseFloat(getComputedStyle(g).getPropertyValue('--dockH'))||0;
-    if(Math.abs(want-cur)<3)break;g.style.setProperty('--dockH',want+'px')}
-  fitBusy=false;
-}
-addEventListener('resize',()=>{dockMax=(()=>{try{return +localStorage.getItem(dockKey())||0}catch(e){return 0}})();requestAnimationFrame(fitStage)});
-setInterval(fitStage,800);
+/* v35.38: 화면 크기는 CSS가 정합니다. 예전에 저장해 둔 높이 값이 남아 창 크기를 바꾼 뒤 화면이 어긋나지 않도록 지웁니다 */
+function fitStage(){const g=$('game');if(g)g.style.removeProperty('--dockH')}
+try{Object.keys(localStorage).forEach(k=>{if(/^cg-dockmax/.test(k))localStorage.removeItem(k)})}catch(e){}
+addEventListener('resize',()=>requestAnimationFrame(fitStage));
 
 document.addEventListener('click',e=>{if(e.target.closest('[data-awk],#wallet .wap'))openAwaken()});
 
