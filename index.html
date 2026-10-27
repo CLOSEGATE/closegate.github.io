@@ -1022,9 +1022,9 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 }
 @media (min-width:761px) and (max-width:1099px){
   body.refined{padding-bottom:74px!important}
-  .hudgame{--sw:min(100%,max(560px,calc((100dvh - 250px) * 16 / 9)))!important}
+  .hudgame{--sw:min(100%,max(520px,calc((100dvh - 300px) * 16 / 9)))!important}
   .hudgame .stage,.hudgame .dock{width:var(--sw)!important;min-width:0!important}
-  .hudgame .dock{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"talk act" "mid act"!important}
+  .hudgame .dock{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"talk act" "talk mid"!important;align-items:start}
   .hudgame .tabs{position:fixed!important;left:0;right:0;bottom:0;z-index:20;border-radius:0!important;margin:0}
   .toast{bottom:calc(80px + env(safe-area-inset-bottom,0px))!important}
   .dockmid{flex-wrap:wrap}.dockmid .subrow{flex-basis:100%}.wallet{flex:1}.wallet>span{flex:1;padding:6px 10px}
@@ -1038,6 +1038,19 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
   .hudgame .dock .tabs{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding:6px!important}
   .hudgame .dock .tabs>*{min-width:0!important;padding-inline:0!important;font-size:.74rem!important;white-space:nowrap}
 }
+/* v35.39 타이틀 화면 버전 표시 */
+.title-hero{position:relative}
+.title-ver{position:absolute;right:10px;bottom:8px;z-index:3;font:700 .74rem/1 var(--f-ui,system-ui);letter-spacing:.04em;color:#fff;background:rgba(28,36,64,.62);padding:4px 8px;border-radius:8px;pointer-events:none}
+/* v35.39 지갑(크레딧 · 각성)은 글자 폭보다 줄어들지 않고, 자리가 모자라면 가이딩 단추가 다음 줄로 내려갑니다 */
+.hudgame .dockmid{flex-wrap:wrap!important}
+.hudgame .wallet{flex:1 0 auto!important;min-width:max-content!important}
+.hudgame .wallet>span{flex:1 0 auto!important;min-width:max-content!important}
+.hudgame .dockmid .subrow{flex:1 1 260px!important;min-width:0!important}
+/* v35.39 지도: 왼쪽 위 내 정보 카드가 게이트를 가리지 않게 얼굴만 남기고, 게이트 표시는 화면 위 단추들보다 앞에 둡니다 */
+#stage[data-view="map"] .hud-me .hm-txt{display:none}
+#stage[data-view="map"] .hud-me{padding:4px!important;opacity:.92}
+#stage[data-view="map"] #mapLayer{z-index:6;pointer-events:none}
+#stage[data-view="map"] #mapLayer .gbtn{pointer-events:auto}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1059,6 +1072,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
+      <span class="title-ver" id="titleVer">v35.40</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -3498,23 +3512,43 @@ function enhanceGear(gid){
   toast(`${g.name}의 ${ATTRS[g.attr].n} 속성을 +${g.enh}로 강화했습니다.`);beep(1047,.08);beep(1568,.14,'square',.04,.08);if(typeof burst==='function')burst(96,60,[ATTRS[g.attr].col,'#FFFFFF'],16,30,0);save();updateUI(true);
 }
 /* ── 캐릭터 속성 강화 (+5까지) ──
-   내 속성과 같은 각성석으로 '구슬'을 하나씩 채웁니다. 구슬 5개를 채우면 강화 단계가 +1 오릅니다(구슬은 다시 0개).
+   내 속성과 같은 각성석을 써서 한 번에 1단계씩 올립니다(최대 +5).
    단계마다 약점 공략 보너스가 장비 강화 2단계만큼 커지고, 캐릭터 속성 이펙트도 진해집니다. */
 const CENH_MAX=5,ORB_N=5;
 const charEnh=a=>Math.max(0,Math.min(CENH_MAX,+((S.attrEnh||{})[a])||0));
-const charOrb=a=>charEnh(a)>=CENH_MAX?0:Math.max(0,Math.min(ORB_N-1,+((S.attrOrb||{})[a])||0));
-const charEnhCost=a=>{const k=charEnh(a)+1;return Math.max(1,Math.ceil((3+k*k*1.5)/2))};
-function enhOrbs(a){const lv=charEnh(a),o=charOrb(a),col=ATTRS[a]?ATTRS[a].col:'#8E6CF0';
-  return `<span class="orbs" title="속성 강화 +${lv}/${CENH_MAX} · 구슬 ${lv>=CENH_MAX?ORB_N:o}/${ORB_N}"><b>+${lv}</b>${Array.from({length:ORB_N},(_,i)=>`<i class="${lv>=CENH_MAX||i<o?'on':''}" style="--oc:${col}"></i>`).join('')}</span>`}
+const charEnhCost=a=>{const k=charEnh(a)+1;return Math.ceil(3+k*k*1.5)};
+function enhOrbs(a){const lv=charEnh(a),col=ATTRS[a]?ATTRS[a].col:'#8E6CF0';
+  return `<span class="orbs" title="속성 강화 +${lv}/${CENH_MAX}"><b>+${lv}</b>${Array.from({length:CENH_MAX},(_,i)=>`<i class="${i<lv?'on':''}" style="--oc:${col}"></i>`).join('')}</span>`}
 function enhanceChar(a){
   a=+a;if(!(S.attrs||[]).includes(a)){toast('내가 가진 속성만 강화할 수 있습니다.');return}
   if(charEnh(a)>=CENH_MAX){toast(`이미 최대 강화(+${CENH_MAX})입니다.`);return}
   const c=charEnhCost(a),have=stonesOf(a).length;if(have<c){toast(`${ATTRS[a].n} 각성석이 ${c-have}개 부족합니다.`);return}
-  useStones(a,c);S.attrOrb=S.attrOrb||{};S.attrEnh=S.attrEnh||{};
-  const o=charOrb(a)+1;
-  if(o>=ORB_N){S.attrOrb[a]=0;S.attrEnh[a]=charEnh(a)+1;toast(`구슬 ${ORB_N}개가 모였습니다! 내 ${ATTRS[a].n} 속성이 +${S.attrEnh[a]}로 강화되었습니다.`);beep(1047,.08);beep(1568,.14,'square',.04,.08);try{fanfare()}catch(e){}}
-  else{S.attrOrb[a]=o;toast(`${ATTRS[a].n} 속성 구슬을 채웠습니다. (${o}/${ORB_N}) 다 모이면 +${charEnh(a)+1} 강화가 됩니다.`);beep(988,.06)}
+  useStones(a,c);S.attrEnh=S.attrEnh||{};S.attrEnh[a]=charEnh(a)+1;
+  toast(`내 ${ATTRS[a].n} 속성이 +${S.attrEnh[a]}로 강화되었습니다.`);beep(1047,.08);beep(1568,.14,'square',.04,.08);if(S.attrEnh[a]>=CENH_MAX)try{fanfare()}catch(e){}
   save();pushPresence();updateUI(true);
+}
+/* v35.40: 예전 '구슬 채우기' 강화에서 채워 둔 구슬은, 쓴 각성석을 그대로 돌려줍니다 */
+function refundOldOrbs(){
+  const o=S.attrOrb;if(!o||typeof o!=='object'||!Object.keys(o).length)return;
+  let n=0;for(const k in o){const a=+k,c=Math.max(0,Math.min(4,+o[k]||0));if(!c||!ATTRS[a])continue;const per=Math.max(1,Math.ceil((3+(charEnh(a)+1)**2*1.5)/2));
+    for(let i=0;i<c*per;i++){S.items.push({id:'i'+Date.now().toString(36)+n,attr:a});n++}}
+  S.attrOrb={};if(n){toastLater(`속성 강화 방식이 바뀌어, 채워 두었던 구슬에 쓴 각성석 ${n}개를 돌려드렸습니다.`);save()}
+}
+setInterval(()=>{try{if(S&&S.role&&(typeof cloudOK!=='function'||!cloudOK()||ACC.synced))refundOldOrbs()}catch(e){}},4000);
+/* ── 속성 숙련 (AP) ──
+   각성 포인트로 구슬을 하나씩 채웁니다. 구슬 5개가 모이면 숙련이 +1 오릅니다(최대 +5). */
+const mastLv=a=>Math.max(0,Math.min(MAST_MAX,+((S.mast||{})[a])||0));
+const mastOrb=a=>mastLv(a)>=MAST_MAX?0:Math.max(0,Math.min(ORB_N-1,+((S.mastOrb||{})[a])||0));
+const mastOrbCost=a=>Math.max(1,Math.round(mastCost(mastLv(a))/ORB_N));
+function mastOrbs(a){const lv=mastLv(a),o=mastOrb(a),col=ATTRS[a]?ATTRS[a].col:'#8E6CF0';
+  return `<span class="orbs" title="속성 숙련 +${lv}/${MAST_MAX} · 구슬 ${lv>=MAST_MAX?ORB_N:o}/${ORB_N}"><b>+${lv}</b>${Array.from({length:ORB_N},(_,i)=>`<i class="${lv>=MAST_MAX||i<o?'on':''}" style="--oc:${col}"></i>`).join('')}</span>`}
+function fillMastOrb(a){
+  a=+a;if(!(S.attrs||[]).includes(a))return;if(mastLv(a)>=MAST_MAX){toast(`이미 최고 숙련(+${MAST_MAX})입니다.`);return}
+  const c=mastOrbCost(a);if((S.ap||0)<c){toast(`각성 포인트가 ${Math.ceil(c-(S.ap||0))} 부족합니다.`);return}
+  S.ap=Math.round((S.ap-c)*10)/10;S.mast=S.mast||{};S.mastOrb=S.mastOrb||{};const o=mastOrb(a)+1;
+  if(o>=ORB_N){S.mastOrb[a]=0;S.mast[a]=mastLv(a)+1;checkAch();toast(`구슬 ${ORB_N}개가 모였습니다! ${ATTRS[a].n} 숙련이 +${S.mast[a]}가 되었습니다.`);beep(988,.08);beep(1318,.12,'square',.04,.08);try{fanfare()}catch(e){}}
+  else{S.mastOrb[a]=o;toast(`${ATTRS[a].n} 숙련 구슬을 채웠습니다. (${o}/${ORB_N}) 다 모이면 숙련 +${mastLv(a)+1}이 됩니다.`);beep(988,.06)}
+  save();updateUI(true);
 }
 /* ── 게이트 속성 상성 ──
    게이트마다 약점 속성 2개와 강한(저항) 속성 1개가 있습니다. 공격 속성은 무기 속성, 무기에 속성이 없으면 내 첫 속성입니다. */
@@ -5560,7 +5594,7 @@ const cloudRef=()=>NET.db.doc('data/users/'+NET.uid+'/save');
    data/users/<uid>/bag  : 가방 · 장비 · 준비해 둔 물약
    data/users/<uid>/misc : 업적 · 기록 · 개인 우편 · 혼자 모드 게이트 등
    바뀐 덩어리만, 트랜잭션 한 번으로 함께 올립니다(모두 올라가거나 모두 안 올라감). */
-const PARTS={bag:['items','equip','nextBuff'],misc:['ach','log','localMail','localGates','raidClaimed','chatSeen','pendingRolls','mast','attrEnh']};
+const PARTS={bag:['items','equip','nextBuff'],misc:['ach','log','localMail','localGates','raidClaimed','chatSeen','pendingRolls','mast','mastOrb','attrEnh']};
 const SKIPK=new Set(['savedAt','cloudRev']);
 function partsOf(){
   const inPart={};for(const k in PARTS)PARTS[k].forEach(x=>inPart[x]=k);
@@ -5873,7 +5907,7 @@ function renderBag(){
     if(seenStone[it.attr])return '';seenStone[it.attr]=1;const n=S.items.filter(x=>!x.kind&&x.attr===it.attr).length;
     const a=ATTRS[it.attr],has=mine.includes(it.attr);
     const rep=mine.map((m,i)=>`<button type="button" class="sbtn" data-id="${it.id}" data-slot="${i}" ${has?'disabled':''}>${ATTRS[m].n} 대신</button>`).join('');
-    return `<li><span class="bt">${itemIcon(it)}<span class="atag"><i style="background:${a.col}"></i>${a.n}</span><b>${a.n} 각성석 <small>×${n}</small></b></span><span class="muted">${has?`내 속성입니다. 캐릭터 속성 강화 +${charEnh(it.attr)}/${CENH_MAX}`:'속성을 추가하거나 기존 속성과 바꿀 수 있습니다.'}</span><span class="acts">${has?(charEnh(it.attr)>=CENH_MAX?'<span class="enh max">캐릭터 속성 강화 완료</span>':`${enhOrbs(it.attr)}<button type="button" class="sbtn eq enhb" data-cenh="${it.attr}" ${n<charEnhCost(it.attr)?'disabled':''}>구슬 채우기 · 각성석 ${n}/${charEnhCost(it.attr)}</button>`):''}${has?'':`<button type="button" class="sbtn" data-id="${it.id}" ${mine.length>=MAX_ATTR?'disabled':''}>추가하기 (${mine.length}/${MAX_ATTR})</button>${rep}`}<button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}).join('');
+    return `<li><span class="bt">${itemIcon(it)}<span class="atag"><i style="background:${a.col}"></i>${a.n}</span><b>${a.n} 각성석 <small>×${n}</small></b></span><span class="muted">${has?`내 속성입니다. 캐릭터 속성 강화 +${charEnh(it.attr)}/${CENH_MAX}`:'속성을 추가하거나 기존 속성과 바꿀 수 있습니다.'}</span><span class="acts">${has?(charEnh(it.attr)>=CENH_MAX?'<span class="enh max">캐릭터 속성 강화 완료</span>':`${enhOrbs(it.attr)}<button type="button" class="sbtn eq enhb" data-cenh="${it.attr}" ${n<charEnhCost(it.attr)?'disabled':''}>+${charEnh(it.attr)+1} 강화 · 각성석 ${n}/${charEnhCost(it.attr)}</button>`):''}${has?'':`<button type="button" class="sbtn" data-id="${it.id}" ${mine.length>=MAX_ATTR?'disabled':''}>추가하기 (${mine.length}/${MAX_ATTR})</button>${rep}`}<button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}).join('');
 }
 $('bagList').addEventListener('click',e=>{const b=e.target.closest('.sbtn');if(!b||b.disabled||b.classList.contains('eq'))return;useItem(b.dataset.id,b.dataset.slot==null?null:+b.dataset.slot)});
 function renderExam(){
@@ -5913,7 +5947,7 @@ function setTimer(t){
   for(const ch of t){const f=DIGF[ch]||DIGF['0'];for(let yy=0;yy<7;yy++)for(let xx=0;xx<f[yy].length;xx++)if(f[yy][xx]==='1'){g.fillStyle='rgba(28,36,64,.22)';g.fillRect((x+xx)*u,yy*u+dpr,u,u);g.fillStyle=ink;g.fillRect((x+xx)*u,yy*u,u,u)}x+=f[0].length+1}
 }
 addEventListener('resize',()=>{timerLast=''});
-function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
+function updateUI(full){try{const st=$('stage');if(st&&st.dataset.view!==S.view)st.dataset.view=S.view}catch(e){}{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
   const role=S.role,t=now(),lvI=levelOf(S.xp),rw=liveRunaway();
   document.body.dataset.role=role||'sentinel';
   const sel=gateById(S.selGate);
@@ -5983,7 +6017,7 @@ function updateUI(full){{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Ma
     applyTheme();
     $('topbar').hidden=!role;
     $('who').innerHTML=`<span>${esc(S.name||'이름 없음')}</span><span class="muted">Lv.${lvI.lv}</span><span class="rk">${GRADES[gr]}</span>`;
-    $('myAttrs').innerHTML=attrTags(S.attrs||[],S.partner?(S.attrs||[]).filter(a=>S.partner.attrs.includes(a)):[])+((S.attrs||[]).length?`<span class="orbrow">${(S.attrs||[]).map(a=>`<span class="orbitem">${ATTRS[a].n} ${enhOrbs(a)}</span>`).join('')}</span>`:'')+((S.attrs||[]).length?`<button type="button" class="sbtn awkgo" data-awk="1">AP로 속성 숙련 강화</button>`:'');
+    $('myAttrs').innerHTML=attrTags(S.attrs||[],S.partner?(S.attrs||[]).filter(a=>S.partner.attrs.includes(a)):[])+((S.attrs||[]).length?`<span class="orbrow">${(S.attrs||[]).map(a=>`<span class="orbitem">${ATTRS[a].n} ${mastOrbs(a)}</span>`).join('')}</span>`:'')+((S.attrs||[]).length?`<button type="button" class="sbtn awkgo" data-awk="1">AP로 속성 숙련 강화</button>`:'');
     $('tip').textContent=S.phase==='break'?'금색 고리에 파란 고리가 겹칠 때 화면이나 버튼을 누릅니다. 자동 가이딩은 효율이 낮은 대신 손을 대지 않아도 됩니다.'
       :S.phase==='auto'?'자동 가이딩은 폭주 게이지에 따라 정해진 시간 동안 천천히 진행됩니다. 탭을 닫아도 괜찮습니다.'
       :S.phase==='focus'?(S.awayCheck?'엄격 모드입니다. 다른 탭이나 앱으로 가면 연결이 흔들리고 그 시간은 기록되지 않습니다.':'이 탭을 닫거나 다른 일을 해도 괜찮습니다. 출동은 계속되고, 돌아오면 보고서로 결과를 알려 줍니다.')
@@ -6051,11 +6085,11 @@ function openAwaken(){
 function renderGym(){
   const ap=Math.floor(S.ap||0),mine=S.attrs||[];S.mast=S.mast||{};
   const prog=TRAININGS.map(t=>`<button type="button" class="gitem" data-tr="${t.id}" aria-pressed="${S.selGate===t.id}"><span class="gc" style="background:#6FDCEB">${t.mins}</span><span class="n">${t.name}<br><small>${t.desc}</small></span><small>${t.id==='trall'?(S.trHours||1)+'시간':t.mins+'분'}</small></button>`).join('');
-  const mast=mine.map(a=>{const lv=+S.mast[a]||0,cost=mastCost(lv),max=lv>=MAST_MAX;
-    return `<li><span class="atag"><i style="background:${ATTRS[a].col}"></i>${ATTRS[a].n}</span><span class="tx"><b>${ATTRS[a].n} 숙련</b><span class="pips">${Array.from({length:MAST_MAX},(_,i)=>`<i class="${i<lv?'on':''}"></i>`).join('')}</span></span><button type="button" class="sbtn" data-mast="${a}" ${max||ap<cost?'disabled':''}>${max?'최고 단계':cost+' AP'}</button></li>`}).join('');
+  const mast=mine.map(a=>{const cost=mastOrbCost(a),max=mastLv(a)>=MAST_MAX;
+    return `<li><span class="atag"><i style="background:${ATTRS[a].col}"></i>${ATTRS[a].n}</span><span class="tx"><b>${ATTRS[a].n} 숙련</b>${mastOrbs(a)}</span><button type="button" class="sbtn" data-mast="${a}" ${max||ap<cost?'disabled':''}>${max?'최고 단계':'구슬 채우기 · '+cost+' AP'}</button></li>`}).join('');
   $('gymBox').innerHTML=`<div class="apbar"><span>각성 포인트</span><b>${ap} AP</b></div>
     <section class="awk" id="awk"><h3>속성 숙련 강화 <small>각성 포인트(AP) 사용</small></h3>
-    <p class="muted">숙련 1단계마다 그 속성으로 싸우거나 가이딩할 때 효율이 6%씩 오릅니다.</p>
+    <p class="muted">각성 포인트로 구슬을 채우고, 구슬 5개가 모이면 숙련이 +1 오릅니다(최대 +5). 숙련 1단계마다 그 속성으로 싸우거나 가이딩할 때 효율이 6%씩 오릅니다.</p>
     <ul class="shop">${mast||'<li><span class="tx"><span>먼저 속성을 얻어야 숙련을 올릴 수 있습니다.</span></span></li>'}
       <li><span class="tx"><b>각성석 교환</b><span>속성 하나가 담긴 각성석을 무작위로 받습니다.</span></span><button type="button" class="sbtn" data-buy="stone" ${ap<STONE_AP?'disabled':''}>${STONE_AP} AP</button></li></ul></section>
     <span class="eyebrow">Training</span><div class="glist" id="trList">${prog}</div>
@@ -6063,8 +6097,7 @@ function renderGym(){
 }
 $('gymBox').addEventListener('click',e=>{
   const tr=e.target.closest('[data-tr]');if(tr){if(S.phase!=='idle')return;S.selGate=tr.dataset.tr;ensurePartner();save();updateUI(true);return}
-  const m=e.target.closest('[data-mast]');if(m&&!m.disabled){const a=+m.dataset.mast;S.mast=S.mast||{};const lv=+S.mast[a]||0,c=mastCost(lv);if(lv>=MAST_MAX||(S.ap||0)<c)return;
-    S.ap=Math.round((S.ap-c)*10)/10;S.mast[a]=lv+1;checkAch();beep(988,.08);beep(1318,.12,'square',.04,.08);toast(`${ATTRS[a].n} 숙련이 ${lv+1}단계가 됐습니다.`);save();updateUI(true);return}
+  const m=e.target.closest('[data-mast]');if(m&&!m.disabled){fillMastOrb(m.dataset.mast);return}
   const st=e.target.closest('[data-buy]');if(st&&!st.disabled){if((S.ap||0)<STONE_AP)return;S.ap=Math.round((S.ap-STONE_AP)*10)/10;
     const it={id:'i'+Date.now().toString(36),attr:pick(STONE_ATTRS)};S.items.push(it);toast(`${ATTRS[it.attr].n} 각성석을 받았습니다. 가방에서 쓸 수 있습니다.`);save();updateUI(true)}
 });
@@ -6073,7 +6106,7 @@ $('lookBtn').addEventListener('click',()=>{if(S.phase==='idle'){$('settings').hi
 $('resetBtn').addEventListener('click',()=>{
   const b=$('resetBtn');
   if(armedReset>now()){
-    const keep={view:S.view,mast:S.mast,role:S.role,name:S.name,look:S.look,lookSet:S.lookSet,awayCheck:S.awayCheck,sound:S.sound,grade:S.grade,attrs:S.attrs,netId:S.netId,localGates:S.localGates,log:S.log};
+    const keep={view:S.view,mast:S.mast,mastOrb:S.mastOrb,role:S.role,name:S.name,look:S.look,lookSet:S.lookSet,awayCheck:S.awayCheck,sound:S.sound,grade:S.grade,attrs:S.attrs,netId:S.netId,localGates:S.localGates,log:S.log};
     relWake();S=Object.assign({},DEF,keep,{items:[]});previewGrade=null;resetBattle();cine=null;newPartner();save();
     b.classList.remove('armed');b.textContent='초기화';armedReset=0;say('idle');toast('기록을 초기화했습니다. 역할과 능력, 등급은 그대로입니다.');updateUI(true)}
   else{armedReset=now()+3000;b.classList.add('armed');b.textContent='한 번 더 누르면 지워집니다';setTimeout(()=>updateUI(),3050)}
