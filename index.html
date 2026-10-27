@@ -1093,7 +1093,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.47</span>
+      <span class="title-ver" id="titleVer">v35.48</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -3561,13 +3561,26 @@ setInterval(()=>{try{if(S&&S.role&&(typeof cloudOK!=='function'||!cloudOK()||ACC
    각성 포인트로 구슬을 하나씩 채웁니다. 구슬 5개가 모이면 숙련이 +1 오릅니다(최대 +5). */
 const mastLv=a=>Math.max(0,Math.min(MAST_MAX,+((S.mast||{})[a])||0));
 const mastOrb=a=>mastLv(a)>=MAST_MAX?0:Math.max(0,Math.min(ORB_N-1,+((S.mastOrb||{})[a])||0));
-const mastOrbCost=a=>Math.max(1,Math.round(mastCost(mastLv(a))/ORB_N));
+/* v35.48: 숙련 한 단계 값 = 그 동그라미의 예전 한 단계 값(15 · 30 · 45 · 60 · 75 AP). 25단계 전부 1125 AP */
+const mastOrbCost=a=>mastCost(mastLv(a));
+/* 예전 가격으로 올려 둔 숙련은, 그때 쓴 각성 포인트를 새 가격으로 다시 계산해 단계를 맞추고 남는 포인트는 돌려줍니다 */
+function migrateMast(){
+  if(S.mastV===2)return;const M=S.mast||{},O=S.mastOrb||{};let back=0,ch=[];
+  for(const k of new Set([...Object.keys(M),...Object.keys(O)])){
+    const lv=Math.max(0,Math.min(MAST_MAX,+M[k]||0)),o=lv>=MAST_MAX?0:Math.max(0,Math.min(ORB_N-1,+O[k]||0));
+    let spent=0;for(let l=0;l<lv;l++)spent+=mastCost(l);if(lv<MAST_MAX)spent+=o*Math.max(1,Math.round(mastCost(lv)/ORB_N));
+    if(!spent)continue;let st=0;while(st<MAST_MAX*ORB_N&&spent>=mastCost(Math.floor(st/ORB_N))){spent-=mastCost(Math.floor(st/ORB_N));st++}
+    M[k]=Math.floor(st/ORB_N);O[k]=st%ORB_N;back+=spent;if(ATTRS[+k])ch.push(`${ATTRS[+k].n} +${st}`)}
+  S.mast=M;S.mastOrb=O;S.mastV=2;if(back)S.ap=Math.round(((S.ap||0)+back)*10)/10;
+  if(ch.length)toastLater(`속성 숙련 가격이 바뀌어, 쓴 각성 포인트에 맞춰 단계를 다시 맞췄습니다: ${ch.join(' · ')}${back?` (남은 ${Math.round(back)} AP 돌려받음)`:''}`);save()}
+setInterval(()=>{try{if(S&&S.role&&S.mastV!==2&&(typeof cloudOK!=='function'||!cloudOK()||ACC.synced))migrateMast()}catch(e){}},3000);
 /* 속성 숙련 표시: 총 25단계. 동그라미 5개 중 하나에, 강화 5단계마다 불이 들어옵니다. 채우는 중인 동그라미는 아래부터 차오릅니다 */
 const MAST_STEPS=MAST_MAX*ORB_N;
 const mastStep=a=>Math.min(MAST_STEPS,mastLv(a)*ORB_N+mastOrb(a));
 function mastOrbs(a,noStep){const lv=mastLv(a),o=mastOrb(a),st=mastStep(a),col=ATTRS[a]?ATTRS[a].col:'#8E6CF0';
   return `<span class="orbs" title="속성 숙련 ${st}/${MAST_STEPS}단계"><b>+${st}</b>${Array.from({length:MAST_MAX},(_,i)=>`<i class="${i<lv?'on':i===lv&&o?'part':''}" style="--oc:${col};--pp:${i===lv?o/ORB_N*100:0}%"></i>`).join('')}${!noStep?`<small class="ostep">${st}/${MAST_STEPS}</small>`:''}</span>`}
 function fillMastOrb(a){
+  if(S.mastV!==2)migrateMast();
   a=+a;if(!(S.attrs||[]).includes(a))return;if(mastLv(a)>=MAST_MAX){toast(`이미 최고 숙련(+${MAST_STEPS})입니다.`);return}
   const c=mastOrbCost(a);if((S.ap||0)<c){toast(`각성 포인트가 ${Math.ceil(c-(S.ap||0))} 부족합니다.`);return}
   S.ap=Math.round((S.ap-c)*10)/10;S.mast=S.mast||{};S.mastOrb=S.mastOrb||{};const o=mastOrb(a)+1;
@@ -5721,7 +5734,7 @@ const cloudRef=()=>NET.db.doc('data/users/'+NET.uid+'/save');
    data/users/<uid>/bag  : 가방 · 장비 · 준비해 둔 물약
    data/users/<uid>/misc : 업적 · 기록 · 개인 우편 · 혼자 모드 게이트 등
    바뀐 덩어리만, 트랜잭션 한 번으로 함께 올립니다(모두 올라가거나 모두 안 올라감). */
-const PARTS={bag:['items','equip','nextBuff'],misc:['ach','log','localMail','localGates','raidClaimed','chatSeen','pendingRolls','mast','mastOrb','attrEnh']};
+const PARTS={bag:['items','equip','nextBuff'],misc:['ach','log','localMail','localGates','raidClaimed','chatSeen','pendingRolls','mast','mastOrb','mastV','attrEnh']};
 const SKIPK=new Set(['savedAt','cloudRev']);
 function partsOf(){
   const inPart={};for(const k in PARTS)PARTS[k].forEach(x=>inPart[x]=k);
@@ -6224,7 +6237,7 @@ function renderGym(){
     return `<li><span class="atag">${attrDot(a)}${ATTRS[a].n}</span><span class="tx"><b>${ATTRS[a].n} 숙련</b>${mastOrbs(a)}</span><button type="button" class="sbtn" data-mast="${a}" ${max||ap<cost?'disabled':''}>${max?'최고 단계':'강화 · '+cost+' AP'}</button></li>`}).join('');
   $('gymBox').innerHTML=`<div class="apbar"><span>각성 포인트</span><b>${ap} AP</b></div>
     <section class="awk" id="awk"><h3>속성 숙련 강화 <small>각성 포인트(AP) 사용</small></h3>
-    <p class="muted">숙련은 총 25단계입니다. 각성 포인트로 한 단계씩 올리고, 5단계마다 동그라미 하나에 불이 들어옵니다. 한 단계마다 그 속성으로 싸우거나 가이딩할 때 효율이 1.2%씩(동그라미 하나에 6%) 오릅니다.</p>
+    <p class="muted">숙련은 총 25단계입니다. 각성 포인트로 한 단계씩 올리고, 5단계마다 동그라미 하나에 불이 들어옵니다. 한 단계 값은 동그라미마다 15 · 30 · 45 · 60 · 75 AP입니다. 한 단계마다 그 속성으로 싸우거나 가이딩할 때 효율이 1.2%씩(동그라미 하나에 6%) 오릅니다.</p>
     <ul class="shop">${mast||'<li><span class="tx"><span>먼저 속성을 얻어야 숙련을 올릴 수 있습니다.</span></span></li>'}
       <li><span class="tx"><b>각성석 교환</b><span>속성 하나가 담긴 각성석을 무작위로 받습니다.</span></span><button type="button" class="sbtn" data-buy="stone" ${ap<STONE_AP?'disabled':''}>${STONE_AP} AP</button></li></ul></section>
     <span class="eyebrow">Training</span><div class="glist" id="trList">${prog}</div>
@@ -6241,7 +6254,7 @@ $('lookBtn').addEventListener('click',()=>{if(S.phase==='idle'){$('settings').hi
 $('resetBtn').addEventListener('click',()=>{
   const b=$('resetBtn');
   if(armedReset>now()){
-    const keep={view:S.view,mast:S.mast,mastOrb:S.mastOrb,role:S.role,name:S.name,look:S.look,lookSet:S.lookSet,awayCheck:S.awayCheck,sound:S.sound,grade:S.grade,attrs:S.attrs,netId:S.netId,localGates:S.localGates,log:S.log};
+    const keep={view:S.view,mast:S.mast,mastOrb:S.mastOrb,mastV:S.mastV,role:S.role,name:S.name,look:S.look,lookSet:S.lookSet,awayCheck:S.awayCheck,sound:S.sound,grade:S.grade,attrs:S.attrs,netId:S.netId,localGates:S.localGates,log:S.log};
     relWake();S=Object.assign({},DEF,keep,{items:[]});previewGrade=null;resetBattle();cine=null;newPartner();save();
     b.classList.remove('armed');b.textContent='초기화';armedReset=0;say('idle');toast('기록을 초기화했습니다. 역할과 능력, 등급은 그대로입니다.');updateUI(true)}
   else{armedReset=now()+3000;b.classList.add('armed');b.textContent='한 번 더 누르면 지워집니다';setTimeout(()=>updateUI(),3050)}
