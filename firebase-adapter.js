@@ -68,6 +68,15 @@ function boot(){
     rtSub=RT.m.onValue(RT.m.ref(RT.db,'presence'),snap=>{if(rtMode!=='on'){rtMode='on';if(pollT){clearInterval(pollT);pollT=null}if(gateSub){gateSub();gateSub=null}gateId=null}
       const v=snap.val()||{};peerDocs=Object.keys(v).map(id=>({id,...v[id]}));emit()},()=>rtOff())};
   import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js').then(m=>{RT={m,db:m.getDatabase(app,RT_URL)};rtListen()}).catch(()=>rtOff());
+  /* v35.59 채팅 등 게임이 쓰는 실시간 데이터베이스 기능. 접속 신호가 실시간 데이터베이스로 잘 돌 때만 ready()가 참입니다 */
+  db.rt={
+    ready:()=>!!RT&&rtMode==='on',
+    listen:(path,n,cb)=>{if(!RT)return()=>{};const q=RT.m.query(RT.m.ref(RT.db,path),RT.m.orderByChild('t'),RT.m.limitToLast(n||60));
+      return RT.m.onValue(q,s=>{const v=s.val()||{};cb(Object.keys(v).map(k=>({id:k,...v[k]})))},()=>cb(null))},
+    push:(path,v)=>RT?RT.m.push(RT.m.ref(RT.db,path),v):Promise.reject(new Error('rt')),
+    update:(path,v)=>RT?RT.m.update(RT.m.ref(RT.db,path),v):Promise.reject(new Error('rt')),
+    set:(path,v)=>RT?RT.m.set(RT.m.ref(RT.db,path),v):Promise.reject(new Error('rt'))
+  };
   const emit=()=>{if(!peersCb)return;const now=Date.now(),me=uid();
     peersCb({peers:peerDocs.filter(d=>now-(d.t||0)<(rtMode==='on'?600000:STALE)).map(d=>({kind:'viewer',isMe:d.id===me,presence:d.p,peer:d.id}))})};
   /* v35.55 사용량 절약: 내용이 바뀌었을 때만, 그리고 15초에 한 번까지만 씁니다. 바뀐 게 없으면 2분마다 살아 있다는 신호만 보냅니다 */

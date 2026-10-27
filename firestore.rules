@@ -35,8 +35,8 @@ service cloud.firestore {
     // 레이드 · 봉인 기록 · 레이드 결과
     match /world/{docId} {
       allow read: if signedIn();
-      // 레이드 일정 조정(gmraid)은 GM만 바꿀 수 있습니다
-      allow write: if signedIn() && (docId != 'gmraid' || isGM());
+      // 레이드 일정 조정(gmraid)과 최신 버전 표시(version)는 GM과 배포 스크립트만 바꿀 수 있습니다
+      allow write: if signedIn() && ((docId != 'gmraid' && docId != 'version') || isGM());
     }
     // 동시에 봉인할 때 한 사람만 처리하도록 거는 짧은 잠금
     match /locks/{lockId} {

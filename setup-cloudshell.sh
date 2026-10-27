@@ -78,9 +78,9 @@ if ! echo "$R" | grep -q rulesetName; then
 fi
 echo "$R" | grep -q rulesetName && ok "규칙 게시 완료" || { warn "규칙 게시 실패"; echo "$R" | head -8; }
 
-# ── 4-2. Realtime Database 규칙 (접속 신호용, v35.58)
+# ── 4-2. Realtime Database 규칙 (접속 신호 · 채팅 · 운영 명단, v35.59)
 RTDB="https://${P}-default-rtdb.asia-southeast1.firebasedatabase.app"
-RTRULES='{"rules":{".read":false,".write":false,"presence":{".read":"auth != null","$uid":{".write":"auth != null && auth.uid === $uid",".validate":"!newData.exists() || (newData.hasChildren([\"t\"]) && newData.child(\"t\").isNumber())"}}}}'
+RTRULES='{"rules":{".read":false,".write":false,"presence":{".read":"auth != null","$uid":{".write":"auth != null && auth.uid === $uid",".validate":"!newData.exists() || (newData.hasChildren(['\''t'\'']) && newData.child('\''t'\'').isNumber())"}},"chat":{".read":"auth != null","$ch":{".indexOn":["t"],"$mid":{".write":"auth != null && ((!data.exists() && newData.child('\''uid'\'').val() === auth.uid && (!root.child('\''mod/mutes/'\''+auth.uid).exists() || root.child('\''mod/mutes/'\''+auth.uid).val() < now) && (!root.child('\''mod/bans/'\''+auth.uid).exists() || root.child('\''mod/bans/'\''+auth.uid).val() < now)) || root.child('\''mod/gms/'\''+auth.uid).val() === true)",".validate":"!newData.exists() || (newData.hasChildren(['\''uid'\'','\''text'\'','\''t'\'']) && newData.child('\''text'\'').isString() && newData.child('\''text'\'').val().length > 0 && newData.child('\''text'\'').val().length <= 120 && newData.child('\''t'\'').isNumber())"}}},"mod":{".read":"auth != null",".write":"auth != null && root.child('\''mod/gms/'\''+auth.uid).val() === true"}}}'
 RTTOKEN=$(gcloud auth print-access-token --scopes=https://www.googleapis.com/auth/firebase.database,https://www.googleapis.com/auth/userinfo.email 2>/dev/null || echo "$TOKEN")
 RR=$(curl -sS -X PUT -H "Authorization: Bearer $RTTOKEN" -H "Content-Type: application/json" "$RTDB/.settings/rules.json" -d "$RTRULES" 2>&1)
 if echo "$RR" | grep -q '"status" *: *"ok"'; then ok "실시간 데이터베이스 규칙 게시 완료"
@@ -90,6 +90,19 @@ else
   echo "$RTRULES" | python3 -m json.tool
   echo "   (그 전까지는 게임이 자동으로 예전 방식(Firestore)으로 접속 신호를 보낸다.)"
 fi
+
+# ── 4-3. GM 명단을 실시간 데이터베이스에도 맞추고(채팅 관리용), 예전 Firestore 채팅을 한 번에 정리한다
+GMS=$(api "https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents/gms?pageSize=100" | python3 -c 'import sys,json;d=json.load(sys.stdin);print(json.dumps({x["name"].split("/")[-1]:True for x in d.get("documents",[])}))' 2>/dev/null || echo '{}')
+curl -sS -X PUT -H "Authorization: Bearer $RTTOKEN" -H "Content-Type: application/json" "$RTDB/mod/gms.json" -d "$GMS" >/dev/null 2>&1 && ok "GM 명단 맞춤: $GMS"
+OLD=0
+while :; do
+  L=$(api "https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents/chat?pageSize=300&mask.fieldPaths=t" | python3 -c 'import sys,json;d=json.load(sys.stdin);print("\n".join(x["name"] for x in d.get("documents",[])))' 2>/dev/null)
+  [ -z "$L" ] && break
+  W=$(echo "$L" | python3 -c 'import sys,json;print(json.dumps({"writes":[{"delete":n} for n in sys.stdin.read().split()]}))')
+  api -X POST "https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents:commit" -d "$W" >/dev/null || break
+  OLD=$((OLD+$(echo "$L" | wc -l))); [ $OLD -gt 3000 ] && break
+done
+[ $OLD -gt 0 ] && ok "예전 채팅 $OLD개를 정리했다" || ok "정리할 예전 채팅이 없다"
 
 # ── 5. 웹 앱 설정값
 say "웹 앱 설정값 받기"
@@ -137,6 +150,20 @@ else
   if [ -n "$GT" ]; then
     if git push -q "https://x-access-token:${GT}@github.com/${REPO_PATH}.git" HEAD:main; then
       ok "올리기 완료. 1~2분 뒤 https://${SITE_DOMAIN}/ 을 새로고침한다."
+      # v35.60 새 버전 알림: 사이트에 새 파일이 실제로 올라온 것을 확인한 뒤, 켜 둔 이전 버전 화면들이 스스로 새로고침하게 한다
+      VER=$(grep -o 'id="titleVer">v[0-9.]*' index.html | sed 's/.*>v//')
+      if [ -n "$VER" ]; then
+        printf "  사이트에 v%s가 올라오기를 기다리는 중" "$VER"
+        LIVE=""; for i in $(seq 1 40); do
+          if curl -s "https://${SITE_DOMAIN}/?nc=$RANDOM$i" | grep -q "titleVer\">v${VER}<"; then LIVE=1; break; fi; printf "."; sleep 6
+        done; echo
+        if [ -n "$LIVE" ]; then
+          VR=$(api -X PATCH "https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents/world/version" \
+            -d "{\"fields\":{\"v\":{\"stringValue\":\"$VER\"},\"t\":{\"integerValue\":\"$(date +%s)000\"}}}")
+          echo "$VR" | grep -q '"updateTime"' \
+            && ok "새 버전 v$VER 알림 완료: 켜 둔 이전 버전 화면은 1분 안에 새로고침됩니다" || warn "새 버전 알림을 보내지 못했다(게임은 정상)"
+        else warn "4분 안에 사이트에 새 버전이 보이지 않아 새 버전 알림은 건너뛰었다. 조금 뒤 deploy.sh를 다시 실행하면 된다."; fi
+      fi
     else
       warn "올리지 못했다. 토큰 권한(repo 또는 Contents 쓰기)을 확인한다."
     fi

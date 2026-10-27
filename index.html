@@ -1079,6 +1079,9 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 /* v35.51 공략 시간 단추: 시간 + 짧은 설명 */
 [data-glen]{display:inline-grid!important;justify-items:center;line-height:1.15}
 [data-glen] small{font-size:.66rem;opacity:.75;font-weight:600}
+/* v35.60 새 버전 알림 막대 */
+.verbar{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:60;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;max-width:min(94vw,560px);padding:10px 14px;border-radius:14px;background:#1C2440;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:.88rem}
+.verbar b{color:#FFE27A}.verbar .sbtn{margin-left:auto}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1100,7 +1103,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.58</span>
+      <span class="title-ver" id="titleVer">v35.60</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -2486,6 +2489,16 @@ function ensureLocalGates(){
   for(let s=0;s<6;s++){if(!S.localGates.some(g=>g.slot===s&&g.status==='open')){const gen=(S.localGates.filter(g=>g.slot===s).reduce((m,g)=>Math.max(m,g.gen||0),0))+1;
     const low=S.localGates.filter(g=>g.status==='open'&&g.g<=1).length<2;S.localGates=S.localGates.filter(g=>g.slot!==s);S.localGates.push({id:`s${s}-g${gen}`,...makeGate(s,gen,false,low)})}}
 }
+const MY_VER=(()=>{try{return (document.getElementById('titleVer').textContent||'').replace(/^v/,'').trim()}catch(e){return ''}})();
+const verNewer=(a,b)=>{const A=String(a).split('.').map(Number),B=String(b).split('.').map(Number);for(let i=0;i<Math.max(A.length,B.length);i++){const x=A[i]||0,y=B[i]||0;if(x!==y)return x>y}return false};
+let verT=null;
+function newVersionNotice(v){
+  if(verT)return;let left=60;const bar=document.createElement('div');bar.className='verbar';
+  const paint=()=>{bar.innerHTML=`<b>새 버전 v${esc(v)}이 나왔습니다.</b><span>기록을 저장하고 ${left}초 뒤 새로고침합니다.</span><button type="button" class="sbtn">지금 새로고침</button>`;bar.querySelector('button').onclick=go};
+  const go=async()=>{clearInterval(verT);bar.querySelector('span').textContent='저장하는 중입니다…';try{flushSave()}catch(e){}try{if(typeof cloudPut==='function'&&S.acct&&S.acct.mode==='cloud')await Promise.race([cloudPut(),new Promise(r=>setTimeout(r,5000))])}catch(e){}
+    window.__cgKicked=true;location.replace(location.pathname+'?v='+encodeURIComponent(v))};
+  paint();document.body.appendChild(bar);verT=setInterval(()=>{left--;if(left<=0)go();else paint()},1000);
+}
 async function initNet(){
   const C=window.claude;if(!C||typeof C.use!=='function')return;
   let db=null,user=null,room=null;
@@ -2510,6 +2523,8 @@ async function initNet(){
       },()=>{});
       db.doc('world/raidlog').onSnapshot(s=>{const d=s.exists?s.data():null;NET.raidLog=Array.isArray(d&&d.items)?d.items.slice(0,20):[];claimResults(NET.raidLog);onWorldChange()},()=>{});
       setInterval(()=>{if(NET.raid&&NET.raid.day!==raidTargetDay())settleOnline();onWorldChange()},60e3);
+      /* v35.60 새 버전 알림: 배포 스크립트가 world/version에 최신 버전을 적으면, 이전 버전 화면은 저장 후 스스로 새로고침합니다 */
+      db.doc('world/version').onSnapshot(s=>{const v=s.exists?String(s.data().v||''):'';if(v&&verNewer(v,MY_VER))newVersionNotice(v)},()=>{});
       db.doc('world/log').onSnapshot(s=>{const d=s.exists?s.data():null;NET.log=Array.isArray(d&&d.items)?d.items.slice(0,8):[];renderLog()},()=>{});
     }catch(e){NET.mode='solo'}
   }
@@ -4026,16 +4041,20 @@ const CHAT={ch:'center',subs:{},msgs:{center:[],party:[]},seen:{center:0,party:0
 CHAT.seen={center:+((S.chatSeen||{}).center)||0,party:+((S.chatSeen||{}).party)||0};
 function markSeen(c){const ms=CHAT.msgs[c]||[],last=ms.length?Math.max(...ms.map(m=>+m.t||0)):0,v=Math.max(CHAT.seen[c]||0,last,now());if(v-(CHAT.seen[c]||0)<1000&&S.chatSeen)return;CHAT.seen[c]=v;S.chatSeen={...(S.chatSeen||{}),[c]:v};save()}
 const chKey=c=>c==='party'?(S.party?'party:'+S.party:null):'center';
+/* v35.59 채팅은 실시간 데이터베이스(chat/{채널}/{메시지})에 둡니다. 쓸 수 없으면 예전 Firestore 채팅으로 돌아갑니다 */
+const chatRT=()=>!!(NET.db&&NET.db.rt&&NET.db.rt.ready());
+const chPath=k=>'chat/'+String(k).replace(/[.#$\[\]:\/]/g,'_');
 function watchChat(){
   if(!online())return;
   ['center','party'].forEach(c=>{const k=chKey(c);if(!k){CHAT.msgs.party=[];return}
-    if(CHAT.subs[c]&&CHAT.subs[c].k===k)return;
+    const rt=chatRT(),sk=(rt?'rt:':'fs:')+k;
+    if(CHAT.subs[c]&&CHAT.subs[c].k===sk)return;
     try{CHAT.subs[c]&&CHAT.subs[c].off&&CHAT.subs[c].off()}catch(e){}
-    const off=NET.db.collection('chat').where('ch','==',k).onSnapshot(s=>{
-      CHAT.msgs[c]=s.docs.map(d=>({id:d.id,...d.data()})).filter(m=>typeof m.text==='string'&&!m.hidden).sort((a,b)=>(a.t||0)-(b.t||0)).slice(-60);
-      if(curTab==='chat'&&!$('drawer').hidden&&CHAT.ch===c){markSeen(c);renderChat(true)}chatBadge();
-    },()=>{});
-    CHAT.subs[c]={k,off};
+    const got=list=>{if(!list)return;CHAT.msgs[c]=list.filter(m=>typeof m.text==='string'&&!m.hidden).sort((a,b)=>(a.t||0)-(b.t||0)).slice(-60);
+      if(curTab==='chat'&&!$('drawer').hidden&&CHAT.ch===c){markSeen(c);renderChat(true)}chatBadge()};
+    if(rt)CHAT.msgs[c]=[];/* v35.59: 실시간 데이터베이스로 옮기면서 지난 대화는 가져오지 않고 새로 시작합니다 */
+    const off=rt?NET.db.rt.listen(chPath(k),60,got):NET.db.collection('chat').where('ch','==',k).onSnapshot(s=>got(s.docs.map(d=>({id:d.id,...d.data()}))),()=>{});
+    CHAT.subs[c]={k:sk,off};
   });
 }
 function chatBadge(){const b=$('chatCount');if(!b)return;const n=['center','party'].reduce((a,c)=>a+CHAT.msgs[c].filter(m=>(m.t||0)>CHAT.seen[c]&&m.uid!==NET.uid).length,0);b.hidden=!n||(curTab==='chat'&&!$('drawer').hidden);b.textContent=n>9?'9+':n}
@@ -4044,7 +4063,8 @@ async function sendChat(){
   if(typeof muted==='function'&&muted()){toast('운영 정책에 따라 지금은 채팅을 보낼 수 없습니다.');return}
   const k=chKey(CHAT.ch);if(!online()||!k){toast(CHAT.ch==='party'?'파티에 들어가야 파티 채팅을 쓸 수 있습니다.':'채팅은 온라인에서만 쓸 수 있습니다.');return}
   inp.value='';inp.focus();
-  try{await NET.db.doc('chat/'+NET.uid.slice(0,10)+'_'+Date.now().toString(36)).set({ch:k,uid:NET.uid,nick:(S.name||'요원').slice(0,10),role:S.role,text,t:now()})}catch(e){toast('메시지를 보내지 못했습니다.')}
+  const msg={ch:k,uid:NET.uid,nick:(S.name||'요원').slice(0,10),role:S.role,text,t:now()};
+  try{if(chatRT())await NET.db.rt.push(chPath(k),msg);else await NET.db.doc('chat/'+NET.uid.slice(0,10)+'_'+Date.now().toString(36)).set(msg)}catch(e){toast('메시지를 보내지 못했습니다.')}
 }
 /* 채팅: 메신저처럼 내 말은 오른쪽, 남의 말은 왼쪽에 놓습니다. 같은 사람이 이어 말하면 이름을 한 번만 씁니다.
    위로 올려 읽는 중에는 새 메시지가 와도 아래로 끌어내리지 않고 '새 메시지' 단추만 띄웁니다. */
@@ -4583,7 +4603,7 @@ function gmWatchAll(){
     NET.db.doc('bans/'+NET.uid).onSnapshot(s=>{GMX.ban=s.exists?s.data():null;checkBan()},()=>{});
     NET.db.doc('mutes/'+NET.uid).onSnapshot(s=>{GMX.mute=s.exists?s.data():null},()=>{});
     NET.db.collection('gmpatch').where('to','==',NET.uid).onSnapshot(s=>{s.docs.forEach(d=>applyPatch(d.id,d.data()))},()=>{});
-    NET.db.doc('gms/'+NET.uid).get().then(s=>{GMX.is=!!(s&&s.exists);$('gmRow').hidden=!GMX.is}).catch(()=>{});
+    NET.db.doc('gms/'+NET.uid).get().then(s=>{GMX.is=!!(s&&s.exists);$('gmRow').hidden=!GMX.is;if(GMX.is)setTimeout(()=>{try{if(NET.db.rt)NET.db.rt.set('mod/gms/'+NET.uid,true).catch(()=>{})}catch(e){}},5000)}).catch(()=>{});
   }catch(e){}
 }
 let profKey='',profAt=0;
@@ -4596,6 +4616,8 @@ function writeProfile(){
 }
 setInterval(()=>{gmWatchAll();writeProfile()},5*60000);setTimeout(()=>{gmWatchAll();writeProfile()},4000);setInterval(gmWatchAll,5000);
 function renderNotice(){const n=GMX.notice,el=$('noticeBar');const on=n&&n.on&&n.text;el.hidden=!on;document.body.classList.toggle('hasNotice',!!on);if(on){el.className='noticebar '+(n.level==='warn'?'warn':'');$('noticeText').textContent=String(n.text).slice(0,200)}}
+/* 실시간 데이터베이스 쪽 운영 명단(mod/bans · mod/mutes · mod/gms)도 함께 맞춥니다. 채팅 규칙이 이 명단을 봅니다 */
+const rtMod=(k,uid,until)=>{try{if(NET.db&&NET.db.rt)NET.db.rt.set('mod/'+k+'/'+uid,until).catch(()=>{})}catch(e){}};
 const muted=()=>GMX.mute&&+GMX.mute.until>gmT();
 function checkBan(){const b=GMX.ban,on=b&&(+b.until>gmT());$('banScreen').hidden=!on;
   if(on){$('banWhy').textContent=b.reason?`사유: ${String(b.reason).slice(0,120)}`:'';$('banUntil').textContent=+b.until>gmT()+50*365*864e5?'기간: 영구':`기간: ${new Date(+b.until).toLocaleString('ko-KR')}까지`}}
@@ -4617,7 +4639,9 @@ function gmOpen(){if(!GMX.is){toast('GM 계정만 열 수 있습니다.');return
 function gmSubs(){
   if(GMX.subs.gm)return;GMX.subs.gm=true;const col=n=>NET.db.collection(n);
   col('profiles').onSnapshot(s=>{GMX.users=s.docs.map(d=>({uid:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0));gmRender(true)},()=>{});
-  col('chat').where('ch','==','center').onSnapshot(s=>{GMX.chat=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,40);gmRender(true)},()=>{});
+  {const fsChat=()=>col('chat').where('ch','==','center').onSnapshot(s=>{GMX.chat=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,40);gmRender(true)},()=>{});
+   /* 채팅이 실시간 데이터베이스에 있으면 그쪽을 봅니다 */
+   const tryRT=n=>{if(chatRT())NET.db.rt.listen('chat/center',40,L=>{if(L){GMX.chat=L.map(m=>({...m,rt:1})).sort((a,b)=>(b.t||0)-(a.t||0));gmRender(true)}});else if(n>0)setTimeout(()=>tryRT(n-1),3000);else fsChat()};tryRT(5)}
   col('market').where('status','==','open').onSnapshot(s=>{GMX.market=s.docs.map(d=>({id:d.id,...d.data()}));gmRender(true)},()=>{});
   col('mail').onSnapshot(s=>{GMX.mails=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,30);gmRender(true)},()=>{});
   col('invites').onSnapshot(s=>{GMX.codes=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.t||0)-(a.t||0));gmRender(true)},()=>{});
@@ -4728,10 +4752,10 @@ async function gmAct(a){
   else if(!u&&['patch','ban','unban','mute','unmute'].includes(a)){toast('먼저 유저 탭에서 요원을 선택해 주세요.')}
   else if(a==='patch'){const ops={cr:+val('gmPcr')||0,ap:+val('gmPap')||0,xp:+val('gmPxp')||0,heal:$('gmPheal').checked,runaway:$('gmPrw').checked};const g=val('gmPgr');if(g!=='')ops.grade=+g;const rl=val('gmProle');if(rl)ops.role=rl;
     await db.doc('gmpatch/'+gmId('p')).set({to:u.uid,ops,note:val('gmPnote').trim(),by:NET.uid,t:gmT(),applied:false});gmLog('계정 조정',u.uid,`${who} · `+[ops.cr&&`크레딧 ${ops.cr>0?'+':''}${ops.cr}`,ops.ap&&`각성 포인트 ${ops.ap>0?'+':''}${ops.ap}`,ops.xp&&`경험치 ${ops.xp>0?'+':''}${ops.xp}`,ops.grade!=null&&`등급 ${GRADES[ops.grade]}`,ops.heal&&'치료 해제',ops.runaway&&'폭주 0',ops.role&&(ops.role==='guide'?'가이드로 변경':'센티넬로 변경')].filter(Boolean).join(', '));toast(`${who} 요원에게 조정을 보냈습니다. 접속하면 바로 적용됩니다.`)}
-  else if(a==='ban'){const d=+val('gmBd'),until=gmT()+d*864e5,reason=val('gmBr').trim();await db.doc('bans/'+u.uid).set({until,reason,by:NET.uid,t:gmT()});gmLog('이용 정지',u.uid,`${who} · ${d>=99999?'영구':d+'일'} · ${reason}`);toast(`${who} 요원을 정지했습니다.`)}
-  else if(a==='unban'){await db.doc('bans/'+u.uid).set({until:0,reason:'',by:NET.uid,t:gmT()});gmLog('정지 해제',u.uid,who);toast('정지를 해제했습니다.')}
-  else if(a==='mute'){const hh=+val('gmMh');await db.doc('mutes/'+u.uid).set({until:gmT()+hh*36e5,reason:val('gmBr').trim(),by:NET.uid,t:gmT()});gmLog('채팅 금지',u.uid,`${who} · ${hh}시간`);toast('채팅을 금지했습니다.')}
-  else if(a==='unmute'){await db.doc('mutes/'+u.uid).set({until:0,by:NET.uid,t:gmT()});gmLog('채팅 금지 해제',u.uid,who);toast('채팅 금지를 해제했습니다.')}
+  else if(a==='ban'){const d=+val('gmBd'),until=gmT()+d*864e5,reason=val('gmBr').trim();await db.doc('bans/'+u.uid).set({until,reason,by:NET.uid,t:gmT()});rtMod('bans',u.uid,until);gmLog('이용 정지',u.uid,`${who} · ${d>=99999?'영구':d+'일'} · ${reason}`);toast(`${who} 요원을 정지했습니다.`)}
+  else if(a==='unban'){await db.doc('bans/'+u.uid).set({until:0,reason:'',by:NET.uid,t:gmT()});rtMod('bans',u.uid,0);gmLog('정지 해제',u.uid,who);toast('정지를 해제했습니다.')}
+  else if(a==='mute'){const hh=+val('gmMh');await db.doc('mutes/'+u.uid).set({until:gmT()+hh*36e5,reason:val('gmBr').trim(),by:NET.uid,t:gmT()});rtMod('mutes',u.uid,gmT()+hh*36e5);gmLog('채팅 금지',u.uid,`${who} · ${hh}시간`);toast('채팅을 금지했습니다.')}
+  else if(a==='unmute'){await db.doc('mutes/'+u.uid).set({until:0,by:NET.uid,t:gmT()});rtMod('mutes',u.uid,0);gmLog('채팅 금지 해제',u.uid,who);toast('채팅 금지를 해제했습니다.')}
   else if(a==='raidOpen'||a==='raidClose'){const hh=+val('gmRh');await db.doc('world/gmraid').set({mode:a==='raidOpen'?'open':'closed',until:gmT()+hh*36e5,by:NET.uid,t:gmT()});gmLog(a==='raidOpen'?'레이드 강제 열기':'레이드 강제 닫기','',hh+'시간');toast('레이드 일정을 바꿨습니다.')}
   else if(a==='raidReset'){await db.doc('world/gmraid').set({mode:null,until:0,by:NET.uid,t:gmT()});gmLog('레이드 기본 일정','','');toast('레이드를 기본 일정으로 되돌렸습니다.')}
   }catch(e){toast('처리하지 못했습니다. GM 권한과 보안 규칙을 확인해 주세요.')}
@@ -4756,7 +4780,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.gmrecall){NET.db.doc('mail/'+t.dataset.gmrecall).update({exp:gmT()-1}).then(()=>{gmLog('우편 회수',t.dataset.gmrecall,'');toast('우편을 회수했습니다. 아직 받지 않은 사람에게서 사라집니다.')}).catch(()=>toast('회수하지 못했습니다.'));return}
   if(t.dataset.gmcopy){try{navigator.clipboard.writeText(t.dataset.gmcopy);toast('코드를 복사했습니다.')}catch(_){}return}
   if(t.dataset.gmcodeoff){NET.db.doc('invites/'+t.dataset.gmcodeoff).update({off:true}).then(()=>{gmLog('가입 코드 중지',t.dataset.gmcodeoff,'');toast('가입 코드를 중지했습니다.')}).catch(()=>toast('중지하지 못했습니다.'));return}
-  if(t.dataset.gmhide){NET.db.doc('chat/'+t.dataset.gmhide).update({hidden:true}).then(()=>gmLog('채팅 지우기',t.dataset.gmhide,'')).catch(()=>toast('지우지 못했습니다.'));return}
+  if(t.dataset.gmhide){const m=GMX.chat.find(x=>x.id===t.dataset.gmhide);(m&&m.rt?NET.db.rt.update('chat/center/'+t.dataset.gmhide,{hidden:true}):NET.db.doc('chat/'+t.dataset.gmhide).update({hidden:true})).then(()=>gmLog('채팅 지우기',t.dataset.gmhide,'')).catch(()=>toast('지우지 못했습니다.'));return}
   if(t.dataset.gmmk){NET.db.doc('market/'+t.dataset.gmmk).update({status:'removed'}).then(()=>{gmLog('장터 판매글 내리기',t.dataset.gmmk,'');toast('판매글을 내렸습니다.')}).catch(()=>toast('내리지 못했습니다.'));return}
   if(t.dataset.gmsetsum)return gmSetSum(t.dataset.gmsetsum,false);
   if(t.dataset.gmclose)return gmSetSum(t.dataset.gmclose,true);
