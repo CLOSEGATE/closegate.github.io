@@ -439,9 +439,6 @@ body.ingame .app{max-width:none}
 .shop li .tx{flex:1;display:grid;min-width:0}
 .shop li .tx b{font-family:var(--f-display);font-weight:400;font-size:1.02rem}
 .shop li .tx span{font-size:.8rem;color:var(--ink-soft)}
-.pips{display:flex;gap:2px}
-.pips i{width:8px;height:8px;border:2px solid var(--ink);background:var(--panel)}
-.pips i.on{background:var(--accent)}
 @media (max-width:760px){.homemenu{right:8px;width:52%;gap:6px}.hbtn{padding:6px 8px}.hbtn b{font-size:1rem}.hbtn span{display:none}}
 /* 설정 */
 .settings{gap:16px;max-height:calc(100dvh - 40px);overflow-y:auto}
@@ -856,9 +853,6 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
 body.hasNotice{padding-top:calc(14px + 36px)!important}
 .pmood{display:grid;gap:6px;border:1px dashed color-mix(in srgb,var(--pink) 60%,transparent);border-radius:12px;padding:10px 12px}
 .gmlist b.code{font-family:var(--f-pixel,monospace);letter-spacing:.06em}
-/* PC: 게임 화면을 조금 줄여 아래 대화 · 메뉴 · 탭이 스크롤 없이 한 화면에 들어오게 한다 */
-@media (min-width:761px){body.refined{padding-bottom:12px}.hudgame{--dockH:300px;--sw:min(100%,1120px,max(680px,calc((100dvh - var(--dockH) - 40px) * 16 / 9)))}
-  .hudgame .stage,.hudgame .dock{min-width:min(100%,520px)!important}}
 /* 아래 영역: 왼쪽에 대화 · 지갑과 가이딩 단추 · 탭, 오른쪽에 메뉴 */
 .dock{grid-template-areas:"talk act" "mid act" "tabs act"!important}
 .dockmid{grid-area:mid;display:flex;gap:8px;align-items:stretch;flex-wrap:nowrap;min-width:0}
@@ -871,7 +865,6 @@ body.hasNotice{padding-top:calc(14px + 36px)!important}
 .wallet .wcr i{background:#FFC23D;box-shadow:inset 0 -2px 0 #E39A00}.wallet .wap i{background:#8E6CF0;box-shadow:inset 0 -2px 0 #6247C4}
 .wallet em{font-style:normal;font-size:.76rem;color:var(--ink-soft)}
 .wallet b{font-size:1.15rem;font-weight:700;letter-spacing:-.01em}.wallet small{font-size:.74rem;color:var(--ink-soft);font-weight:600}
-@media (min-width:761px){.hudgame{--dockH:250px}}
 @media (max-width:760px){.dock{grid-template-areas:"act" "mid" "talk"!important}.dockmid{flex-wrap:wrap}.dockmid .subrow{flex-basis:100%}.wallet{flex:1}.wallet>span{flex:1;padding:6px 10px}.wallet b{font-size:1rem}}
 /* 시간 · 레벨 글자: 도트 글꼴 대신 또렷한 글꼴, 숫자 폭 고정 */
 #timer,.timer{font-family:"IBM Plex Sans KR",system-ui,sans-serif!important;font-weight:700!important;font-variant-numeric:tabular-nums;letter-spacing:.02em;font-size:1.55rem!important;line-height:1.15;padding:4px 16px!important}
@@ -999,7 +992,6 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .orbs b{font-size:.75rem;margin-right:2px}
 .orbs i{width:10px;height:10px;border-radius:50%;background:var(--wash);border:1.5px solid color-mix(in srgb,var(--oc) 55%,var(--line,#D9E0F2));display:inline-block}
 .orbs i.on{background:radial-gradient(circle at 35% 35%,#fff 0 18%,var(--oc) 22% 100%);border-color:color-mix(in srgb,var(--oc) 70%,#1C2440);box-shadow:0 0 5px color-mix(in srgb,var(--oc) 60%,transparent)}
-.orbrow{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.8rem;margin-top:4px}.orbitem{display:inline-flex;align-items:center;gap:5px}
 .rgsheet{max-width:440px;text-align:center}.rgrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
 .rgcard{display:grid;justify-items:center;gap:4px;padding:14px 8px;border-radius:14px;border:1.5px solid var(--line,#D9E0F2);background:var(--panel);cursor:pointer;font:inherit;color:var(--ink)}
 .rgcard:hover,.rgcard:focus-visible{border-color:var(--accent);box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 25%,transparent)}
@@ -1062,6 +1054,26 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .enhtbl{flex:0 0 100%;width:100%;display:grid;grid-template-columns:auto auto auto;justify-content:start;align-items:center;gap:5px 16px;font-size:.8rem;margin:6px 0 2px}
 .enhtbl em{font-style:normal;font-size:.7rem;color:var(--ink-soft);font-weight:700}
 .enhtbl>b{font-weight:600;white-space:nowrap}
+/* v35.43 가구 썸네일 · 받지 못한 보상 가구 */
+.dthumb{width:36px;height:36px;flex:none;image-rendering:pixelated;border-radius:8px;background:var(--wash);border:1px solid var(--line,#D9E0F2);object-fit:contain;padding:2px;box-sizing:border-box}
+.decor li.locked .dthumb{filter:grayscale(1) brightness(.45);opacity:.7}
+.decor li.locked .tx b{color:var(--ink-soft)}
+/* v35.43 도트 아이콘 */
+.atag img.adot{width:14px;height:14px;image-rendering:pixelated;display:block;flex:none}
+.achs .ic{background:none!important;box-shadow:none!important;border:0!important;width:32px;height:32px}
+.abadge{width:32px;height:32px;image-rendering:pixelated;display:block}
+.achs li.achhd{display:block;border:0!important;background:none!important;padding:8px 2px 0!important;font-size:.72rem;font-weight:700;color:var(--ink-soft);letter-spacing:.02em;box-shadow:none!important}
+.mico{width:24px;height:18px;image-rendering:pixelated;flex:none}
+/* v35.44 승급 시험 중 표시 */
+.examtag{position:absolute;left:50%;top:50px;transform:translateX(-50%);z-index:6;display:grid;grid-template-columns:auto auto;gap:0 8px;align-items:center;padding:5px 12px 7px;border-radius:12px;background:#FF6B8A;color:#fff;border:2px solid #1C2440;box-shadow:0 3px 0 #1C2440;font-size:.8rem;pointer-events:none;overflow:hidden;animation:examPulse 2s ease-in-out infinite}
+.examtag b{font-weight:800;letter-spacing:-.01em}.examtag span{font-variant-numeric:tabular-nums;font-weight:700}
+.examtag i{position:absolute;left:0;bottom:0;height:3px;background:#FFE27A}
+@keyframes examPulse{50%{box-shadow:0 3px 0 #1C2440,0 0 0 4px rgba(255,107,138,.35)}}
+@media (max-width:760px){.examtag{top:auto;bottom:8px;font-size:.74rem}}
+.ebox.on{border-color:#FF6B8A!important;background:color-mix(in srgb,#FF6B8A 8%,var(--panel))}
+.ebox .bar2{display:block;height:8px;border-radius:99px;background:var(--wash);overflow:hidden}.ebox .bar2 i{display:block;height:100%;background:#FF6B8A}
+#examQuit.armed{background:#F0544F;color:#fff}
+.logbrk span{color:#B0203A;font-weight:700}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
 </style>
 
@@ -1083,7 +1095,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.42</span>
+      <span class="title-ver" id="titleVer">v35.45</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -1197,6 +1209,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
           <span class="hm-txt"><b id="hudName">이름 없음</b><span id="hudLv">Lv.1 · F급</span><span class="hm-bar"><i id="hudXp"></i></span></span>
         </button>
         <span class="tag hud-phase" id="phaseTag">센터 대기</span>
+        <div class="examtag" id="examTag" hidden></div>
         <p class="bubble" id="meBubble" hidden></p>
 
         <!-- 오른쪽 위 -->
@@ -1289,7 +1302,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
               <ul id="crewList"></ul>
               <span class="eyebrow">Friends</span>
               <div id="friendBox"></div>
-              <span class="eyebrow">최근 봉인</span>
+              <span class="eyebrow">최근 게이트 소식</span>
               <ul class="log" id="logList"></ul>
             </section>
           </div>
@@ -1321,7 +1334,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
           <button type="button" class="hp" data-go="gym"><b>훈련장</b><span>AP 모으기 · 속성 숙련 강화</span></button>
           <button type="button" class="hp" data-go="office"><b>보고서 작성</b><span id="officeSub">크레딧을 법니다</span></button>
           <button type="button" class="hp" data-go="guiding"><b>가이딩실</b><span id="guideSub">함께 가이딩합니다</span><em id="guideCount" hidden>0</em></button>
-          <button type="button" class="hp" data-go="shop"><b>상점</b><span>사고팔기 · 가구</span></button>
+          <button type="button" class="hp" data-go="shop"><b>상점</b><span>아이템 · 가구 · 팔기</span></button>
           <button type="button" class="hp" data-go="market"><b>장터</b><span>요원끼리 물건을 사고팝니다</span></button>
           <button type="button" class="hp" data-go="party"><b>파티</b><span id="partySub">함께 출동합니다</span></button>
           <button type="button" class="hp wide home" data-go="home"><b>퇴근하기</b><span>내 방으로 돌아갑니다</span></button>
@@ -1583,7 +1596,7 @@ const rollGrade=()=>{let r=Math.random()*100;for(let i=0;i<GRADE_W.length;i++){i
 const needXp=l=>Math.round((10+3*l)*1.7);
 function levelOf(xp){let l=1,x=xp;while(l<100&&x>=needXp(l)){x-=needXp(l);l++}return {lv:l,into:x,need:needXp(l)}}
 const powerOf=(lv,gr)=>lv+gr*.15+(gr>=7?.35:0);/* SS급은 S급보다 조금 더 강합니다 */
-const attrTags=(list,hits)=>list.map(a=>`<span class="atag${hits&&hits.includes(a)?' hit':''}"><i style="background:${ATTRS[a].col}"></i>${ATTRS[a].n}</span>`).join('');
+const attrTags=(list,hits)=>list.map(a=>`<span class="atag${hits&&hits.includes(a)?' hit':''}">${attrDot(a)}${ATTRS[a].n}</span>`).join('');
 function matchCount(a,b){b=b||[];return (a||[]).filter(x=>b.includes(x)||(x>=6&&x<=8&&b.includes(12))||(x>=9&&x<=11&&b.includes(13))).length}
 /* 장비 속성이 내 속성과 맞는지 (가이드의 물리·정신은 같은 계열 전체와 맞습니다) */
 const attrFits=(g,mine)=>g!=null&&(mine||[]).some(x=>x===g||attrCat(x)!=='n'&&attrCat(x)===attrCat(g)&&(x>=12||g>=12));
@@ -2557,7 +2570,7 @@ async function contribute(gate,mins){
   if(sum>=lg.hp){lg.status='closed';pushLog(lg.d,lg.g,1);ensureLocalGates();return {closed:true,sum,hp:lg.hp,n:1,g:cleanGate(lg.id,lg)}}
   return {sum,hp:lg.hp,n:1,g:cleanGate(lg.id,lg)};
 }
-async function closeOnline(ref,d,n,npc){
+async function closeOnline(ref,d,n,npc,silent){
   try{const l=await ref.acquire({holder:NET.uid,ttlMs:6000});if(l&&!l.acquired)return false}catch(e){}
   try{
     const fresh=cleanGate(d.id,(await ref.get()).data());if(!fresh||fresh.status!=='open')return false;slotClosedAt[fresh.slot]=Date.now();
@@ -2565,7 +2578,7 @@ async function closeOnline(ref,d,n,npc){
     await ref.update({status:'closed',closedAt:Date.now(),...(npc?{closedBy:'npc'}:{clr})});
     const gen=(fresh.gen||1)+1;
     await NET.db.doc(`gates/s${fresh.slot}-g${gen}-${fresh.id.slice(-4)}`).set(makeGate(fresh.slot,gen,true,NET.gates.filter(g=>g.g<=1&&g.id!==fresh.id).length<2));
-    pushLog(fresh.d,fresh.g,n,npc?{npc:1,brk:fresh.brk?1:0}:(fresh.brk?{brk:1}:null));return true;
+    if(!silent)pushLog(fresh.d,fresh.g,n,npc?{npc:1,brk:fresh.brk?1:0}:(fresh.brk?{brk:1}:null));return true;
   }catch(e){return false}
 }
 async function pushLog(d,g,n,extra){
@@ -3263,7 +3276,7 @@ function buyDecor(id){
   const d=DECOR.find(x=>x.id===id);if(!d||d.src||(S.decor||[]).includes(id))return;
   if((S.ap||0)<d.ap){toast(`각성 포인트가 ${d.ap-Math.floor(S.ap||0)} 부족합니다.`);return}
   S.ap=Math.round((S.ap-d.ap)*10)/10;S.decor=[...(S.decor||[]),id];(S.decorOn=S.decorOn||{})[id]=true;
-  toast(`새 가구를 방에 놓았다: ${d.n}`);beep(988,.08);checkAch();save();updateUI(true);
+  toast(`${josa(d.n,'을','를')} 사서 방에 놓았습니다.`);beep(988,.08);checkAch();save();updateUI(true);
 }
 function toggleDecor(id){S.decorOn=S.decorOn||{};S.decorOn[id]=S.decorOn[id]===false;save();updateUI(true)}
 
@@ -3654,7 +3667,7 @@ function buyDecor2(id){
   const d=DECOR2.find(x=>x.id===id);if(!d||(S.decor||[]).includes(id))return;
   if(CR()<d.cr){toast(`크레딧이 ${d.cr-CR()} 부족합니다.`);return}
   addCr(-d.cr);S.decor=[...(S.decor||[]),id];(S.decorOn=S.decorOn||{})[id]=true;
-  toast(`새 가구를 방에 놓았다: ${d.n}`);beep(988,.08);checkAch();save();updateUI(true);
+  toast(`${josa(d.n,'을','를')} 사서 방에 놓았습니다.`);beep(988,.08);checkAch();save();updateUI(true);
 }
 function drawDecor2(){
   const t=T;
@@ -3803,7 +3816,7 @@ function renderShop(){
   const sell=S.items.filter(it=>!(S.equip&&Object.values(S.equip).includes(it.id)));
   $('shopBox').innerHTML=`${crBar()}
   <span class="eyebrow">Buy</span><ul class="shop">${SHOP.map(s=>`<li>${shopIco(s)}<span class="tx"><b>${s.n}</b><span>${s.d}</span></span><button type="button" class="sbtn" data-shop="${s.id}" ${(s.daily&&boughtToday(s.id))||(s.id==='ap:heal'&&!(healLeft()>0))||(s.id==='ap:xp'&&S.xpBoost)||(s.ap?(S.ap||0)<s.ap:CR()<s.cr)?'disabled':''}>${s.daily&&boughtToday(s.id)?'오늘 구매함':s.id==='ap:xp'&&S.xpBoost?'준비됨':s.ap?s.ap+' AP':s.cr+' C'}</button></li>`).join('')}</ul>
-  <span class="eyebrow">Furniture</span><ul class="decor">${DECOR2.map(d=>{const own=(S.decor||[]).includes(d.id);return `<li><span class="tx"><b>${d.n}</b><span>${d.d}</span></span><button type="button" class="sbtn" data-pv="${d.id}">미리보기</button>${own?'<span class="muted">보유 중</span>':`<button type="button" class="sbtn" data-d2="${d.id}" ${CR()<d.cr?'disabled':''}>${d.cr} C</button>`}</li>`}).join('')}</ul>
+  <span class="eyebrow">Furniture</span><ul class="decor">${[...DECOR.filter(d=>!d.src),...DECOR2].map(d=>{const own=(S.decor||[]).includes(d.id),ap=!!d.ap;return `<li>${decorThumb(d.id)}<span class="tx"><b>${d.n}</b><span>${d.d}</span></span><button type="button" class="sbtn" data-pv="${d.id}">미리보기</button>${own?'<span class="muted">보유 중</span>':ap?`<button type="button" class="sbtn" data-db="${d.id}" ${(S.ap||0)<d.ap?'disabled':''}>${d.ap} AP</button>`:`<button type="button" class="sbtn" data-d2="${d.id}" ${CR()<d.cr?'disabled':''}>${d.cr} C</button>`}</li>`}).join('')}</ul>
   <span class="eyebrow">Sell</span>${sell.length?`<ul class="shop">${sell.map(it=>`<li>${itemIcon(it)}<span class="tx"><b>${itemName(it)}</b><span>${itemDesc(it)}</span></span><button type="button" class="sbtn" data-sell="${it.id}">${sellPrice(it)} C에 팔기</button></li>`).join('')}</ul>`:'<p class="muted">팔 수 있는 물건이 없습니다. 장착 중인 장비는 해제해야 팔 수 있습니다.</p>'}
   <p class="muted">크레딧은 게이트를 닫거나 센터에서 보고서를 쓰면 얻습니다. 가이드는 보고서로 두 배를 받습니다.</p>`;
 }
@@ -3849,6 +3862,7 @@ function renderGuiding(){
 function updateBadges(){const b=$('guideCount');if(b){const n=S.role==='guide'?GUIDE.reqs.length:0;b.hidden=!n;b.textContent=n}}
 $('shopBox').addEventListener('click',e=>{const a=e.target.closest('[data-shop]');if(a&&!a.disabled){buyShop(a.dataset.shop);renderShop();return}
   const d=e.target.closest('[data-d2]');if(d&&!d.disabled){buyDecor2(d.dataset.d2);renderShop();return}
+  const da=e.target.closest('[data-db]');if(da&&!da.disabled){buyDecor(da.dataset.db);renderShop();return}
   const s=e.target.closest('[data-sell]');if(s){sellItem(s.dataset.sell);renderShop()}});
 $('marketBox').addEventListener('click',e=>{const b=e.target.closest('[data-mbuy]');if(b&&!b.disabled){buyListing(b.dataset.mbuy);return}
   const c=e.target.closest('[data-mcancel]');if(c){cancelListing(c.dataset.mcancel);return}
@@ -4115,7 +4129,7 @@ function renderMail(){
   const L=mailList(),box=$('mailBox');
   box.innerHTML=`${L.length?`<ul class="mlist">${L.map(m=>{const its=Array.isArray(m.items)?m.items:[];
     const what=[its.length?`아이템 ${its.length}개`:'',m.cr?`${+m.cr} 크레딧`:'',m.ap?`각성 포인트 ${+m.ap}`:''].filter(Boolean).join(' · ');
-    return `<li class="mcard${m.claimed?' done':''}"><div class="mtop"><span class="gear-t" style="background:${m.src==='local'?'#21A574':'#8E6CF0'}">${esc((/^gm$/i.test(String(m.from||''))||!m.from?'센터 운영팀':String(m.from)).slice(0,12))}</span><b>${esc(String(m.title||'우편').slice(0,40))}</b></div>
+    return `<li class="mcard${m.claimed?' done':''}"><div class="mtop">${mailIco(m)}<span class="gear-t" style="background:${m.src==='local'?'#21A574':'#8E6CF0'}">${esc((/^gm$/i.test(String(m.from||''))||!m.from?'센터 운영팀':String(m.from)).slice(0,12))}</span><b>${esc(String(m.title||'우편').slice(0,40))}</b></div>
       <p class="mbody">${esc(String(m.body||'').slice(0,400))}</p>
       ${Array.isArray(m.codes)&&m.codes.length?`<div class="mcodes">${m.codes.slice(0,10).map(c=>`<span><code>${esc(String(c).slice(0,14))}</code><button type="button" class="sbtn" data-copycode="${esc(String(c).slice(0,14))}">복사</button></span>`).join('')}</div>`:''}
       <div class="mbot"><span class="muted">${new Date(+m.t||0).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})}${what?' · '+what:''}</span>${m.claimed?'<span class="muted">받음</span>':`<button type="button" class="sbtn buy" data-mail="${esc(m.id)}">${what?'받기':'읽음'}</button>`}</div></li>`}).join('')}</ul>`:'<p class="muted">받은 우편이 없습니다.</p>'}
@@ -4375,7 +4389,7 @@ function renderPotBar(){
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pot]');if(b&&!b.disabled)usePotion(b.dataset.pot)});
 document.addEventListener('change',e=>{if(e.target.id==='autoPot'){S.autoPot=e.target.checked;save();toast(S.autoPot?'HP가 30% 아래로 내려가면 회복약을 자동으로 씁니다.':'회복약 자동 사용을 껐습니다.')}});
-setInterval(()=>{if(inBattle())renderPotBar()},1000);
+setInterval(()=>{if(!document.hidden&&inBattle())renderPotBar()},1000);
 
 /* ═════════ 아이템 도트 아이콘 (12×12) ═════════
    무기는 종류별 모양, 방어구 · 장신구는 등급별 모양, 각성석은 속성 색 보석, 물약은 병 색으로 구분합니다. */
@@ -4436,6 +4450,24 @@ function itemIcon(it,size){
   return `<img class="ico" src="${icoCache.get(key)}" width="${size||28}" height="${size||28}" alt="">`;
 }
 
+/* ═════════ 가구 썸네일 ═════════
+   빈 방과 그 가구만 놓은 방을 한 번씩 그려 달라진 픽셀 영역만 잘라, 목록용 작은 도트 그림을 만듭니다(한 번 만들면 저장해 둡니다) */
+const thumbCache=new Map();
+function decorThumb(id){
+  const role=S.role||'sentinel',key=id+role;
+  if(!thumbCache.has(key)){let url='';
+    try{const bg=roomBg(role),w=bg.width,h=bg.height,mk=()=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
+      const a=mk(),b=mk(),p=G,od=S.decor,oo=S.decorOn,t0=T;
+      const draw=(c,on)=>{G=c.getContext('2d');G.imageSmoothingEnabled=false;S.decor=on?[id]:[];S.decorOn=on?{[id]:true}:{};G.drawImage(bg,0,0);drawRugOverride();drawDecor();drawDecor2()};
+      try{T=1.3;draw(a,false);draw(b,true)}finally{G=p;S.decor=od;S.decorOn=oo;T=t0}
+      const A=a.getContext('2d').getImageData(0,0,w,h).data,B=b.getContext('2d').getImageData(0,0,w,h).data;let x0=w,y0=h,x1=-1,y1=-1;
+      for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4;if(A[i]!==B[i]||A[i+1]!==B[i+1]||A[i+2]!==B[i+2]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}}
+      if(x1>=0){const pad=2;x0=Math.max(0,x0-pad);y0=Math.max(0,y0-pad);x1=Math.min(w-1,x1+pad);y1=Math.min(h-1,y1+pad);const sz=Math.max(x1-x0+1,y1-y0+1),o=document.createElement('canvas');o.width=o.height=sz;
+        const g=o.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(b,x0,y0,x1-x0+1,y1-y0+1,Math.floor((sz-(x1-x0+1))/2),Math.floor((sz-(y1-y0+1))/2),x1-x0+1,y1-y0+1);url=o.toDataURL()}}catch(e){}
+    thumbCache.set(key,url)}
+  const u=thumbCache.get(key);return u?`<img class="dthumb" src="${u}" alt="" width="36" height="36">`:'<span class="dthumb"></span>';
+}
+
 /* ═════════ 가구 미리보기 ═════════ */
 let pvId=null,pvRaf=0;
 function previewDecor(id){
@@ -4450,6 +4482,62 @@ function previewDecor(id){
 }
 function closePreview(){pvId=null;cancelAnimationFrame(pvRaf);$('pvModal').hidden=true}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pv]');if(b){previewDecor(b.dataset.pv);return}if(e.target.id==='pvClose'||e.target.id==='pvModal')closePreview()});
+
+/* ═════════ v35.43 도트 아이콘: 업적 배지 · 우편 · 속성 문양 ═════════
+   모두 작은 픽셀 그림을 한 번만 그려 데이터 URL로 저장해 두고 씁니다. */
+const PX8=s=>s.trim().split(/\s+/);
+const icoUrl=new Map();
+function pxIcon(key,w,h,fn){if(!icoUrl.has(key)){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');try{fn(g)}catch(e){}icoUrl.set(key,c.toDataURL())}return icoUrl.get(key)}
+function glyph(g,rows,ox,oy,col,edge){const set=new Set();rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='X')set.add((x+ox)+','+(y+oy))}));
+  if(edge){g.fillStyle=edge;set.forEach(k=>{const [x,y]=k.split(',').map(Number);[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{if(!set.has((x+dx)+','+(y+dy)))g.fillRect(x+dx,y+dy,1,1)})})}
+  g.fillStyle=col;set.forEach(k=>{const [x,y]=k.split(',').map(Number);g.fillRect(x,y,1,1)})}
+
+/* 속성 문양 14종(물 · 불 · 바람 · 땅 · 빛 · 어둠 · 신체 강화 · 강철 피부 · 초가속 · 염력 · 염동력 · 정신 공격 · 물리 · 정신) */
+const ATTR_GLYPH=[
+ '...X.... ...X.... ..XXX... .XXXXX.. .XXXXX.. .XXXXX.. ..XXX... ........',
+ '...X.... ..XX.... ..XXX.X. .XXXXXX. .XXXXXX. XXX.XXXX .XX..XX. ..XXXX..',
+ '..XXX... .X...X.. ....X... XXXX.... ........ XXXXXX.. ......X. ....XX..',
+ '........ ...X.... ..XXX... ..XXX.X. .XXXXXXX .XXXXXXX XXXXXXXX ........',
+ '...X.... X..X..X. .X.X.X.. ..XXX... XXXXXXX. ..XXX... .X.X.X.. X..X..X.',
+ '..XXX... .XX..... XX...... XX...... XX...... XX...... .XX..... ..XXX...',
+ '........ XX....XX XX....XX XXXXXXXX XXXXXXXX XX....XX XX....XX ........',
+ 'XXXXXXX. X..X..X. X..X..X. XXXXXXX. X..X..X. .X.X.X.. ..XXX... ...X....',
+ '....XX.. ...XX... ..XX.... .XXXXX.. ...XX... ..XX.... .XX..... .X......',
+ '...X.... ..XXX... .XXXXX.. ..XXX... ...X.... ........ .X.X.X.. ........',
+ 'XXXXXX.. X....X.. X.XX.X.. X.X..X.. X.XXXX.. X....... XXXXXXX. ........',
+ '........ ..XXXX.. .X....X. X..XX..X X..XX..X .X....X. ..XXXX.. ........',
+ 'X.....X. .X...X.. ..X.X... ...X.... ..X.X... .X...X.. XX...XX. XX...XX.',
+ '...X.... ...X.... ..XXX... XXXXXXX. ..XXX... ...X.... ...X.... ........'].map(PX8);
+function attrDot(a){const A=ATTRS[a];if(!A)return '<i></i>';
+  const u=pxIcon('ad'+a,10,10,g=>glyph(g,ATTR_GLYPH[a]||ATTR_GLYPH[13],1,1,A.col,shade(A.col,-.45)));
+  return `<img class="adot" src="${u}" alt="" width="14" height="14">`}
+
+/* 업적 배지 8종: 출동 · 봉인 · 집중 · 가이딩 · 성장 · 레이드 · 수집 · 함께 */
+const BADGE={
+ sortie:{c:'#2F5BEA',g:'......X. .....XX. ....XX.. X..XX... .XXX.... ..X..... .X.X.... X.......'},
+ seal:{c:'#8E6CF0',g:'..XXXX.. .X....X. X..XX..X X.X..X.X X.X..X.X X..XX..X .X....X. ..XXXX..'},
+ focus:{c:'#21A574',g:'XXXXXXXX .X....X. ..X..X.. ...XX... ...XX... ..X..X.. .XXXXXX. XXXXXXXX'},
+ guide:{c:'#F2546B',g:'.XX..XX. XXXXXXXX XXXXXXXX XXXXXXXX .XXXXXX. ..XXXX.. ...XX... ........'},
+ grow:{c:'#FF8A2B',g:'...XX... ..XXXX.. .XXXXXX. XXXXXXXX ...XX... ...XX... ...XX... ...XX...'},
+ raid:{c:'#B03A8C',g:'........ X..XX..X XX.XX.XX XXXXXXXX XXXXXXXX X.XXXX.X XXXXXXXX ........'},
+ home:{c:'#C9853A',g:'...XX... ..XXXX.. .XXXXXX. XXXXXXXX .X....X. .X.XX.X. .X.XX.X. .XXXXXX.'},
+ social:{c:'#3BA7C9',g:'........ .XX..XX. .XX..XX. ........ XXXXXXXX XXX..XXX XXX..XXX ........'}};
+const achCat=id=>/^(first|s\d)/.test(id)?'sortie':/^(close|kill|weak)/.test(id)?'seal':/^(h\d|night)/.test(id)?'focus':/^(pf|assist|pair)/.test(id)?'guide':/^raid/.test(id)?'raid':/^(decor|cr10k|trade|pot)/.test(id)?'home':/^(party|friend)/.test(id)?'social':'grow';
+function achBadge(id,done){const k=achCat(id),B=BADGE[k];
+  const u=pxIcon('ab'+k+(done?1:0),16,16,g=>{
+    const ring=done?'#FFC23D':'#C9CEDB',fill=done?B.c:'#EEF1F8',ink='#1C2440';
+    for(let y=0;y<16;y++)for(let x=0;x<16;x++){const d=Math.hypot(x-7.5,y-7.5);if(d<=7.6){g.fillStyle=d>6.6?ink:d>5.4?ring:fill;g.fillRect(x,y,1,1)}}
+    if(done){g.fillStyle='#FFF3B8';g.fillRect(4,3,2,1);g.fillRect(3,4,1,2)}
+    glyph(g,PX8(B.g),4,4,done?'#FFFFFF':shade(B.c,.15),done?shade(B.c,-.4):null)});
+  return `<img class="abadge${done?' done':''}" src="${u}" alt="" width="32" height="32">`}
+
+/* 우편 아이콘 3종: 운영팀(별 봉인) · 보상(리본) · 일반 */
+function mailIco(m){const gm=/^gm$/i.test(String(m.from||''))||!m.from,rw=(Array.isArray(m.items)&&m.items.length)||+m.cr||+m.ap,k=rw?'rw':gm?'gm':'nm';
+  const u=pxIcon('ml'+k,16,12,g=>{const ink='#1C2440';g.fillStyle=ink;g.fillRect(0,0,16,12);g.fillStyle='#FFFFFF';g.fillRect(1,1,14,10);
+    g.fillStyle='#C9CEDB';for(let i=0;i<7;i++){g.fillRect(1+i,1+i,1,1);g.fillRect(14-i,1+i,1,1)}
+    if(k==='gm'){g.fillStyle='#8E6CF0';g.fillRect(6,6,4,4);g.fillStyle='#FFE27A';g.fillRect(7,7,2,2)}
+    if(k==='rw'){g.fillStyle='#F2546B';g.fillRect(7,1,2,10);g.fillRect(1,5,14,2);g.fillStyle='#FFC23D';g.fillRect(6,4,4,4)}});
+  return `<img class="mico" src="${u}" alt="" width="24" height="18">`}
 /* ═════════ GM(운영자) 기능 ═════════
    gms/{uid} 문서가 있는 계정만 GM입니다. 화면은 GM에게만 보이고, 실제 권한은 Firestore 보안 규칙이 지킵니다.
    모든 GM 행동은 gmlog에 남습니다. */
@@ -5198,6 +5286,25 @@ function draw(dt){
   if(cine&&cine.t>=2.7){const c=cine;cine=null;if(c.after)c.after();updateUI(true)}
 }
 
+/* ═════════ 승급 시험 (v35.44) ═════════
+   시험을 시작하면 'S.examRun'에 상태만 남기고, 평소처럼 게이트를 공략합니다.
+   게이트 · 레이드 공략 시간이 EXAM_NEED분 쌓이면 합격, 출동이 끝날 때 폭주 게이지가 100이면 불합격입니다. */
+const EXAM_NEED=25;
+const examRun=()=>S.examRun&&typeof S.examRun==='object'&&S.examRun.gr===myGrade()&&myGrade()<6?S.examRun:null;
+const examCounts=g=>!!g&&!g.train&&!g.report&&!g.exam;
+function examMin(){const X=examRun();if(!X)return 0;let m=+X.min||0;
+  if(S.phase==='focus'&&S.curGate&&examCounts(S.curGate)&&+S.phaseStart>=+X.at)m+=Math.max(0,Math.min(now(),S.phaseEnd)-S.phaseStart)/60000;return Math.min(EXAM_NEED,m)}
+function startExam(){
+  const gr=myGrade();if(gr>=6||examRun())return;if(myLevel()<EXAM_LV[gr]){toast(`Lv.${EXAM_LV[gr]}부터 볼 수 있습니다.`);return}
+  const c=EXAM_AP[gr]||0;if((S.ap||0)<c){toast(`각성 포인트가 ${c-Math.floor(S.ap||0)} 부족합니다. 훈련장에서 모을 수 있습니다.`);return}
+  S.ap=Math.round((S.ap-c)*10)/10;S.examRun={gr,min:0,at:now()};save();
+  toast(`${GRADES[gr]} → ${GRADES[gr+1]} 승급 시험을 시작했습니다. 게이트를 ${EXAM_NEED}분 공략하면 합격입니다.`);try{beep(880,.08);beep(1175,.12,'square',.04,.08)}catch(e){}
+  if(S.phase==='idle'){setView('map');openTab('ctl')}updateUI(true);
+}
+function quitExam(){const b=$('examQuit');if(!examRun())return;
+  if(!b||!b.classList.contains('armed')){if(b){b.classList.add('armed');b.textContent='한 번 더 누르면 포기합니다';setTimeout(()=>{try{b.classList.remove('armed');b.textContent='시험 포기하기'}catch(e){}},3000)}return}
+  S.examRun=null;save();toast('승급 시험을 포기했습니다. 응시료는 돌려받지 못합니다.');updateUI(true)}
+
 /* ═════════ 진행 ═════════ */
 function startFocus(){
   if(S.phase!=='idle')return;
@@ -5239,6 +5346,9 @@ async function completeFocus(early){
   if(S.partner&&S.role==='guide')S.partner.runaway=S.runaway;
   let examResult=null;
   if(gate.exam&&!early){examResult=rw<100;if(examResult){S.grade=Math.min(6,myGrade()+1);S.promos=(S.promos||0)+1}}
+  {const X=examRun();if(X&&!early&&examCounts(gate)&&+S.phaseStart>=+X.at){
+    if(rw>=100){S.examRun=null;toastLater('폭주 게이지가 100에 닿아 승급 시험에 불합격했습니다. 조건을 채우면 다시 응시할 수 있습니다.')}
+    else{X.min=Math.round(((+X.min||0)+effMin)*100)/100;if(X.min>=EXAM_NEED){S.examRun=null;examResult=true;S.grade=Math.min(6,myGrade()+1);S.promos=(S.promos||0)+1}else toastLater(`승급 시험 진행: 게이트 공략 ${Math.floor(X.min)} / ${EXAM_NEED}분`)}}}
   if(gate.id==='trall'&&!early)S.maxTrain=Math.max(S.maxTrain||0,Math.floor(effMin/60+.001));
   if(gate.raid)S.raidMin=(S.raidMin||0)+effMin;
   // 아이템
@@ -5515,18 +5625,19 @@ setInterval(()=>{
   else if(!want&&GGR.sub){try{GGR.sub()}catch(e){}GGR.sub=null}
 },2000);
 /* ═════════ 게이트 수명 · 게이트 브레이크 ═════════
-   - 닫히지 않은 일반 게이트는 열린 뒤 2~6시간 사이 무작위 시점에 NPC 요원들이 처리합니다(오래된 것부터 사라지고 새 게이트가 열립니다).
-   - 아주 드물게(약 0.1%) 열린 뒤 2~4시간 사이에 '게이트 브레이크'가 일어나 특수 게이트로 바뀝니다.
-     브레이크 30분 전부터 경고가 뜨고, 브레이크 게이트는 공략 시간이 길고 강하지만 등급과 상관없이 누구나 들어갈 수 있습니다.
+   - 닫히지 않은 일반 게이트는 열린 뒤 2~6시간 사이 무작위 시점에 수명이 다합니다.
+   - 수명이 다한 게이트는 약 0.1% 확률로 '게이트 브레이크'가 일어나 특수 게이트로 바뀌고, 나머지는 NPC 요원들이 처리해 사라집니다.
+     브레이크 게이트는 공략 시간이 길고 강하지만 등급과 상관없이 누구나 들어갈 수 있습니다.
      브레이크 게이트도 6시간 안에 닫히지 않으면 NPC 특수 부대가 처리합니다.
    어느 요원 화면이든 1분마다 확인하고, 잠금을 걸어 한 화면만 처리합니다. */
 const GL_LIFE=6*3600e3,GL_WARN=30*60e3;
 const glHash=(id,salt)=>{let h=2166136261;const s=String(id)+'|'+salt;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0)/4294967296};
 const canBreak=g=>!!g&&!g.train&&!g.raid&&!g.exam&&glHash(g.id,'brk')<.001;/* 약 0.1%의 게이트만 브레이크 */
-/* 일반 게이트는 열린 뒤 2~6시간 사이 무작위 시점에 NPC 요원들이 처리합니다(브레이크될 게이트는 6시간) */
-const lifeOf=g=>canBreak(g)?GL_LIFE:2*3600e3+glHash(g.id,'life')*4*3600e3;
-const breakAtOf=g=>(+g.openedAt||0)+2*3600e3+glHash(g.id,'at')*2*3600e3;
-function brkWarn(g){if(!g||g.brk||!canBreak(g)||!g.openedAt)return false;const t=now(),b=breakAtOf(g);return t>=b-GL_WARN&&t<b}
+/* v35.45: 모든 일반 게이트는 열린 뒤 2~6시간 사이에 수명이 다합니다. 그때 약 0.1% 확률로 브레이크, 나머지는 NPC 요원들이 처리합니다 */
+const lifeOf=g=>2*3600e3+glHash(g.id,'life')*4*3600e3;
+const BV=3;/* 이번 방식으로 일어난 브레이크 표시. 예전 버전 화면이 만든 브레이크(표시 없음)는 조용히 정리합니다 */
+const validBrk=g=>!!g&&g.brk&&g.bv===BV;
+function brkWarn(){return false}
 const GL={busy:false,seenBrk:new Set(),seenWarn:new Set(),boot:true};
 /* 봉인 진행이 다 찬 게이트를 바로 닫습니다. 아직 진행 중인 출동은 지금까지 쌓은 몫으로 정산하고,
    참여한 요원 명단(clr)을 남겨 각자 출동이 끝날 때 '공략 완료' 결과를 안내받게 합니다 */
@@ -5554,24 +5665,25 @@ async function gateMaint(){
         if(g.status!=='open')continue;const ref=NET.db.doc('gates/'+g.id);
         if(!g.openedAt){await ref.update({openedAt:t}).catch(()=>{});continue}
         if(!g.train&&g.sum+(typeof projOf==='function'?projOf(g.id).m:0)>=g.hp){await clearGateNow(ref,g);continue}
-        /* v35.38 이전에 브레이크된 게이트(bv 표시 없음)는, 아무도 공략 중이 아니면 모두 일반 게이트로 되돌립니다 */
-        if(g.brk&&(g.bv!==2||!canBreak(g))&&!peersOn(g.id).length&&!SORTIE.list.some(x=>x.gate===g.id&&+x.endAt>t)&&!(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id)){await ref.update({brk:false,brkAt:0,hp:Math.max(1,Math.round(g.hp/2))}).catch(()=>{});continue}
-        const npc=g.brk?(g.brkAt&&t-g.brkAt>=GL_LIFE):(t-g.openedAt>=lifeOf(g)),brk=!g.brk&&canBreak(g)&&t>=breakAtOf(g);
-        if(!npc&&!brk)continue;
-        if(npc&&(peersOn(g.id).length||SORTIE.list.some(x=>x.gate===g.id&&+x.endAt>t)||(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id)))continue;/* 누가 공략 중이면 NPC가 가로채지 않습니다 */
+        const busy=peersOn(g.id).length||SORTIE.list.some(x=>x.gate===g.id&&+x.endAt>t)||(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id);
+        if(busy)continue;/* 누가 공략 중이면 건드리지 않습니다 */
+        const bad=g.brk&&!validBrk(g),npc=bad||(validBrk(g)?(g.brkAt&&t-g.brkAt>=GL_LIFE):(t-g.openedAt>=lifeOf(g))),brk=!g.brk&&npc&&canBreak(g);
+        if(!npc)continue;
         try{const l=await ref.acquire({holder:NET.uid,ttlMs:8000});if(l&&!l.acquired)continue}catch(e){}
         const fs=await ref.get();const f=fs.exists?cleanGate(g.id,fs.data()):null;if(!f||f.status!=='open')continue;
-        if(npc)await closeOnline(ref,f,f.n,true);
-        else{await ref.update({brk:true,bv:2,brkAt:t,hp:Math.round(f.hp*2)});pushLog(f.d,f.g,0,{brk:1,warnBrk:1})}
+        if(brk){await ref.update({brk:true,bv:BV,brkAt:t,hp:Math.round(f.hp*2)});pushLog(f.d,f.g,0,{brk:1,warnBrk:1})}
+        else await closeOnline(ref,f,f.n,true,bad);
       }
     }else if(Array.isArray(S.localGates)){
       let ch=false;
       for(const lg of S.localGates){
         if(lg.status!=='open')continue;if(!lg.openedAt){lg.openedAt=t;ch=true;continue}
         const g=cleanGate(lg.id,lg);
-        if(lg.brk&&(lg.bv!==2||!canBreak(g))&&!(S.phase==='focus'&&S.curGate&&S.curGate.id===lg.id)){lg.brk=false;lg.brkAt=0;lg.hp=Math.max(1,Math.round((lg.hp||2)/2));ch=true;continue}
-        if(g.brk?(lg.brkAt&&t-lg.brkAt>=GL_LIFE):(t-lg.openedAt>=lifeOf(g))){if(S.phase==='focus'&&S.curGate&&S.curGate.id===lg.id)continue;lg.status='closed';pushLog(lg.d,lg.g,0,{npc:1,brk:lg.brk?1:0});ch=true}
-        else if(!lg.brk&&canBreak(g)&&t>=breakAtOf(g)){lg.brk=true;lg.bv=2;lg.brkAt=t;lg.hp=Math.round((lg.hp||1)*2);pushLog(lg.d,lg.g,0,{brk:1,warnBrk:1});ch=true}
+        if(S.phase==='focus'&&S.curGate&&S.curGate.id===lg.id)continue;
+        const bad=lg.brk&&lg.bv!==BV,npc=bad||(lg.brk?(lg.brkAt&&t-lg.brkAt>=GL_LIFE):(t-lg.openedAt>=lifeOf(g)));if(!npc)continue;
+        if(!lg.brk&&canBreak(g)){lg.brk=true;lg.bv=BV;lg.brkAt=t;lg.hp=Math.round((lg.hp||1)*2);pushLog(lg.d,lg.g,0,{brk:1,warnBrk:1})}
+        else{lg.status='closed';if(!bad)pushLog(lg.d,lg.g,0,{npc:1,brk:lg.brk?1:0})}
+        ch=true;
       }
       if(ch){ensureLocalGates();save();try{onWorldChange()}catch(e){}}
     }
@@ -5581,7 +5693,7 @@ async function gateMaint(){
 /* 알림: 브레이크 경고 · 발생을 한 번씩 알려 줍니다(처음 켰을 때 이미 일어난 것은 조용히 넘깁니다) */
 function gateNotices(){
   for(const g of allGates()){
-    if(g.brk&&!GL.seenBrk.has(g.id)){GL.seenBrk.add(g.id);if(!GL.boot){toast(`⚠ 게이트 브레이크 발생! ${DIST[g.d].name}의 게이트가 특수 게이트로 바뀌었습니다. 등급과 상관없이 누구나 공략할 수 있습니다.`);try{beep(220,.2,'sawtooth',.04);beep(180,.3,'sawtooth',.04,.2)}catch(e){}}}
+    if(validBrk(g)&&!GL.seenBrk.has(g.id)){GL.seenBrk.add(g.id);if(!GL.boot){toast(`⚠ 게이트 브레이크 발생! ${DIST[g.d].name}의 게이트가 특수 게이트로 바뀌었습니다. 등급과 상관없이 누구나 공략할 수 있습니다.`);try{beep(220,.2,'sawtooth',.04);beep(180,.3,'sawtooth',.04,.2)}catch(e){}}}
     else if(brkWarn(g)&&!GL.seenWarn.has(g.id)){GL.seenWarn.add(g.id);if(!GL.boot)toast(`${DIST[g.d].name} ${GRADES[g.g]}급 게이트가 오래 방치되어 곧 브레이크가 일어납니다. 그 전에 닫으면 막을 수 있습니다.`)}
   }
 }
@@ -5871,7 +5983,7 @@ function renderGates(){
 }
 $('mapLayer').addEventListener('click',e=>{const b=e.target.closest('.gbtn');if(b)selectGate(b.dataset.id)});
 $('gateList').addEventListener('click',e=>{const b=e.target.closest('.gitem');if(b)selectGate(b.dataset.id)});
-function affHtml(g){const af=gateAff(g);if(!af)return '';const r=affMul(g),tag=a=>`<span class="atag"><i style="background:${ATTRS[a].col}"></i>${ATTRS[a].n}</span>`;
+function affHtml(g){const af=gateAff(g);if(!af)return '';const r=affMul(g),tag=a=>`<span class="atag">${attrDot(a)}${ATTRS[a].n}</span>`;
   const me=r.a==null?'':r.kind==='weak'?`<span class="aff good">내 공격 속성 ${ATTRS[r.a].n} · 약점 공략 +${Math.round((r.m-1)*100)}%</span>`:r.kind==='strong'?`<span class="aff bad">내 공격 속성 ${ATTRS[r.a].n} · 저항당함 ${Math.round((r.m-1)*100)}%</span>`:`<span class="aff">내 공격 속성 ${ATTRS[r.a].n} · 보정 없음</span>`;
   return `<div class="affrow"><span>약점</span>${af.weak.map(tag).join('')}<span>강함</span>${tag(af.strong)}${me}</div>`}
 function renderGateInfo(){
@@ -5901,7 +6013,7 @@ function renderCrew(){
 function renderLog(){
   const items=NET.mode==='online'?NET.log:(S.log||[]);
   $('logList').innerHTML=items.length?items.map(it=>{const d=DIST[clampI(it.d,6)],t=new Date(+it.t||0);
-    return `<li><span>${d.name} ${GRADES[clampI(it.g,7)]}급${it.brk?' 브레이크':''} ${it.warnBrk?'게이트 브레이크 발생':it.npc?'· NPC 요원들이 처리':'봉인 · '+Math.max(1,Math.min(99,+it.n||1))+'명'}</span><time>${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}</time></li>`}).join(''):'<li><span class="muted">아직 봉인된 게이트가 없습니다.</span></li>';
+    const gr=GRADES[clampI(it.g,7)],nm=Math.max(1,Math.min(99,+it.n||1));return `<li${it.warnBrk?' class="logbrk"':''}><span>${it.warnBrk?`${d.name} ${gr}급 게이트 · 브레이크 발생!`:it.npc?(it.brk?`${d.name} 브레이크 게이트 · NPC 특수 부대가 처리`:`${d.name} ${gr}급 게이트 · NPC 요원들이 처리`):it.brk?`${d.name} 브레이크 게이트 봉인 · ${nm}명`:`${d.name} ${gr}급 게이트 봉인 · ${nm}명`}</span><time>${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}</time></li>`}).join(''):'<li><span class="muted">아직 봉인된 게이트가 없습니다.</span></li>';
 }
 function renderBag(){
   const ul=$('bagList');$('bagEmpty').hidden=S.items.length>0;const mine=S.attrs||[];
@@ -5920,16 +6032,19 @@ function renderBag(){
     if(seenStone[it.attr])return '';seenStone[it.attr]=1;const n=S.items.filter(x=>!x.kind&&x.attr===it.attr).length;
     const a=ATTRS[it.attr],has=mine.includes(it.attr);
     const rep=mine.map((m,i)=>`<button type="button" class="sbtn" data-id="${it.id}" data-slot="${i}" ${has?'disabled':''}>${ATTRS[m].n} 대신</button>`).join('');
-    return `<li><span class="bt">${itemIcon(it)}<span class="atag"><i style="background:${a.col}"></i>${a.n}</span><b>${a.n} 각성석 <small>×${n}</small></b></span><span class="muted">${has?`내 속성입니다. 캐릭터 속성 강화 +${charEnh(it.attr)}/${CENH_MAX}`:'속성을 추가하거나 기존 속성과 바꿀 수 있습니다.'}</span><span class="acts">${has?(charEnh(it.attr)>=CENH_MAX?'<span class="enh max">캐릭터 속성 강화 완료</span>':`${enhOrbs(it.attr)}<button type="button" class="sbtn eq enhb" data-cenh="${it.attr}" ${n<charEnhCost(it.attr)?'disabled':''}>+${charEnh(it.attr)+1} 강화 · 각성석 ${n}/${charEnhCost(it.attr)}</button>`):''}${has?'':`<button type="button" class="sbtn" data-id="${it.id}" ${mine.length>=MAX_ATTR?'disabled':''}>추가하기 (${mine.length}/${MAX_ATTR})</button>${rep}`}<button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}).join('');
+    return `<li><span class="bt">${itemIcon(it)}<span class="atag">${attrDot(it.attr)}${a.n}</span><b>${a.n} 각성석 <small>×${n}</small></b></span><span class="muted">${has?`내 속성입니다. 캐릭터 속성 강화 +${charEnh(it.attr)}/${CENH_MAX}`:'속성을 추가하거나 기존 속성과 바꿀 수 있습니다.'}</span><span class="acts">${has?(charEnh(it.attr)>=CENH_MAX?'<span class="enh max">캐릭터 속성 강화 완료</span>':`${enhOrbs(it.attr)}<button type="button" class="sbtn eq enhb" data-cenh="${it.attr}" ${n<charEnhCost(it.attr)?'disabled':''}>+${charEnh(it.attr)+1} 강화 · 각성석 ${n}/${charEnhCost(it.attr)}</button>`):''}${has?'':`<button type="button" class="sbtn" data-id="${it.id}" ${mine.length>=MAX_ATTR?'disabled':''}>추가하기 (${mine.length}/${MAX_ATTR})</button>${rep}`}<button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}).join('');
 }
 $('bagList').addEventListener('click',e=>{const b=e.target.closest('.sbtn');if(!b||b.disabled||b.classList.contains('eq'))return;useItem(b.dataset.id,b.dataset.slot==null?null:+b.dataset.slot)});
 function renderExam(){
   const box=$('examBox'),gr=myGrade(),lv=myLevel();
   if(gr>=6){box.innerHTML='';return}
   const need=EXAM_LV[gr],ok=lv>=need,cost=EXAM_AP[gr],ap=Math.floor(S.ap||0),enough=ap>=cost;
-  box.innerHTML=ok?`<div class="ebox"><span><b>${GRADES[gr]} → ${GRADES[gr+1]} 승급 시험</b>을 볼 수 있습니다.</span><span class="muted">응시하려면 각성 포인트 ${cost}이 필요하다(보유 ${ap}). 25분 동안 폭주하지 않고 버티면 합격입니다.</span><button type="button" class="btn" id="examBtn" ${S.phase!=='idle'||!enough?'disabled':''}>${enough?'승급 시험 보기':'각성 포인트 부족'}</button></div>`
+  const X=examRun();
+  box.innerHTML=X?`<div class="ebox on"><span><b>${GRADES[X.gr]} → ${GRADES[X.gr+1]} 승급 시험 중</b> · 게이트 공략 ${Math.floor(examMin())} / ${EXAM_NEED}분</span><span class="bar2"><i style="width:${Math.min(100,examMin()/EXAM_NEED*100)}%"></i></span><span class="muted">게이트를 공략한 시간이 ${EXAM_NEED}분 쌓이면 합격입니다. 출동이 끝날 때 폭주 게이지가 100이면 불합격입니다. 레이드 공략도 인정되고, 훈련과 보고서 작성은 인정되지 않습니다.</span><button type="button" class="sbtn" id="examQuit">시험 포기하기</button></div>`
+    :ok?`<div class="ebox"><span><b>${GRADES[gr]} → ${GRADES[gr+1]} 승급 시험</b>을 볼 수 있습니다.</span><span class="muted">응시하려면 각성 포인트 ${cost}이 필요합니다(보유 ${ap}). 시험이 시작되면 평소처럼 게이트를 공략하면 되고, 공략 시간 ${EXAM_NEED}분을 폭주하지 않고 채우면 합격입니다.</span><button type="button" class="btn" id="examBtn" ${!enough?'disabled':''}>${enough?'승급 시험 시작':'각성 포인트 부족'}</button></div>`
     :`<span class="muted">${GRADES[gr+1]}급 승급 시험은 Lv.${need}부터 각성 포인트 ${cost}로 볼 수 있습니다.</span>`;
-  const b=$('examBtn');if(b)b.addEventListener('click',()=>{S.selGate='exam';ensurePartner();say('select');openTab('ctl');updateUI(true)});
+  const b=$('examBtn');if(b)b.addEventListener('click',startExam);
+  const q=$('examQuit');if(q)q.addEventListener('click',quitExam);
 }
 function renderPartner(){
   if(!S.partner)return;const p=S.partner,isS=p.role==='sentinel';
@@ -5961,7 +6076,7 @@ function setTimer(t){
 }
 addEventListener('resize',()=>{timerLast=''});
 let lastResume='';
-function updateUI(full){try{const st=$('stage');if(st&&st.dataset.view!==S.view)st.dataset.view=S.view;const k=JSON.stringify({view:S.view,sel:S.selGate||null,tab:curTab||null});if(k!==lastResume){lastResume=k;sessionStorage.setItem('cg-resume',k)}}catch(e){}{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
+function updateUI(full){try{const et=$('examTag'),X=examRun();if(et){et.hidden=!X;if(X)et.innerHTML=`<b>승급 시험 중</b><span>${Math.floor(examMin())}/${EXAM_NEED}분</span><i style="width:${Math.min(100,examMin()/EXAM_NEED*100)}%"></i>`}}catch(e){}try{const st=$('stage');if(st&&st.dataset.view!==S.view)st.dataset.view=S.view;const k=JSON.stringify({view:S.view,sel:S.selGate||null,tab:curTab||null});if(k!==lastResume){lastResume=k;sessionStorage.setItem('cg-resume',k)}}catch(e){}{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
   const role=S.role,t=now(),lvI=levelOf(S.xp),rw=liveRunaway();
   document.body.dataset.role=role||'sentinel';
   const sel=gateById(S.selGate);
@@ -6086,8 +6201,8 @@ function renderCtl(){
   if(v==='home'||v==='center'||v==='office')$('homeBox').innerHTML=`${crBar()}
     <p class="muted">아침에는 내 방에서 출발해 <b>센터</b>로 출근합니다. 센터에서 <b>게이트 출동</b>, <b>훈련</b>, <b>보고서 작성</b>을 하고, <b>상점</b>과 <b>장터</b>에서 물건을 사고팝니다.</p>
     <div class="stats"><div class="stat"><span>오늘 출동</span><b>${S.todayDate===today()?S.todayCount:0}회</b></div><div class="stat"><span>열린 게이트</span><b>${mapGates().length}개</b></div></div>
-    ${v==='home'?`<span class="eyebrow">Room theme</span><div class="roomth">${ROOM_TH.map((t,i)=>`<button type="button" data-rth="${i}" aria-pressed="${roomTheme(S.role)===i}" title="${t.n}"><i style="background:${t.w}"></i><i style="background:${t.a}"></i><i style="background:${t.f}"></i><span>${t.n}</span></button>`).join('')}</div>`:''}<span class="eyebrow" id="decorHead">Room decor</span><ul class="decor">${DECOR2.filter(d=>(S.decor||[]).includes(d.id)).map(d=>{const on=(S.decorOn||{})[d.id]!==false;return `<li><span class="tx"><b>${d.n}</b><span>${d.d}</span></span><button type="button" class="sbtn" data-dt="${d.id}">${on?'치우기':'놓기'}</button></li>`}).join('')}${DECOR.map(d=>{const own=(S.decor||[]).includes(d.id),on=own&&(S.decorOn||{})[d.id]!==false;
-      return `<li><span class="tx"><b>${d.n}</b><span>${d.d}</span></span>${own?'':`<button type="button" class="sbtn" data-pv="${d.id}">미리보기</button>`}${own?`<button type="button" class="sbtn" data-dt="${d.id}">${on?'치우기':'놓기'}</button>`:d.src?`<span class="muted">${d.src==='raid'?'레이드 보상':'업적 보상'}</span>`:`<button type="button" class="sbtn" data-db="${d.id}" ${(S.ap||0)<d.ap?'disabled':''}>${d.ap} AP</button>`}</li>`}).join('')}</ul><p class="muted">더 많은 가구는 센터 상점에서 크레딧으로 살 수 있습니다.</p>`;
+    ${v==='home'?`<span class="eyebrow">Room theme</span><div class="roomth">${ROOM_TH.map((t,i)=>`<button type="button" data-rth="${i}" aria-pressed="${roomTheme(S.role)===i}" title="${t.n}"><i style="background:${t.w}"></i><i style="background:${t.a}"></i><i style="background:${t.f}"></i><span>${t.n}</span></button>`).join('')}</div>`:''}${v==='home'?`<span class="eyebrow" id="decorHead">My furniture</span><ul class="decor">${[...DECOR,...DECOR2].filter(d=>(S.decor||[]).includes(d.id)||d.src).map(d=>{const own=(S.decor||[]).includes(d.id),on=own&&(S.decorOn||{})[d.id]!==false;
+      return `<li${own?'':' class="locked"'}>${decorThumb(d.id)}<span class="tx"><b>${d.n}</b><span>${d.d}</span></span>${own?`<button type="button" class="sbtn" data-dt="${d.id}">${on?'치우기':'놓기'}</button>`:`<span class="muted">${d.src==='raid'?'레이드 보상':'업적 보상'}</span>`}</li>`}).join('')}</ul><p class="muted">새 가구는 센터 상점에서 삽니다.</p>`:''}`;
   if(v==='gym'||(S.phase==='focus'&&S.curGate&&S.curGate.train))renderGym();
 }
 /* 속성 숙련 강화(AP)로 바로 갑니다: 각성 지갑 · 캐릭터 탭 단추에서 부릅니다 */
@@ -6100,7 +6215,7 @@ function renderGym(){
   const ap=Math.floor(S.ap||0),mine=S.attrs||[];S.mast=S.mast||{};
   const prog=TRAININGS.map(t=>`<button type="button" class="gitem" data-tr="${t.id}" aria-pressed="${S.selGate===t.id}"><span class="gc" style="background:#6FDCEB">${t.mins}</span><span class="n">${t.name}<br><small>${t.desc}</small></span><small>${t.id==='trall'?(S.trHours||1)+'시간':t.mins+'분'}</small></button>`).join('');
   const mast=mine.map(a=>{const cost=mastOrbCost(a),max=mastLv(a)>=MAST_MAX;
-    return `<li><span class="atag"><i style="background:${ATTRS[a].col}"></i>${ATTRS[a].n}</span><span class="tx"><b>${ATTRS[a].n} 숙련</b>${mastOrbs(a)}</span><button type="button" class="sbtn" data-mast="${a}" ${max||ap<cost?'disabled':''}>${max?'최고 단계':'강화 · '+cost+' AP'}</button></li>`}).join('');
+    return `<li><span class="atag">${attrDot(a)}${ATTRS[a].n}</span><span class="tx"><b>${ATTRS[a].n} 숙련</b>${mastOrbs(a)}</span><button type="button" class="sbtn" data-mast="${a}" ${max||ap<cost?'disabled':''}>${max?'최고 단계':'강화 · '+cost+' AP'}</button></li>`}).join('');
   $('gymBox').innerHTML=`<div class="apbar"><span>각성 포인트</span><b>${ap} AP</b></div>
     <section class="awk" id="awk"><h3>속성 숙련 강화 <small>각성 포인트(AP) 사용</small></h3>
     <p class="muted">각성 포인트로 5번 강화하면 동그라미 하나에 불이 들어오며 숙련이 +1 오릅니다(최대 +5). 숙련 1단계마다 그 속성으로 싸우거나 가이딩할 때 효율이 6%씩 오릅니다.</p>
@@ -6365,7 +6480,7 @@ function tick(){
   else if(S.phase==='auto'&&t>=S.phaseEnd)endAuto(false);
   if(S.role&&!$('game').hidden)updateUI();
 }
-setInterval(tick,250);setInterval(()=>{try{chatterTick()}catch(e){}},2000);setInterval(save,5000);
+setInterval(tick,250);setInterval(()=>{if(document.hidden)return;try{chatterTick()}catch(e){}},2000);setInterval(save,5000);
 let last=performance.now();
 function frame(n){
   const dt=Math.min(.05,(n-last)/1000);last=n;T+=dt;
@@ -6391,7 +6506,8 @@ function renderAch(){
   const owned=ACH.filter(a=>S.ach[a.id]);
   $('titleList').innerHTML=owned.length?['',...owned.map(a=>a.id)].map(id=>`<button type="button" data-title="${id}" aria-pressed="${(S.title||'')===id}">${id?esc(achTitle(id)):'칭호 없음'}</button>`).join(''):'<span class="muted">업적을 달성하면 칭호를 얻습니다.</span>';
   $('raidRec').innerHTML=raidResultsHtml(30);
-  $('achList').innerHTML=ACH.map(a=>{const [c,t]=a.p(),done=!!S.ach[a.id];return `<li class="${done?'done':''}"><span class="ic">${done?'OK':Math.min(99,Math.floor(Math.min(c,t)/t*100))+'%'}</span><span class="tx"><b>${a.n}</b><span>${a.d} · 칭호 '${a.t}'</span>${done?'':`<span class="mini"><i style="width:${Math.min(100,c/t*100)}%"></i></span>`}</span><span class="rw">+${a.ap}<br>AP</span></li>`}).join('');
+  const ordered=ACH.map(a=>{const [c,t]=a.p();return {a,c,t,done:!!S.ach[a.id],r:Math.min(1,c/t)}}).sort((x,y)=>(x.done-y.done)||(y.r-x.r));
+  $('achList').innerHTML=ordered.map(({a,c,t,done},i)=>{const head=i===0&&!done?'<li class="achhd">진행 중 · 많이 진행된 순</li>':(done&&(i===0||!ordered[i-1].done))?'<li class="achhd">달성한 업적</li>':'';return head+`<li class="${done?'done':''}"><span class="ic" title="${done?'달성':Math.min(99,Math.floor(Math.min(c,t)/t*100))+'%'}">${achBadge(a.id,done)}</span><span class="tx"><b>${a.n}</b><span>${a.d} · 칭호 '${a.t}'</span>${done?'':`<span class="mini"><i style="width:${Math.min(100,c/t*100)}%"></i></span>`}</span><span class="rw">+${a.ap}<br>AP</span></li>`}).join('');
 }
 $('titleList').addEventListener('click',e=>{const b=e.target.closest('[data-title]');if(!b)return;S.title=b.dataset.title||null;save();pushPresence();updateUI(true)});
 
@@ -6403,7 +6519,7 @@ $('backBtn').addEventListener('click',()=>{closeDrawer();setView('center')});
 $('bagList').addEventListener('change',e=>{const sl=e.target.closest('.anoint');if(sl&&sl.value)anointGear(sl.dataset.g,sl.value)});
 $('bagList').addEventListener('click',e=>{const rg=e.target.closest('[data-regrade]');if(rg){useRegrade(rg.dataset.regrade);return}const rt=e.target.closest('[data-roletk]');if(rt){useRoleTicket(rt.dataset.roletk);return}const c=e.target.closest('[data-cenh]');if(c&&!c.disabled){enhanceChar(c.dataset.cenh);return}const b=e.target.closest('[data-enh]');if(b&&!b.disabled)enhanceGear(b.dataset.enh)});
 $('bagList').addEventListener('click',e=>{const q=e.target.closest('[data-eq]');if(q){toggleEquip(q.dataset.eq);return}const s=e.target.closest('[data-tomarket]');if(s){openTab('market');setTimeout(()=>{const m=$('mItem');if(m)m.value=s.dataset.tomarket},50)}});
-setInterval(()=>{if(curTab==='guiding')renderGuiding();if(S.role==='guide')watchRequests();updateBadges()},5000);
+setInterval(()=>{if(curTab==='guiding'&&!document.hidden)renderGuiding();if(S.role==='guide')watchRequests();updateBadges()},5000);
 
 $('gateInfo').addEventListener('click',e=>{if(e.target.id==='dualBtn'){S.dualTrain=!S.dualTrain;save();renderGateInfo()}});
 /* 공략 시간 단추: 화면이 자주 다시 그려져도 눌림이 사라지지 않도록 누르는 순간(pointerdown)에 처리합니다 */
@@ -6424,7 +6540,7 @@ function syncCont(){const reg=!S.role&&!!S.pendingRole&&!!S.pendingRoll;const ok
 $('toTitle').addEventListener('click',goTitle);
 $('accSwitch').addEventListener('click',()=>$('accOut').click());
 $('accCont').addEventListener('click',()=>{if(S.acct&&S.acct.mode==='cloud'&&!cloudReady()){toast('클라우드 기록을 확인하는 중입니다. 잠시 뒤에 이어서 할 수 있습니다.');return}if(!S.role){showOnboard();return}showGame()});
-setInterval(()=>{if(!$('account').hidden)syncCont()},1500);
+setInterval(()=>{if(!document.hidden&&!$('account').hidden)syncCont()},1500);
 
 
 
@@ -6437,9 +6553,6 @@ function roJosa(w){const c=w.charCodeAt(w.length-1)-0xAC00;if(c<0||c>11171)retur
 
 /* PC: 아래 영역(대화 · 지갑 · 탭 · 메뉴)의 실제 높이를 재서, 남는 높이에 맞춰 게임 화면 크기를 정합니다.
    창 크기나 메뉴 구성이 바뀌어도 탭이 화면 아래로 숨지 않습니다 */
-let fitBusy=false;
-const dockKey=()=>'cg-dockmax2-'+innerWidth+'x'+innerHeight;
-let dockMax=(()=>{try{return +localStorage.getItem(dockKey())||0}catch(e){return 0}})();
 /* v35.38: 화면 크기는 CSS가 정합니다. 예전에 저장해 둔 높이 값이 남아 창 크기를 바꾼 뒤 화면이 어긋나지 않도록 지웁니다 */
 function fitStage(){const g=$('game');if(g)g.style.removeProperty('--dockH')}
 try{Object.keys(localStorage).forEach(k=>{if(/^cg-dockmax/.test(k))localStorage.removeItem(k)})}catch(e){}
