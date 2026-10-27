@@ -3,11 +3,11 @@
    이 파일은 같은 모양의 함수를 Firebase(Authentication + Firestore)로 만들어 넘겨준다.
    - db   : Firestore 문서 읽기·쓰기·실시간 구독, 짧은 잠금(acquire)
    - user : 로그인한 사람의 uid (로그인 전에는 null)
-   - room : 지금 접속한 요원 목록(presence 컬렉션에 40초마다 신호를 남긴다) */
+   - room : 지금 접속한 요원 목록(presence 컬렉션. 바뀔 때만 신호, 목록은 2분마다 읽기, 같은 게이트는 실시간) */
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut}
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import {getFirestore,initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,getDoc,setDoc,deleteDoc,onSnapshot,collection,query,where,runTransaction}
+import {getFirestore,initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,getDoc,getDocs,setDoc,deleteDoc,onSnapshot,collection,query,where,runTransaction}
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const done=v=>{if(window.__fbResolve){window.__fbResolve(v);window.__fbResolve=null}};
@@ -59,15 +59,37 @@ function boot(){
 
   /* ── room: 접속 중인 요원 ── */
   let lastP=null,peersCb=null,peerDocs=[],myDoc=null;
-  const STALE=90000;
+  const STALE=330000;/* v35.55: 접속 신호를 2분마다만 보내므로, 5분 넘게 신호가 없을 때만 나간 것으로 봅니다 */
+  /* v35.58 접속 신호는 Realtime Database(횟수 제한 없음)에 둡니다. 쓸 수 없으면(데이터베이스 · 규칙 미설정) Firestore 방식으로 돌아갑니다 */
+  const RT_URL=cfg.databaseURL||'https://close-gate-kr-default-rtdb.asia-southeast1.firebasedatabase.app';
+  let RT=null,rtMode='pending',rtSub=null,rtDisc=false;
+  const rtOff=()=>{rtMode='off';if(rtSub){try{rtSub()}catch(e){}rtSub=null}if(peersCb){poll();if(!pollT)pollT=setInterval(poll,120000)}};
+  const rtListen=()=>{if(!RT||!peersCb||rtSub||rtMode==='off')return;
+    rtSub=RT.m.onValue(RT.m.ref(RT.db,'presence'),snap=>{if(rtMode!=='on'){rtMode='on';if(pollT){clearInterval(pollT);pollT=null}if(gateSub){gateSub();gateSub=null}gateId=null}
+      const v=snap.val()||{};peerDocs=Object.keys(v).map(id=>({id,...v[id]}));emit()},()=>rtOff())};
+  import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js').then(m=>{RT={m,db:m.getDatabase(app,RT_URL)};rtListen()}).catch(()=>rtOff());
   const emit=()=>{if(!peersCb)return;const now=Date.now(),me=uid();
-    peersCb({peers:peerDocs.filter(d=>now-(d.t||0)<STALE).map(d=>({kind:'viewer',isMe:d.id===me,presence:d.p,peer:d.id}))})};
-  const beat=()=>{const me=uid();if(!me||!lastP)return Promise.resolve();myDoc=me;return setDoc(doc(fs,'presence',me),{p:lastP,t:Date.now()}).catch(()=>{})};
-  setInterval(beat,40000);setInterval(emit,15000);
-  addEventListener('pagehide',()=>{if(myDoc)deleteDoc(doc(fs,'presence',myDoc)).catch(()=>{})});
+    peersCb({peers:peerDocs.filter(d=>now-(d.t||0)<(rtMode==='on'?600000:STALE)).map(d=>({kind:'viewer',isMe:d.id===me,presence:d.p,peer:d.id}))})};
+  /* v35.55 사용량 절약: 내용이 바뀌었을 때만, 그리고 15초에 한 번까지만 씁니다. 바뀐 게 없으면 2분마다 살아 있다는 신호만 보냅니다 */
+  let lastSent='',lastAt=0,pend=null;
+  const write=()=>{const me=uid();if(!me||!lastP)return Promise.resolve();myDoc=me;lastSent=JSON.stringify(lastP);lastAt=Date.now();const v={p:lastP,t:lastAt,g:lastP.gate||null};
+    if(RT&&rtMode!=='off'){const r=RT.m.ref(RT.db,'presence/'+me);if(!rtDisc){rtDisc=true;try{RT.m.onDisconnect(r).remove()}catch(e){}}
+      return RT.m.set(r,JSON.parse(JSON.stringify(v))).catch(()=>{rtOff();return setDoc(doc(fs,'presence',me),v).catch(()=>{})})}
+    return setDoc(doc(fs,'presence',me),v).catch(()=>{})};
+  const beat=()=>{const k=JSON.stringify(lastP);if(k===lastSent&&Date.now()-lastAt<110000)return Promise.resolve();
+    const wait=15000-(Date.now()-lastAt);if(wait>0){if(!pend)pend=setTimeout(()=>{pend=null;write()},wait);return Promise.resolve()}return write()};
+  setInterval(()=>{if(Date.now()-lastAt>=110000)write()},120000);setInterval(emit,15000);
+  addEventListener('pagehide',()=>{if(!myDoc)return;if(RT&&rtMode==='on')RT.m.remove(RT.m.ref(RT.db,'presence/'+myDoc)).catch(()=>{});else deleteDoc(doc(fs,'presence',myDoc)).catch(()=>{})});
+  /* v35.57 사용량 절약: 접속자 전체 목록은 2분마다 한 번 읽고(실시간 구독 안 함),
+     내가 게이트를 공략 중일 때만 같은 게이트에 있는 요원을 실시간으로 받습니다. 읽기가 접속자 수의 제곱으로 늘던 문제를 줄입니다 */
+  let allDocs=[],gateDocs=[],gateSub=null,gateId=null,pollT=null;
+  const mergeDocs=()=>{const m=new Map(allDocs.filter(d=>!(gateSub&&d.g===gateId)).map(d=>[d.id,d]));gateDocs.forEach(d=>m.set(d.id,d));peerDocs=[...m.values()];emit()};
+  const poll=()=>{if(document.hidden&&allDocs.length)return;getDocs(query(collection(fs,'presence'),where('t','>',Date.now()-STALE))).then(s=>{allDocs=s.docs.map(d=>({id:d.id,...d.data()}));mergeDocs()}).catch(()=>{})};
+  const watchGate=id=>{if(rtMode==='on'||id===gateId)return;gateId=id;if(gateSub){gateSub();gateSub=null}gateDocs=[];
+    if(id)gateSub=onSnapshot(query(collection(fs,'presence'),where('g','==',id)),s=>{gateDocs=s.docs.map(d=>({id:d.id,...d.data()}));mergeDocs()},()=>{});else mergeDocs()};
   const room={
-    presence:p=>{lastP=JSON.parse(JSON.stringify(p));return beat()},
-    onPeers:cb=>{peersCb=cb;return onSnapshot(collection(fs,'presence'),s=>{peerDocs=s.docs.map(d=>({id:d.id,...d.data()}));emit()},()=>{})}
+    presence:p=>{lastP=JSON.parse(JSON.stringify(p));watchGate(lastP.gate||null);return beat()},
+    onPeers:cb=>{peersCb=cb;if(rtMode!=='on'){poll();if(!pollT)pollT=setInterval(poll,120000)}rtListen();document.addEventListener('visibilitychange',()=>{if(!document.hidden&&rtMode!=='on')poll()});return()=>{}}
   };
 
   /* ── 아이디 · 비밀번호 계정 (이메일 대신 아이디@closegate.game을 쓴다. 메일은 보내지 않는다) ── */
@@ -76,7 +98,7 @@ function boot(){
     name:()=>{const e=auth.currentUser&&auth.currentUser.email||'';return e.endsWith(MAIL)?e.slice(0,-MAIL.length):e},
     createAccount:async(id,pw)=>(await createUserWithEmailAndPassword(auth,toMail(id),pw)).user.uid,
     signIn:async(id,pw)=>(await signInWithEmailAndPassword(auth,toMail(id),pw)).user.uid,
-    signOut:async()=>{const me=uid();if(me)await deleteDoc(doc(fs,'presence',me)).catch(()=>{});await signOut(auth)}
+    signOut:async()=>{const me=uid();if(me){await deleteDoc(doc(fs,'presence',me)).catch(()=>{});if(RT)await RT.m.remove(RT.m.ref(RT.db,'presence/'+me)).catch(()=>{})}await signOut(auth)}
   };
 
   /* 로그인 상태가 정해지면 게임에 넘긴다. 로그인하지 않은 사람은 게임이 계정 화면에서 멈춰 둔다. */

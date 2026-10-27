@@ -78,6 +78,19 @@ if ! echo "$R" | grep -q rulesetName; then
 fi
 echo "$R" | grep -q rulesetName && ok "규칙 게시 완료" || { warn "규칙 게시 실패"; echo "$R" | head -8; }
 
+# ── 4-2. Realtime Database 규칙 (접속 신호용, v35.58)
+RTDB="https://${P}-default-rtdb.asia-southeast1.firebasedatabase.app"
+RTRULES='{"rules":{".read":false,".write":false,"presence":{".read":"auth != null","$uid":{".write":"auth != null && auth.uid === $uid",".validate":"!newData.exists() || (newData.hasChildren([\"t\"]) && newData.child(\"t\").isNumber())"}}}}'
+RTTOKEN=$(gcloud auth print-access-token --scopes=https://www.googleapis.com/auth/firebase.database,https://www.googleapis.com/auth/userinfo.email 2>/dev/null || echo "$TOKEN")
+RR=$(curl -sS -X PUT -H "Authorization: Bearer $RTTOKEN" -H "Content-Type: application/json" "$RTDB/.settings/rules.json" -d "$RTRULES" 2>&1)
+if echo "$RR" | grep -q '"status" *: *"ok"'; then ok "실시간 데이터베이스 규칙 게시 완료"
+else
+  warn "실시간 데이터베이스 규칙을 자동으로 올리지 못했다. 처음 한 번만 직접 붙여 넣으면 된다."
+  echo "   Firebase 콘솔 → Realtime Database → 규칙 탭에 아래 내용을 붙여 넣고 [게시]를 누른다."
+  echo "$RTRULES" | python3 -m json.tool
+  echo "   (그 전까지는 게임이 자동으로 예전 방식(Firestore)으로 접속 신호를 보낸다.)"
+fi
+
 # ── 5. 웹 앱 설정값
 say "웹 앱 설정값 받기"
 APP=$(api "https://firebase.googleapis.com/v1beta1/projects/$P/webApps" | jget "a=d.get('apps',[]);print(a[0]['appId'] if a else '')")

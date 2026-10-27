@@ -1100,7 +1100,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.53</span>
+      <span class="title-ver" id="titleVer">v35.58</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -2595,7 +2595,7 @@ async function pushLog(d,g,n,extra){
 /* 게이트 공략 중에는 내 HP가 바뀌면 5초에 한 번까지 접속 정보에 실어 보내, 같은 게이트 요원 화면에 HP 막대를 보여 줍니다 */
 let hpSentKey='',hpSentAt=0;
 setInterval(()=>{try{if(S.phase!=='focus'||!S.curGate||S.curGate.train||S.curGate.report)return;const h=hpNow();if(!h)return;const k=h.hp+'/'+h.max+'/'+(h.down?1:0);
-  if(k!==hpSentKey&&now()-hpSentAt>5000){hpSentKey=k;hpSentAt=now();pushPresence()}}catch(e){}},1000);
+  if(k!==hpSentKey&&now()-hpSentAt>60000){hpSentKey=k;hpSentAt=now();pushPresence()}}catch(e){}},1000);
 /* ═════════ 그리기 기본 ═════════ */
 /* 화면 안 글자가 휴대폰에서도 깨지지 않도록 메인 캔버스는 6배 해상도로 그린다 */
 const MSC=6;const cv=$('cv');cv.width=W*MSC;cv.height=H*MSC;
@@ -4586,12 +4586,15 @@ function gmWatchAll(){
     NET.db.doc('gms/'+NET.uid).get().then(s=>{GMX.is=!!(s&&s.exists);$('gmRow').hidden=!GMX.is}).catch(()=>{});
   }catch(e){}
 }
+let profKey='',profAt=0;
 function writeProfile(){
   if(!online()||!NET.uid||!S.role)return;
   const id=(window.closeGateAuth&&closeGateAuth.name&&closeGateAuth.name())||'';
-  try{NET.db.doc('profiles/'+NET.uid).set({nick:(S.name||'').slice(0,10),id:String(id).slice(0,30),role:S.role,lv:myLevel(),gr:myGrade(),cr:CR(),t:gmT()}).catch(()=>{})}catch(e){}
+  /* v35.55: 바뀐 내용이 있거나 30분이 지났을 때만 씁니다 */
+  const d={nick:(S.name||'').slice(0,10),id:String(id).slice(0,30),role:S.role,lv:myLevel(),gr:myGrade(),cr:CR()},k=JSON.stringify(d);if(k===profKey&&Date.now()-profAt<30*60e3)return;profKey=k;profAt=Date.now();
+  try{NET.db.doc('profiles/'+NET.uid).set({...d,t:gmT()}).catch(()=>{})}catch(e){}
 }
-setInterval(()=>{gmWatchAll();writeProfile()},60000);setTimeout(()=>{gmWatchAll();writeProfile()},4000);setInterval(gmWatchAll,5000);
+setInterval(()=>{gmWatchAll();writeProfile()},5*60000);setTimeout(()=>{gmWatchAll();writeProfile()},4000);setInterval(gmWatchAll,5000);
 function renderNotice(){const n=GMX.notice,el=$('noticeBar');const on=n&&n.on&&n.text;el.hidden=!on;document.body.classList.toggle('hasNotice',!!on);if(on){el.className='noticebar '+(n.level==='warn'?'warn':'');$('noticeText').textContent=String(n.text).slice(0,200)}}
 const muted=()=>GMX.mute&&+GMX.mute.until>gmT();
 function checkBan(){const b=GMX.ban,on=b&&(+b.until>gmT());$('banScreen').hidden=!on;
@@ -5395,8 +5398,8 @@ async function completeFocus(early){
   if(gate.raid)S.raidMin=(S.raidMin||0)+effMin;
   // 아이템
   let item=null,gear=null;
-  relWake();if(S.runaway>=SEVERE){beginAuto();toastLater('센티넬 상태가 심각해 자동 가이딩으로만 안정시킬 수 있습니다.')}else startBreak(directMinFor(S.runaway)*60e3);
-  S.curGate=null;save();pushPresence();updateUI(true);
+  relWake();if(S.runaway>=SEVERE){beginAuto();toastLater('센티넬 상태가 심각해 자동 가이딩으로만 안정시킬 수 있습니다.')}else if(gate.train||gate.report){S.phase='idle';if(S.runaway>0)toastLater(`폭주 게이지 ${Math.round(S.runaway)}입니다. 필요하면 아래 가이딩 단추로 안정시킬 수 있습니다.`)}/* 훈련 · 보고서 뒤에는 가이딩으로 옮기지 않습니다 */else startBreak(directMinFor(S.runaway)*60e3);
+  S.curGate=null;save();try{ACC.soon=true}catch(e){}pushPresence();updateUI(true);
   const was=await sortieFinish();/* 탭을 닫아 둔 사이 다른 요원이 이미 정산했다면 봉인에는 다시 넣지 않습니다 */
   const res=early?{skip:true}:gate.raid?await contributeRaid(effMin*powMul,gate.day):await contribute(gate,was==='settled'||was==='expired'?0:effMin*powMul);
   /* 공략 중에 봉인 진행이 다 차서 게이트가 먼저 닫혔다면, 참여한 요원에게 공략 완료로 안내합니다 */
@@ -5431,7 +5434,7 @@ function autoGuideTick(t){
   const skill=bondMul()*(S.role==='guide'?myMast():1),m=matchMult(matchN());
   for(let i=0;i<n;i++){S.runaway=Math.max(0,S.runaway-6*(S.role==='guide'?1.5:1)*m*skill);S.bond+=1;if(S.assist)S.assist.taps+=1}
   if(S.partner&&S.role==='guide')S.partner.runaway=S.runaway;
-  if(S.assist&&online())NET.db.doc('guidereq/'+S.assist.sid).update({gtap:S.assist.taps}).catch(()=>{});
+  if(S.assist&&online()&&now()-(S.assist.tapAt||0)>15000){S.assist.tapAt=now();NET.db.doc('guidereq/'+S.assist.sid).update({gtap:S.assist.taps}).catch(()=>{})}
   if(!document.hidden)burst(96,38,['#9FD6FF','#FFFFFF'],6,20,0);
   if(S.runaway<=0&&!S.stableSaid){S.stableSaid=true;say('stable')}
   calmEnd();
@@ -5703,6 +5706,8 @@ async function gateMaint(){
   try{
     const t=now();
     if(NET.mode==='online'&&NET.db&&NET.canWrite!==false){
+      /* v35.55 사용량 절약: 접속한 요원 중 한 명(uid가 가장 앞선 사람)만 게이트 정리를 맡습니다 */
+      {const ids=[NET.uid,...NET.peers.map(p=>peerInfo(p).uid)].filter(Boolean).sort();if(ids[0]!==NET.uid){GL.busy=false;return}}
       for(const g of NET.gates.slice().sort((a,b)=>(a.openedAt||0)-(b.openedAt||0))){
         if(g.status!=='open')continue;const ref=NET.db.doc('gates/'+g.id);
         if(!g.openedAt){await ref.update({openedAt:t}).catch(()=>{});continue}
@@ -5830,12 +5835,13 @@ async function cloudPut(force){
       S.cloudRev=rev;
     });
     if(conflict){const ex=await cloudGet();if(ex&&typeof ex.json==='string')adoptNewer(ex);return false}
-    ACC.last=P;ACC.dirty=false;ACC.lastPush=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAcc();return true}
-  catch(e){return false}finally{ACC.pushing=false}
+    ACC.last=P;ACC.dirty=false;ACC.fails=0;ACC.lastPush=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAcc();return true}
+  catch(e){ACC.lastPush=Date.now();ACC.fails=(ACC.fails||0)+1;return false}/* 실패하면 바로 다시 시도하지 않고 다음 주기(30초~1분)에 다시 올립니다. 기기 안 기록은 그대로 남습니다 */finally{ACC.pushing=false}
 }
 function cloudDirty(){if(S.acct&&S.acct.mode==='cloud'){if(!ACC.dirty)ACC.dirtyAt=Date.now();ACC.dirty=true}}
-/* 바뀐 내용이 있으면 2초 안에 클라우드에 올립니다(같은 내용이면 올리지 않고, 최소 4초 간격) */
-setInterval(()=>{if(ACC.dirty&&S.acct&&S.acct.mode==='cloud'&&Date.now()-ACC.lastPush>4000&&Date.now()-(ACC.dirtyAt||0)>1500)cloudPut()},1000);
+/* v35.55 사용량 절약: 바뀐 내용은 30초에 한 번(출동 · 휴식 중에는 1분에 한 번) 모아서 올립니다.
+   기기 안에는 그때그때 저장되고, 탭을 닫거나 다른 앱으로 넘어가면 바로 올립니다. 출동이 끝나는 등 중요한 순간에는 ACC.soon으로 바로 올립니다 */
+setInterval(()=>{if(!ACC.dirty||!S.acct||S.acct.mode!=='cloud')return;const gap=ACC.soon?3000:(S.phase==='idle'?30000:60000);if(Date.now()-ACC.lastPush>gap&&Date.now()-(ACC.dirtyAt||0)>1500){ACC.soon=false;cloudPut()}},1000);
 addEventListener('pagehide',()=>{if(ACC.dirty)cloudPut()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&ACC.dirty)cloudPut()});
 
@@ -6006,6 +6012,7 @@ function showReport(r){
   $('repList').innerHTML=rows.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
   try{$('repEye').textContent=r.gate.train?'Training report':r.gate.report?'Office report':'Gate report'}catch(e){}$('repTitle').textContent=r.gate.exam?'승급 시험 결과':r.gate.train?(r.early?'훈련 중간 보고':'훈련 결과'):r.gate.report?'보고서 작성 결과':r.early?'긴급 귀환 보고서':'출동 보고서';
   $('repNote').textContent=note||(r.rw>=40?'폭주 게이지가 높습니다. 휴식 시간에 가이딩이 필요합니다.':'파장이 안정적입니다. 휴식 시간에는 편하게 쉬어도 됩니다.');
+  $('repClose').textContent=S.phase==='break'?'가이딩하러 가기':S.phase==='auto'?'자동 가이딩 보기':'확인';
   $('report').hidden=false;if(!document.hidden)setTimeout(()=>$('repClose').focus(),50);
 }
 function selectGate(id){
