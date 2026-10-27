@@ -1039,8 +1039,6 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .hudgame .wallet>span{flex:1 0 auto!important;min-width:max-content!important}
 .hudgame .dockmid .subrow{flex:1 1 260px!important;min-width:0!important}
 /* v35.39 지도: 왼쪽 위 내 정보 카드가 게이트를 가리지 않게 얼굴만 남기고, 게이트 표시는 화면 위 단추들보다 앞에 둡니다 */
-#stage[data-view="map"] .hud-me .hm-txt{display:none}
-#stage[data-view="map"] .hud-me{padding:4px!important;opacity:.92}
 #stage[data-view="map"] #mapLayer{z-index:6;pointer-events:none}
 #stage[data-view="map"] #mapLayer .gbtn{pointer-events:auto}
 /* v35.42 속성 강화(다이아몬드) · 속성 숙련(동그라미) 표시 */
@@ -1095,7 +1093,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.45</span>
+      <span class="title-ver" id="titleVer">v35.47</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -1458,8 +1456,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
       <h3>내 캐릭터</h3>
       <div class="srow"><div class="sl"><b>외형과 성격</b><span>헤어, 눈, 의상과 색, 성격과 말투를 다시 고릅니다.</span></div><button class="sbtn big" type="button" id="lookBtn">바꾸기</button></div>
       <div class="srow"><div class="sl"><b>역할</b><span>한 번 정한 역할은 바꿀 수 없습니다.</span></div><span class="rolebadge" id="roleBadge">센티넬</span></div>
-      <div class="srow col"><div class="sl"><b>등급별 모습 미리보기</b><span>등급이 오르면 생기는 무기와 오라를 미리 봅니다.</span></div><div class="chips g8" id="previews"></div></div>
-      <p class="muted" id="setLock" hidden>출동이나 휴식 중에는 외형과 성격을 바꿀 수 없습니다.</p>
+            <p class="muted" id="setLock" hidden>출동이나 휴식 중에는 외형과 성격을 바꿀 수 없습니다.</p>
     </section>
     <section class="sgroup">
       <h3>계정</h3>
@@ -3194,7 +3191,7 @@ const ACH=[
   {id:'promo',n:'첫 승급',d:'승급 시험에 합격합니다.',t:'승급자',ap:60,p:()=>[S.promos||0,1]},
   {id:'sgrade',n:'S급 요원',d:'S급에 오릅니다.',t:'S급 요원',ap:300,p:()=>[myGrade(),6]},
   {id:'tri',n:'삼중 각성',d:'속성을 3개 가집니다.',t:'삼중 각성',ap:100,p:()=>[(S.attrs||[]).length,3]},
-  {id:'mast',n:'숙련자',d:'속성 숙련 하나를 5단계까지 올립니다.',t:'숙련자',ap:100,p:()=>[maxMast(),5]},
+  {id:'mast',n:'숙련자',d:'속성 숙련 하나를 25단계까지 올립니다.',t:'숙련자',ap:100,p:()=>[maxMast(),5]},
   {id:'raid1',n:'균열 돌파대',d:'균열 레이드에 참여합니다.',t:'균열 돌파대',ap:60,p:()=>[(S.raidMin||0)>0?1:0,1]},
   {id:'raid300',n:'균열의 영웅',d:'균열 레이드에 집중 300분을 보탭니다.',t:'균열의 영웅',ap:250,p:()=>[Math.floor(S.raidMin||0),300]},
   {id:'raidwin',n:'균열 봉인자',d:'참여한 균열 레이드가 봉인됩니다.',t:'균열 봉인자',ap:100,p:()=>[S.raidWins||0,1]},
@@ -3565,15 +3562,17 @@ setInterval(()=>{try{if(S&&S.role&&(typeof cloudOK!=='function'||!cloudOK()||ACC
 const mastLv=a=>Math.max(0,Math.min(MAST_MAX,+((S.mast||{})[a])||0));
 const mastOrb=a=>mastLv(a)>=MAST_MAX?0:Math.max(0,Math.min(ORB_N-1,+((S.mastOrb||{})[a])||0));
 const mastOrbCost=a=>Math.max(1,Math.round(mastCost(mastLv(a))/ORB_N));
-/* 속성 숙련 표시: 동그라미 5개가 숙련 단계입니다. 강화 5번(5칸)마다 동그라미 하나에 불이 들어오고, 채우는 중인 칸 수를 옆에 작게 보여 줍니다 */
-function mastOrbs(a,noStep){const lv=mastLv(a),o=mastOrb(a),col=ATTRS[a]?ATTRS[a].col:'#8E6CF0';
-  return `<span class="orbs" title="속성 숙련 +${lv}/${MAST_MAX}${lv<MAST_MAX?` · 다음 단계까지 ${o}/${ORB_N}`:''}"><b>+${lv}</b>${Array.from({length:MAST_MAX},(_,i)=>`<i class="${i<lv?'on':i===lv&&o?'part':''}" style="--oc:${col};--pp:${i===lv?o/ORB_N*100:0}%"></i>`).join('')}${!noStep&&lv<MAST_MAX?`<small class="ostep">${o}/${ORB_N}</small>`:''}</span>`}
+/* 속성 숙련 표시: 총 25단계. 동그라미 5개 중 하나에, 강화 5단계마다 불이 들어옵니다. 채우는 중인 동그라미는 아래부터 차오릅니다 */
+const MAST_STEPS=MAST_MAX*ORB_N;
+const mastStep=a=>Math.min(MAST_STEPS,mastLv(a)*ORB_N+mastOrb(a));
+function mastOrbs(a,noStep){const lv=mastLv(a),o=mastOrb(a),st=mastStep(a),col=ATTRS[a]?ATTRS[a].col:'#8E6CF0';
+  return `<span class="orbs" title="속성 숙련 ${st}/${MAST_STEPS}단계"><b>+${st}</b>${Array.from({length:MAST_MAX},(_,i)=>`<i class="${i<lv?'on':i===lv&&o?'part':''}" style="--oc:${col};--pp:${i===lv?o/ORB_N*100:0}%"></i>`).join('')}${!noStep?`<small class="ostep">${st}/${MAST_STEPS}</small>`:''}</span>`}
 function fillMastOrb(a){
-  a=+a;if(!(S.attrs||[]).includes(a))return;if(mastLv(a)>=MAST_MAX){toast(`이미 최고 숙련(+${MAST_MAX})입니다.`);return}
+  a=+a;if(!(S.attrs||[]).includes(a))return;if(mastLv(a)>=MAST_MAX){toast(`이미 최고 숙련(+${MAST_STEPS})입니다.`);return}
   const c=mastOrbCost(a);if((S.ap||0)<c){toast(`각성 포인트가 ${Math.ceil(c-(S.ap||0))} 부족합니다.`);return}
   S.ap=Math.round((S.ap-c)*10)/10;S.mast=S.mast||{};S.mastOrb=S.mastOrb||{};const o=mastOrb(a)+1;
-  if(o>=ORB_N){S.mastOrb[a]=0;S.mast[a]=mastLv(a)+1;checkAch();toast(`${ATTRS[a].n} 숙련이 +${S.mast[a]}가 되었습니다!`);beep(988,.08);beep(1318,.12,'square',.04,.08);try{fanfare()}catch(e){}}
-  else{S.mastOrb[a]=o;toast(`${ATTRS[a].n} 숙련을 강화했습니다. (${o}/${ORB_N}) 5번 채우면 숙련 +${mastLv(a)+1}이 됩니다.`);beep(988,.06)}
+  if(o>=ORB_N){S.mastOrb[a]=0;S.mast[a]=mastLv(a)+1;checkAch();toast(`${ATTRS[a].n} 숙련 +${mastStep(a)}단계! 동그라미 ${S.mast[a]}개에 불이 들어왔습니다.`);beep(988,.08);beep(1318,.12,'square',.04,.08);try{fanfare()}catch(e){}}
+  else{S.mastOrb[a]=o;toast(`${ATTRS[a].n} 숙련 +${mastStep(a)}단계가 되었습니다. ${ORB_N-o}단계 더 올리면 동그라미에 불이 들어옵니다.`);beep(988,.06)}
   save();updateUI(true);
 }
 /* ── 게이트 속성 상성 ──
@@ -4488,28 +4487,30 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-pv]');if(b
 const PX8=s=>s.trim().split(/\s+/);
 const icoUrl=new Map();
 function pxIcon(key,w,h,fn){if(!icoUrl.has(key)){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');try{fn(g)}catch(e){}icoUrl.set(key,c.toDataURL())}return icoUrl.get(key)}
-function glyph(g,rows,ox,oy,col,edge){const set=new Set();rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='X')set.add((x+ox)+','+(y+oy))}));
+function glyph(g,rows,ox,oy,col,edge,shadeOn){const set=new Set();rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='X')set.add((x+ox)+','+(y+oy))}));
   if(edge){g.fillStyle=edge;set.forEach(k=>{const [x,y]=k.split(',').map(Number);[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{if(!set.has((x+dx)+','+(y+dy)))g.fillRect(x+dx,y+dy,1,1)})})}
-  g.fillStyle=col;set.forEach(k=>{const [x,y]=k.split(',').map(Number);g.fillRect(x,y,1,1)})}
+  set.forEach(k=>{const [x,y]=k.split(',').map(Number);
+    /* shade: 위 · 왼쪽이 비면 밝게, 아래 · 오른쪽이 비면 어둡게 칠해 입체감을 줍니다 */
+    g.fillStyle=shadeOn?(!set.has(x+','+(y-1))||!set.has((x-1)+','+y)?shade(col,.42):!set.has(x+','+(y+1))||!set.has((x+1)+','+y)?shade(col,-.18):col):col;g.fillRect(x,y,1,1)})}
 
 /* 속성 문양 14종(물 · 불 · 바람 · 땅 · 빛 · 어둠 · 신체 강화 · 강철 피부 · 초가속 · 염력 · 염동력 · 정신 공격 · 물리 · 정신) */
 const ATTR_GLYPH=[
- '...X.... ...X.... ..XXX... .XXXXX.. .XXXXX.. .XXXXX.. ..XXX... ........',
- '...X.... ..XX.... ..XXX.X. .XXXXXX. .XXXXXX. XXX.XXXX .XX..XX. ..XXXX..',
+ '...XX... ...XX... ..XXXX.. .XXXXXX. .XXXXXX. .XXXXXX. ..XXXX.. ........',
+ '...X.... ..XX..X. ..XXX.X. .XXXXXX. XXXXXXXX XXXXXXXX .XXXXXX. ..XXXX..',
  '..XXX... .X...X.. ....X... XXXX.... ........ XXXXXX.. ......X. ....XX..',
- '........ ...X.... ..XXX... ..XXX.X. .XXXXXXX .XXXXXXX XXXXXXXX ........',
- '...X.... X..X..X. .X.X.X.. ..XXX... XXXXXXX. ..XXX... .X.X.X.. X..X..X.',
+ '...X.... ..XXX... ..XXX... .XXXXX.X .XXXXXXX XXXXXXXX XXXXXXXX ........',
+ '...XX... .X....X. ...XX... X.XXXX.X X.XXXX.X ...XX... .X....X. ...XX...',
  '..XXX... .XX..... XX...... XX...... XX...... XX...... .XX..... ..XXX...',
  '........ XX....XX XX....XX XXXXXXXX XXXXXXXX XX....XX XX....XX ........',
  'XXXXXXX. X..X..X. X..X..X. XXXXXXX. X..X..X. .X.X.X.. ..XXX... ...X....',
  '....XX.. ...XX... ..XX.... .XXXXX.. ...XX... ..XX.... .XX..... .X......',
- '...X.... ..XXX... .XXXXX.. ..XXX... ...X.... ........ .X.X.X.. ........',
+ 'X....... ...XX... ..XXXX.. .XXXXXX. ..XXXX.. ...XX... .......X X..X....',
  'XXXXXX.. X....X.. X.XX.X.. X.X..X.. X.XXXX.. X....... XXXXXXX. ........',
  '........ ..XXXX.. .X....X. X..XX..X X..XX..X .X....X. ..XXXX.. ........',
  'X.....X. .X...X.. ..X.X... ...X.... ..X.X... .X...X.. XX...XX. XX...XX.',
  '...X.... ...X.... ..XXX... XXXXXXX. ..XXX... ...X.... ...X.... ........'].map(PX8);
 function attrDot(a){const A=ATTRS[a];if(!A)return '<i></i>';
-  const u=pxIcon('ad'+a,10,10,g=>glyph(g,ATTR_GLYPH[a]||ATTR_GLYPH[13],1,1,A.col,shade(A.col,-.45)));
+  const u=pxIcon('ad2'+a,10,10,g=>glyph(g,ATTR_GLYPH[a]||ATTR_GLYPH[13],1,1,A.col,shade(A.col,-.5),true));
   return `<img class="adot" src="${u}" alt="" width="14" height="14">`}
 
 /* 업적 배지 8종: 출동 · 봉인 · 집중 · 가이딩 · 성장 · 레이드 · 수집 · 함께 */
@@ -4876,7 +4877,8 @@ const baseMinOf=g=>g.brk?Math.max(50,FOCUS_MIN[g.g]*2):FOCUS_MIN[g.g];
 const focusMsOf=g=>g.raid?25*60e3:g.train?(g.mins||1)*60e3:g.exam?25*60e3:(g.brk?Math.max(50,FOCUS_MIN[g.g]*2):FOCUS_MIN[g.g])*60e3*lenOf(g);
 const brkMsOf=g=>g.raid?5*60e3:g.train?(g.brk||20e3):g.exam?5*60e3:BREAK_MIN[g.g]*60e3*(1+.5*(lenOf(g)-1));
 const multOf=g=>g.raid?1.3:g.train?.6:g.exam?1:1+.12*g.g+(g.brk?.5:0);
-const myMast=()=>1+.06*(S.attrs||[]).reduce((a,x)=>a+(+(S.mast||{})[x]||0),0);
+/* 속성 숙련: 강화 1단계마다 효율 +1.2% (불 하나 = 5단계 = +6%, 최대 25단계 = +30%) */
+const myMast=()=>1+.012*(S.attrs||[]).reduce((a,x)=>a+mastStep(x),0);
 const gainOf=g=>Math.min(95,(1-gearCalm())*(S.role==='guide'?40:60)*(g.raid?.9:g.train?.4:g.exam?1:.7+.1*g.g+(g.brk?.2:0))*(matchN()>0?.85:1)*(1+.2*(lenOf(g)-1)));
 const gcolOf=g=>g.brk?'#B0203A':g.raid?'#B48CFF':g.exam?'#FF8FA3':g.train?'#6FDCEB':GCOL[g.g];
 const SEVERE=80;
@@ -5939,7 +5941,7 @@ async function accOnNet(){
     accMsg('클라우드 기록을 확인하지 못했습니다. 잠시 뒤에 다시 확인합니다.',true);showAccount();setTimeout(accOnNet,5000);return;
   }
   try{syncCont()}catch(e){}
-  if(!$('account').hidden)enterGame();
+  if(!$('account').hidden&&!stayTitle)enterGame();
 }
 /* ═════════ UI ═════════ */
 let toastTimer=0;
@@ -6076,7 +6078,11 @@ function setTimer(t){
 }
 addEventListener('resize',()=>{timerLast=''});
 let lastResume='';
-function updateUI(full){try{const et=$('examTag'),X=examRun();if(et){et.hidden=!X;if(X)et.innerHTML=`<b>승급 시험 중</b><span>${Math.floor(examMin())}/${EXAM_NEED}분</span><i style="width:${Math.min(100,examMin()/EXAM_NEED*100)}%"></i>`}}catch(e){}try{const st=$('stage');if(st&&st.dataset.view!==S.view)st.dataset.view=S.view;const k=JSON.stringify({view:S.view,sel:S.selGate||null,tab:curTab||null});if(k!==lastResume){lastResume=k;sessionStorage.setItem('cg-resume',k)}}catch(e){}{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
+/* 새로고침 위치 기억: 지금 보고 있는 화면(타이틀/게임) · 장면 · 고른 게이트 · 열어 둔 메뉴를 이 탭에만 적어 둡니다 */
+function rememberSpot(){try{if(typeof resumeTab!=='undefined'&&resumeTab)return;const g=$('game');if(!g||g.hidden)return;
+  const k=JSON.stringify({scr:'game',view:S.view,sel:S.selGate||null,tab:(typeof curTab!=='undefined'&&curTab)||null});if(k!==lastResume){lastResume=k;sessionStorage.setItem('cg-resume',k)}}catch(e){}}
+function rememberTitle(){try{lastResume='';sessionStorage.setItem('cg-resume',JSON.stringify({scr:'title',view:S.view,sel:S.selGate||null}))}catch(e){}}
+function updateUI(full){try{const et=$('examTag'),X=examRun();if(et){et.hidden=!X;if(X)et.innerHTML=`<b>승급 시험 중</b><span>${Math.floor(examMin())}/${EXAM_NEED}분</span><i style="width:${Math.min(100,examMin()/EXAM_NEED*100)}%"></i>`}}catch(e){}try{const st=$('stage');if(st&&st.dataset.view!==S.view)st.dataset.view=S.view;rememberSpot();}catch(e){}{const a=$('wCr'),b=$('wAp');if(a){const f=n=>n>=1e8?(Math.floor(n/1e7)/10)+'억':n>=1e5?Math.floor(n/1e4).toLocaleString('ko-KR')+'만':n.toLocaleString('ko-KR');a.textContent=f(CR());b.textContent=f(Math.floor(S.ap||0));a.title=CR().toLocaleString('ko-KR')+' C';b.title=Math.floor(S.ap||0).toLocaleString('ko-KR')+' AP'}}if(typeof renderPotBar==='function')renderPotBar();
   const role=S.role,t=now(),lvI=levelOf(S.xp),rw=liveRunaway();
   document.body.dataset.role=role||'sentinel';
   const sel=gateById(S.selGate);
@@ -6218,7 +6224,7 @@ function renderGym(){
     return `<li><span class="atag">${attrDot(a)}${ATTRS[a].n}</span><span class="tx"><b>${ATTRS[a].n} 숙련</b>${mastOrbs(a)}</span><button type="button" class="sbtn" data-mast="${a}" ${max||ap<cost?'disabled':''}>${max?'최고 단계':'강화 · '+cost+' AP'}</button></li>`}).join('');
   $('gymBox').innerHTML=`<div class="apbar"><span>각성 포인트</span><b>${ap} AP</b></div>
     <section class="awk" id="awk"><h3>속성 숙련 강화 <small>각성 포인트(AP) 사용</small></h3>
-    <p class="muted">각성 포인트로 5번 강화하면 동그라미 하나에 불이 들어오며 숙련이 +1 오릅니다(최대 +5). 숙련 1단계마다 그 속성으로 싸우거나 가이딩할 때 효율이 6%씩 오릅니다.</p>
+    <p class="muted">숙련은 총 25단계입니다. 각성 포인트로 한 단계씩 올리고, 5단계마다 동그라미 하나에 불이 들어옵니다. 한 단계마다 그 속성으로 싸우거나 가이딩할 때 효율이 1.2%씩(동그라미 하나에 6%) 오릅니다.</p>
     <ul class="shop">${mast||'<li><span class="tx"><span>먼저 속성을 얻어야 숙련을 올릴 수 있습니다.</span></span></li>'}
       <li><span class="tx"><b>각성석 교환</b><span>속성 하나가 담긴 각성석을 무작위로 받습니다.</span></span><button type="button" class="sbtn" data-buy="stone" ${ap<STONE_AP?'disabled':''}>${STONE_AP} AP</button></li></ul></section>
     <span class="eyebrow">Training</span><div class="glist" id="trList">${prog}</div>
@@ -6230,7 +6236,7 @@ $('gymBox').addEventListener('click',e=>{
   const st=e.target.closest('[data-buy]');if(st&&!st.disabled){if((S.ap||0)<STONE_AP)return;S.ap=Math.round((S.ap-STONE_AP)*10)/10;
     const it={id:'i'+Date.now().toString(36),attr:pick(STONE_ATTRS)};S.items.push(it);toast(`${ATTRS[it.attr].n} 각성석을 받았습니다. 가방에서 쓸 수 있습니다.`);save();updateUI(true)}
 });
-(()=>{const pv=$('previews');['MY',...GRADES].forEach((r,i)=>{const b=document.createElement('button');b.type='button';b.className='chip';b.id='pv-'+i;b.textContent=r;b.title=i?`${r}급 모습 보기`:'내 등급으로 돌아가기';b.addEventListener('click',()=>{previewGrade=i?i-1:null;updateUI(true)});pv.appendChild(b)})})();
+(()=>{const pv=$('previews');if(!pv)return;['MY',...GRADES].forEach((r,i)=>{const b=document.createElement('button');b.type='button';b.className='chip';b.id='pv-'+i;b.textContent=r;b.title=i?`${r}급 모습 보기`:'내 등급으로 돌아가기';b.addEventListener('click',()=>{previewGrade=i?i-1:null;updateUI(true)});pv.appendChild(b)})})();
 $('lookBtn').addEventListener('click',()=>{if(S.phase==='idle'){$('settings').hidden=true;showCustom('edit')}});
 $('resetBtn').addEventListener('click',()=>{
   const b=$('resetBtn');
@@ -6253,7 +6259,7 @@ function showScreen(id){['account','onboard','gacha','custom','game'].forEach(k=
 const TAB_T={mail:'우편함',chat:'채팅',party:'파티',shop:'상점',market:'장터',guiding:'가이딩실',ach:'업적과 칭호',ctl:'출동 관제',me:'내 캐릭터',partner:'파트너 상태',bag:'가방',crew:'요원과 친구'};
 let curTab=null;
 function openTab(t){curTab=t;if(t==='bag'){S.bagSeen=S.items.length;save()}if(t==='mail')renderMail();if(t==='crew')renderFriends();if(t==='partner')renderPair();if(t==='shop')renderShop();if(t==='market')renderMarket();if(t==='guiding')renderGuiding();if(t==='party')renderParty();if(t==='chat')chatLast.ch=null;$('drawer').hidden=false;$('drawer').classList.toggle('chatmode',t==='chat');$('drawerTitle').textContent=TAB_T[t];document.querySelectorAll('.pane[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==t);if(t==='chat')renderChat('open');document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===t)))}
-function closeDrawer(){curTab=null;try{const k=JSON.stringify({view:S.view,sel:S.selGate||null,tab:null});lastResume=k;sessionStorage.setItem('cg-resume',k)}catch(e){}$('drawer').hidden=true;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed','false'))}
+function closeDrawer(){curTab=null;rememberSpot();$('drawer').hidden=true;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed','false'))}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{if(curTab===b.dataset.tab)closeDrawer();else openTab(b.dataset.tab)}));
 $('drawerClose').addEventListener('click',closeDrawer);
 $('hudMe').addEventListener('click',()=>{if(curTab==='me')closeDrawer();else openTab('me')});
@@ -6431,7 +6437,9 @@ $('cSave').addEventListener('click',()=>{
 function showGame(){
   if(S.role&&S.regPending){picked=S.role;if(S.regWp&&!S.items.some(x=>x.kind==='gear'&&x.slot==='weapon')){wpPicked=true;dWp=S.regWp}showCustom('new');return}
   showScreen('game');ensurePartner();if(NET.mode==='solo')ensureLocalGates();
-  $('talkLine').textContent='';say(S.phase==='focus'?'focusStart':S.phase==='break'?'focusEnd':'idle');updateUI(true);
+  $('talkLine').textContent='';say(S.phase==='focus'?'focusStart':S.phase==='break'?'focusEnd':'idle');
+  if(resumeTab){const t=resumeTab;resumeTab=null;try{openTab(t)}catch(e){}}
+  updateUI(true);rememberSpot();
 }
 let cPrevG=null;
 function drawCustomPreview(){
@@ -6459,12 +6467,13 @@ if(S.phase==='break'&&now()>=S.phaseEnd){S.phase='idle';if(S.partner)partnerLeav
 if(S.phase==='auto'&&now()>=S.phaseEnd)endAuto(false);
 if(S.selGate&&!gateById(S.selGate))S.selGate=null;
 /* 새로고침하면 보던 장면 · 고른 게이트 · 열어 둔 메뉴로 돌아갑니다(같은 탭 안에서만, 새로 접속하면 내 방에서 시작) */
-let resumeTab=null;
-if(S.phase==='idle'){let r=null;try{r=JSON.parse(sessionStorage.getItem('cg-resume')||'null')}catch(e){}
-  S.view=r&&['home','center','gym','office','map'].includes(r.view)?r.view:'home';S.selGate=r&&typeof r.sel==='string'?r.sel:null;resumeTab=r&&typeof r.tab==='string'&&TAB_T[r.tab]?r.tab:null}
-setTimeout(()=>{try{if(resumeTab&&!$('game').hidden&&!curTab)openTab(resumeTab);resumeTab=null}catch(e){}},700);
-if(!S.acct)showAccount();
-else afterAccount();
+var resumeTab=null;const RESUME=(()=>{try{return JSON.parse(sessionStorage.getItem('cg-resume')||'null')}catch(e){return null}})();
+/* 타이틀에서 새로고침하면 타이틀에 머뭅니다(계속하기를 눌러 들어갑니다) */
+var stayTitle=!!(RESUME&&RESUME.scr==='title');
+if(S.phase!=='focus'){const r=RESUME&&RESUME.view?RESUME:null;
+  S.view=r&&['home','center','gym','office','map'].includes(r.view)?r.view:'home';if(r)S.selGate=typeof r.sel==='string'?r.sel:null;else if(S.phase==='idle')S.selGate=null;resumeTab=r&&typeof r.tab==='string'&&TAB_T[r.tab]?r.tab:null}
+/* 시작 화면은 스크립트 전체가 읽힌 뒤에 띄웁니다(아래쪽에 선언된 값을 먼저 읽어 멈추는 일이 없도록) */
+setTimeout(()=>{try{if(!S.acct||stayTitle)showAccount();else afterAccount()}catch(e){console.error(e);try{showAccount()}catch(_){}}},0);
 setTimeout(()=>{try{checkAch()}catch(e){}},1200);
 setTimeout(()=>{initNet().finally(()=>{netReady=true;try{watchParty()}catch(e){}accOnNet()})},0);setTimeout(()=>{netReady=true},4000);
 
@@ -6530,7 +6539,7 @@ function renderLenPick(force){const el=$('lenPick');if(!el)return;const sel=gate
 (()=>{const box=$('cGrades');GRADES.forEach((g,i)=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=g;b.setAttribute('aria-pressed','false');b.addEventListener('click',()=>{cPrevG=cPrevG===i?null:i;box.querySelectorAll('button').forEach((x,j)=>x.setAttribute('aria-pressed',String(j===cPrevG)));$('cGradeDesc').textContent=cPrevG==null?'등급을 누르면 그 등급이 되었을 때의 모습을 미리 봅니다.':`${g}급: ${VIS_DESC[document.body.dataset.role==='guide'?'guide':'sentinel'][VTIER[i]]||'기본 모습입니다.'}`});box.appendChild(b)})})();
 
 /* 타이틀 화면으로 돌아가기 · 이어서 하기 */
-function goTitle(){$('settings').hidden=true;if(typeof closeDrawer==='function')closeDrawer();showAccount();syncCont()}
+function goTitle(){$('settings').hidden=true;if(typeof closeDrawer==='function')closeDrawer();showAccount();rememberTitle();stayTitle=true;syncCont()}
 function syncCont(){const reg=!S.role&&!!S.pendingRole&&!!S.pendingRoll;const ok=!!((S.role&&S.grade!=null||reg)&&(S.acct&&(S.acct.mode==='guest'||cloudReady())));$('accCont').hidden=!ok;if(ok&&S.acct.mode==='guest')$('accGuest').hidden=true;
   const inAcc=ok&&S.acct.mode!=='guest'&&cloudOK();
   $('accNew').hidden=$('accLogin').hidden=inAcc;$('accSwitchRow').hidden=!inAcc;$('accNote').hidden=inAcc;
@@ -6539,7 +6548,7 @@ function syncCont(){const reg=!S.role&&!!S.pendingRole&&!!S.pendingRoll;const ok
   if(ok)$('accContD').textContent=reg?`등록 중인 ${GRADES[S.pendingRoll.grade]}급 ${S.pendingRole==='guide'?'가이드':'센티넬'} · 측정 결과가 그대로 남아 있습니다.`:`${S.name||'이름 없는 요원'} · Lv.${myLevel()} ${GRADES[myGrade()]}급 ${S.role==='guide'?'가이드':'센티넬'}로 이어서 합니다.`}
 $('toTitle').addEventListener('click',goTitle);
 $('accSwitch').addEventListener('click',()=>$('accOut').click());
-$('accCont').addEventListener('click',()=>{if(S.acct&&S.acct.mode==='cloud'&&!cloudReady()){toast('클라우드 기록을 확인하는 중입니다. 잠시 뒤에 이어서 할 수 있습니다.');return}if(!S.role){showOnboard();return}showGame()});
+$('accCont').addEventListener('click',()=>{stayTitle=false;if(S.acct&&S.acct.mode==='cloud'&&!cloudReady()){toast('클라우드 기록을 확인하는 중입니다. 잠시 뒤에 이어서 할 수 있습니다.');return}if(!S.role){showOnboard();return}showGame()});
 setInterval(()=>{if(!document.hidden&&!$('account').hidden)syncCont()},1500);
 
 
