@@ -81,6 +81,8 @@ function boot(){
        get은 값이 없으면 null, 읽지 못하면(규칙 미설정 · 시간 초과) undefined를 돌려줍니다 */
     get:(path,ms)=>Promise.race([rtP.then(R=>R?R.m.get(R.m.ref(R.db,path)).then(s=>s.exists()?s.val():null):undefined),new Promise(r=>setTimeout(()=>r(undefined),ms||4000))]).catch(()=>undefined),
     put:(path,v)=>rtP.then(R=>{if(!R)throw new Error('rt');return R.m.set(R.m.ref(R.db,path),JSON.parse(JSON.stringify(v)))}),
+    /* v35.65 주 저장: 그 경로 아래 바뀐 칸만 합쳐 씁니다 */
+    upd:(path,v)=>rtP.then(R=>{if(!R)throw new Error('rt');return R.m.update(R.m.ref(R.db,path),JSON.parse(JSON.stringify(v)))}),
     /* 이 화면이 닫히거나 연결이 끊기면 서버가 알아서 지우는 값(다른 기기가 지금 켜져 있는지 확인용) */
     hold:(path,v)=>rtP.then(R=>{if(!R)return;const r=R.m.ref(R.db,path);return R.m.onDisconnect(r).remove().then(()=>R.m.set(r,v))}).catch(()=>{}),
     release:path=>rtP.then(R=>{if(R)return R.m.onDisconnect(R.m.ref(R.db,path)).cancel()}).catch(()=>{})
@@ -214,6 +216,9 @@ function boot(){
     for(const id in v)if((+v[id].closedAt||0)<lim){up['gates/'+id]=null;up['locks/gates__'+id]=null}
     if(Object.keys(up).length)await RT.m.update(rref(''),up);return Object.keys(up).length/2};
   db.worldOn=()=>migP;
+  /* v35.65 실시간 데이터베이스 상태: 'on'(쓸 수 있음) · 'off'(못 씀, Firestore로) · 'pending'(아직 확인 중). 채팅이 켜진 직후 빈 Firestore 채팅을 붙이지 않게 씁니다 */
+  let worldOK=null;worldP.then(v=>{worldOK=v});
+  db.rt.state=()=>rtMode==='on'||(RT&&worldOK===true)?'on':(rtMode==='off'||worldOK===false?'off':'pending');
 
   /* ── 아이디 · 비밀번호 계정 (이메일 대신 아이디@closegate.game을 쓴다. 메일은 보내지 않는다) ── */
   window.closeGateAuth={

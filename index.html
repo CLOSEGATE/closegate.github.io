@@ -1106,7 +1106,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.64</span>
+      <span class="title-ver" id="titleVer">v35.65</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -4044,22 +4044,38 @@ $('partyBox').addEventListener('click',e=>{const id=e.target.id;if(id==='pCreate
 
 /* ── 채팅 (센터 / 파티 채널을 따로 씁니다) ── */
 const CHAT={ch:'center',subs:{},msgs:{center:[],party:[]},seen:{center:0,party:0}};
+/* v35.65 채팅이 새로고침 · 업데이트 때 비어 보이지 않게: 마지막으로 받은 대화(채널마다 60개)를 이 기기에 두었다가,
+   켜자마자 먼저 보여 주고 서버 대화가 오면 바꿉니다. 같은 계정 · 같은 채널일 때만 씁니다 */
+const CHAT_KEY='cg-chat';
+function chatCacheLoad(){try{const c=JSON.parse(localStorage.getItem(CHAT_KEY)||'null');if(!c||!c.uid)return;
+  ['center','party'].forEach(ch=>{const x=c[ch];if(x&&Array.isArray(x.m))CHAT.msgs[ch]=x.m.filter(m=>m&&typeof m.text==='string').slice(-60);CHAT.cacheKey=CHAT.cacheKey||{};CHAT.cacheKey[ch]=x&&x.k});CHAT.cacheUid=c.uid}catch(e){}}
+let chatCacheT=null;
+function chatCacheSave(){if(chatCacheT)return;chatCacheT=setTimeout(()=>{chatCacheT=null;try{if(!NET.uid)return;
+  localStorage.setItem(CHAT_KEY,JSON.stringify({uid:NET.uid,center:{k:'center',m:CHAT.msgs.center.slice(-60)},party:{k:chKey('party'),m:CHAT.msgs.party.slice(-60)}}))}catch(e){}},1500)}
+chatCacheLoad();
 /* 읽은 시각은 저장해 두어, 새로고침하거나 다른 기기에서 열어도 읽은 채팅이 다시 알림으로 뜨지 않습니다 */
 CHAT.seen={center:+((S.chatSeen||{}).center)||0,party:+((S.chatSeen||{}).party)||0};
 function markSeen(c){const ms=CHAT.msgs[c]||[],last=ms.length?Math.max(...ms.map(m=>+m.t||0)):0,v=Math.max(CHAT.seen[c]||0,last,now());if(v-(CHAT.seen[c]||0)<1000&&S.chatSeen)return;CHAT.seen[c]=v;S.chatSeen={...(S.chatSeen||{}),[c]:v};save()}
 const chKey=c=>c==='party'?(S.party?'party:'+S.party:null):'center';
 /* v35.59 채팅은 실시간 데이터베이스(chat/{채널}/{메시지})에 둡니다. 쓸 수 없으면 예전 Firestore 채팅으로 돌아갑니다 */
 const chatRT=()=>!!(NET.db&&NET.db.rt&&NET.db.rt.ready());
+/* v35.65: 실시간 데이터베이스를 쓸 수 있는지 아직 모르는 동안에는(켜진 직후) 예전 Firestore 채팅을 붙이지 않습니다.
+   예전에는 이때 비어 있는 Firestore 채팅을 먼저 보여 줘서, 업데이트 직후 채팅이 사라진 것처럼 보였습니다 */
+const chatState=()=>NET.db&&NET.db.rt&&typeof NET.db.rt.state==='function'?NET.db.rt.state():(chatRT()?'on':'off');
 const chPath=k=>'chat/'+String(k).replace(/[.#$\[\]:\/]/g,'_');
 function watchChat(){
   if(!online())return;
+  const st=chatState();if(st==='pending')return;
+  /* 다른 계정의 대화가 남아 있으면 지웁니다 */
+  if(CHAT.cacheUid&&CHAT.cacheUid!==NET.uid){CHAT.msgs={center:[],party:[]};CHAT.cacheUid=NET.uid}
   ['center','party'].forEach(c=>{const k=chKey(c);if(!k){CHAT.msgs.party=[];return}
-    const rt=chatRT(),sk=(rt?'rt:':'fs:')+k;
+    const rt=st==='on',sk=(rt?'rt:':'fs:')+k;
     if(CHAT.subs[c]&&CHAT.subs[c].k===sk)return;
     try{CHAT.subs[c]&&CHAT.subs[c].off&&CHAT.subs[c].off()}catch(e){}
     const got=list=>{if(!list)return;CHAT.msgs[c]=list.filter(m=>typeof m.text==='string'&&!m.hidden).sort((a,b)=>(a.t||0)-(b.t||0)).slice(-60);
-      if(curTab==='chat'&&!$('drawer').hidden&&CHAT.ch===c){markSeen(c);renderChat(true)}chatBadge()};
-    if(rt)CHAT.msgs[c]=[];/* v35.59: 실시간 데이터베이스로 옮기면서 지난 대화는 가져오지 않고 새로 시작합니다 */
+      chatCacheSave();if(curTab==='chat'&&!$('drawer').hidden&&CHAT.ch===c){markSeen(c);renderChat(true)}chatBadge()};
+    /* 파티가 바뀌었으면 이전 파티 대화는 지웁니다(센터 대화와 같은 파티의 대화는 서버 대화가 올 때까지 그대로 보여 줌) */
+    if(CHAT.cacheKey&&CHAT.cacheKey[c]!==undefined&&CHAT.cacheKey[c]!==k){CHAT.msgs[c]=[]}if(CHAT.cacheKey)CHAT.cacheKey[c]=k;
     const off=rt?NET.db.rt.listen(chPath(k),60,got):NET.db.collection('chat').where('ch','==',k).onSnapshot(s=>got(s.docs.map(d=>({id:d.id,...d.data()}))),()=>{});
     CHAT.subs[c]={k:sk,off};
   });
@@ -4071,7 +4087,7 @@ async function sendChat(){
   const k=chKey(CHAT.ch);if(!online()||!k){toast(CHAT.ch==='party'?'파티에 들어가야 파티 채팅을 쓸 수 있습니다.':'채팅은 온라인에서만 쓸 수 있습니다.');return}
   inp.value='';inp.focus();
   const msg={ch:k,uid:NET.uid,nick:(S.name||'요원').slice(0,10),role:S.role,text,t:now()};
-  try{if(chatRT())await NET.db.rt.push(chPath(k),msg);else await NET.db.doc('chat/'+NET.uid.slice(0,10)+'_'+Date.now().toString(36)).set(msg)}catch(e){toast('메시지를 보내지 못했습니다.')}
+  try{if(chatState()==='on')await NET.db.rt.push(chPath(k),msg);else await NET.db.doc('chat/'+NET.uid.slice(0,10)+'_'+Date.now().toString(36)).set(msg)}catch(e){toast('메시지를 보내지 못했습니다.')}
 }
 /* 채팅: 메신저처럼 내 말은 오른쪽, 남의 말은 왼쪽에 놓습니다. 같은 사람이 이어 말하면 이름을 한 번만 씁니다.
    위로 올려 읽는 중에는 새 메시지가 와도 아래로 끌어내리지 않고 '새 메시지' 단추만 띄웁니다. */
@@ -4103,6 +4119,8 @@ $('chatBox').addEventListener('click',e=>{if(e.target.id==='chatNew'){const l=$(
 $('chatBox').addEventListener('click',e=>{const b=e.target.closest('[data-ch]');if(b){CHAT.ch=b.dataset.ch;renderChat()}});
 $('chatBox').addEventListener('submit',e=>{e.preventDefault();sendChat()});
 setInterval(()=>{try{watchChat();chatBadge()}catch(e){}},4000);
+/* 켜진 직후에는 실시간 데이터베이스가 준비되자마자 대화를 붙이도록 1초마다 확인합니다(최대 30초) */
+{let n=0;const t=setInterval(()=>{n++;try{if(online()&&chatState()!=='pending'&&!CHAT.subs.center){watchChat();chatBadge()}}catch(e){}if(n>30||CHAT.subs.center)clearInterval(t)},1000)}
 
 /* ── 역할 바꾸기 (변경권 · GM 조정 공통) ── */
 function changeRole(to,src){
@@ -5846,7 +5864,7 @@ async function handoffClaim(){
 async function kickSession(by){
   if(ACC.kicked||ACC.leaving)return;ACC.leaving=true;
   /* 끊기기 전에 마지막 기록을 올리고(최대 6초), 새 화면에 다 올렸다고 알려 줍니다 */
-  try{if(ACC.synced&&!ACC.choosing){for(let i=0;i<50&&ACC.pushing;i++)await sleep(100);await Promise.race([cloudPut(),sleep(6000)])}}catch(e){}
+  try{if(ACC.synced&&!ACC.choosing){for(let i=0;i<50&&ACC.pushing;i++)await sleep(100);await Promise.race([ckptPut().then(ok=>ok||cloudPut()),sleep(6000)])}}catch(e){}
   try{await NET.db.doc('data/users/'+NET.uid+'/session').update({ack:by})}catch(e){}
   try{if(NET.db.rt&&NET.db.rt.release)NET.db.rt.release('sess/'+NET.uid)}catch(e){}
   ACC.leaving=false;ACC.kicked=true;window.__cgKicked=true;ACC.dirty=false;
@@ -5903,36 +5921,43 @@ async function cloudPut(force){
     if(conflict){if(ACC.leaving)return false;const ex=await cloudGet();if(ex&&typeof ex.json==='string'){
       /* 다른 곳 기록과 진행이 같으면 묻지 않고 번호만 맞춘 뒤 다시 올립니다 */
       let od=null;try{od=JSON.parse(ex.json)}catch(e){}
-      if(od&&fp(od)===fp(S)){S.cloudRev=+ex.rev||0;ACC.soon=true}else askChoice({json:ex.json,rev:+ex.rev||0,at:+ex.at||0,src:'fs'},'conflict')}return false}
-    ACC.last=P;ACC.dirty=false;ACC.fails=0;ACC.lastPush=Date.now();lsDel(UNS_KEY);try{localStorage.setItem(BASE_KEY,FP)}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAcc();return true}
-  catch(e){ACC.fails=(ACC.fails||0)+1;ACC.lastPush=Date.now()-CLOUD_GAP+60000;return false}/* 실패하면 1분 뒤에 다시 올립니다. 기기 안 기록과 임시 사본은 그대로 남습니다 */finally{ACC.pushing=false}
+      if(od&&fp(od)===fp(S)){S.cloudRev=+ex.rev||0;ACC.fsSoon=true}else askChoice({json:ex.json,rev:+ex.rev||0,at:+ex.at||0,src:'fs'},'conflict')}return false}
+    ACC.last=P;ACC.dirty=false;ACC.fails=0;ACC.lastPush=Date.now();lsSet(FSAT_KEY,ACC.lastPush);lsDel(UNS_KEY);try{localStorage.setItem(BASE_KEY,FP)}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAcc();return true}
+  catch(e){ACC.fails=(ACC.fails||0)+1;ACC.lastPush=Date.now()-(CK.ok?FS_GAP:FS_GAP_NOCK)+60000;return false}/* 실패하면 1분 뒤에 다시 올립니다. 기기 안 기록과 주 저장은 그대로 남습니다 */finally{ACC.pushing=false}
 }
 function cloudDirty(){if(S.acct&&S.acct.mode==='cloud'){if(!ACC.dirty)ACC.dirtyAt=Date.now();ACC.dirty=true;unsMark()}}
-/* 거래 · 우편 받기 · 강화처럼 잃으면 되돌릴 수 없는 일은 몇 초 안에 바로 올립니다 */
+/* 거래 · 우편 받기 · 강화처럼 잃으면 되돌릴 수 없는 일은 1초 안에 바로 올립니다 */
 function cloudSoon(){ACC.soon=true}
 
-/* v35.61 사용량 절약: 클라우드(Firestore) 정식 저장은 바뀐 내용이 있을 때 5분에 한 번만 합니다. 바뀐 게 없으면 쓰지 않습니다.
-   그사이에는 30초마다 실시간 데이터베이스(ckpt/<uid>)에 임시 사본을 올립니다. 실시간 데이터베이스는 쓰는 횟수에 요금이 붙지 않습니다.
-   기기 안에는 지금처럼 그때그때 저장합니다. 출동 종료 · 거래 · 강화 등 중요한 순간(ACC.soon)과 탭을 닫을 때는 바로 올립니다. */
-const CLOUD_GAP=300000,CKPT_GAP=30000;
-const CK={last:'',at:0,ok:true};
+/* ── v35.65 저장의 중심을 실시간 데이터베이스로 ──
+   - 주 저장: 실시간 데이터베이스 ckpt/<uid> = {rev, at, dev, core, bag, misc}. 바뀐 내용이 있으면 30초마다, 중요한 순간(cloudSoon)과 탭을 숨기거나 닫을 때는 바로.
+     바뀐 덩어리(core · bag · misc)만 보냅니다. 이 세션에서 처음 쓰거나 정식 저장 번호(rev)가 바뀐 뒤에는 세 덩어리를 모두 씁니다.
+     실시간 데이터베이스는 쓰는 횟수에 요금이 없어서 Firestore 무료 한도(하루 쓰기 2만)를 쓰지 않습니다.
+   - 백업: Firestore data/users/<uid>/save · bag · misc. 바뀐 게 있을 때 1시간에 한 번(이 기기 기준, 껐다 켜도 이어 셈). 로그아웃 · 재각성처럼 꼭 필요한 순간에도 씀.
+     실시간 데이터베이스를 쓸 수 없으면(규칙 미설정 등) 예전처럼 5분에 한 번 Firestore에 씁니다.
+   - 불러오기: 두 곳 중 더 새 기록(같은 rev 위에서 더 나중에 쓴 주 저장 > 백업)을 씁니다(accOnNet).
+   기기 안에는 지금처럼 그때그때 저장합니다. */
+const FS_GAP=3600000,FS_GAP_NOCK=300000,CKPT_GAP=30000,FSAT_KEY='cg-fsat';
+const CK={parts:{},rev:null,at:0,ok:true};
 function ckptPut(){
-  if(!ACC.synced||ACC.kicked||ACC.choosing||!cloudOK()||!(NET.db.rt&&NET.db.rt.put))return false;
+  if(!ACC.synced||(ACC.kicked&&!ACC.leaving)||ACC.choosing||!cloudOK()||!(NET.db.rt&&NET.db.rt.upd))return Promise.resolve(false);
   try{flushSave()}catch(e){}
-  const P=partsOf(),L=ACC.last||{};
-  if(P.core===L.core&&P.bag===L.bag&&P.misc===L.misc)return true;/* 클라우드와 같으면 임시 사본이 필요 없습니다 */
-  const sig=P.core+'\u0001'+P.bag+'\u0001'+P.misc;if(sig===CK.last)return CK.ok;
-  CK.last=sig;CK.at=Date.now();
-  NET.db.rt.put('ckpt/'+NET.uid,{rev:+S.cloudRev||0,at:Date.now(),dev:DEV,core:P.core,bag:P.bag,misc:P.misc}).then(()=>{CK.ok=true},()=>{CK.ok=false;CK.last=''});
-  return CK.ok;
+  const P=partsOf(),rev=+S.cloudRev||0,FP=fp(S),full=CK.rev!==rev,up={};let n=0;
+  for(const k of ['core','bag','misc'])if(full||CK.parts[k]!==P[k]){up[k]=P[k];n++}
+  if(!n)return Promise.resolve(CK.ok);
+  up.rev=rev;up.at=Date.now();up.dev=DEV;CK.at=Date.now();
+  const prev=CK.parts;CK.parts={...prev,...Object.fromEntries(['core','bag','misc'].filter(k=>up[k]!==undefined).map(k=>[k,P[k]]))};CK.rev=rev;
+  return NET.db.rt.upd('ckpt/'+NET.uid,up).then(()=>{CK.ok=true;ACC.ckAt=Date.now();lsDel(UNS_KEY);try{localStorage.setItem(BASE_KEY,FP)}catch(e){}renderAcc();return true},
+    ()=>{CK.ok=false;CK.parts=prev;CK.rev=null;return false});/* 실패하면 다음에는 세 덩어리를 모두 다시 씁니다 */
 }
-setInterval(()=>{if(!ACC.dirty||!S.acct||S.acct.mode!=='cloud')return;const gap=ACC.soon?3000:CLOUD_GAP;if(Date.now()-ACC.lastPush>gap&&Date.now()-(ACC.dirtyAt||0)>1500){ACC.soon=false;cloudPut()}},1000);
-setInterval(()=>{if(ACC.dirty&&Date.now()-CK.at>=CKPT_GAP)ckptPut()},5000);
-addEventListener('pagehide',()=>{ckptPut();if(ACC.dirty)cloudPut();
+setInterval(()=>{if(!ACC.synced||!ACC.dirty||!S.acct||S.acct.mode!=='cloud')return;const t=Date.now();
+  if(ACC.soon||(t-CK.at>=CKPT_GAP&&t-(ACC.dirtyAt||0)>1500)){const soon=ACC.soon;ACC.soon=false;ckptPut().then(ok=>{if(!ok&&soon)ACC.fsSoon=true})}
+  if(!ACC.pushing&&(ACC.fsSoon||t-ACC.lastPush>(CK.ok?FS_GAP:FS_GAP_NOCK))){ACC.fsSoon=false;cloudPut()}},1000);
+addEventListener('pagehide',()=>{ckptPut();if(ACC.dirty&&!CK.ok)cloudPut();
   /* 이 화면이 닫히면 '켜져 있는 화면' 표시를 바로 지워, 새로고침한 화면이 기다리지 않게 합니다 */
   if(cloudOK()&&!ACC.kicked&&!ACC.leaving&&NET.db.rt&&NET.db.rt.put)NET.db.rt.put('sess/'+NET.uid,null).catch(()=>{})});
-/* 탭을 숨기면 임시 사본만 바로 올립니다. 임시 사본을 쓸 수 없는 경우(규칙 미설정 등)에만 정식 저장을 합니다 */
-document.addEventListener('visibilitychange',()=>{if(!document.hidden||!ACC.dirty)return;if(!ckptPut())cloudPut()});
+/* 탭을 숨기면 주 저장을 바로 합니다. 실시간 데이터베이스를 쓸 수 없으면 Firestore에 씁니다 */
+document.addEventListener('visibilitychange',()=>{if(!document.hidden||!ACC.dirty)return;ckptPut().then(ok=>{if(!ok)cloudPut()})});
 
 /* ── v35.61 엇갈린 기록 고르기 ──
    서버 기록과 이 기기 기록이 서로 다르게 바뀐 경우(예: 폰이 꺼진 뒤 PC에서 하다가 폰을 다시 켬) 자동으로 덮어쓰지 않고 고르게 합니다.
@@ -5948,6 +5973,7 @@ function altGet(){const a=lsGet(ALT_KEY);if(!a||a.uid!==NET.uid||!(+a.until>Date
 const curJson=()=>{const o={};for(const k in S)if(!NOCMP.has(k))o[k]=S[k];return JSON.stringify(o)};
 /* 서버 기록 data를 이 기기 기록으로 삼고 새로고침합니다. 임시 사본에서 온 기록은 정식 저장이 아직이므로 표시를 남깁니다 */
 function loadServer(sv){
+  try{sessionStorage.setItem('cg-lastload',sv.src+':'+sv.rev+':'+sv.at)}catch(e){}
   const data=JSON.parse(sv.json);data.acct=S.acct||{mode:'cloud',since:Date.now(),id:AUTH().name()};data.savedAt=+sv.at||Date.now();data.cloudRev=+sv.rev||0;
   if(sv.src==='cp')lsSet(UNS_KEY,{base:+sv.rev||0,at:Date.now()});else lsDel(UNS_KEY);
   setBase(data);
@@ -5981,7 +6007,7 @@ function askChoice(sv,mode){
     if(mode==='boot')ACC.synced=true;
     const ok=await cloudPut(true);el.remove();
     toast(ok?'이 기기 기록으로 이어서 합니다. 서버 기록은 24시간 보관합니다.':'이 기기 기록으로 이어서 합니다. 클라우드 저장은 잠시 뒤에 다시 시도합니다.');
-    if(!ok){ACC.dirty=true;ACC.soon=true}
+    if(!ok){ACC.dirty=true;ACC.fsSoon=true}
     if(mode==='boot')afterSync();
   });
   document.body.appendChild(el);el.querySelector('[data-k="b"]').focus();
@@ -6097,7 +6123,7 @@ function renderAcc(){
   const cloud=S.acct&&S.acct.mode==='cloud';
   const who=AUTH()&&AUTH().isMember()?AUTH().name():'';
   $('accState').textContent=cloud?(who?`${who} · 클라우드 저장 중`:'클라우드 저장 중'):'게스트';
-  $('accDesc').textContent=cloud?(ACC.lastPush?`마지막 저장 ${new Date(ACC.lastPush).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} · 다른 기기에서도 이어서 할 수 있습니다.`:'다른 기기에서도 이어서 할 수 있습니다.'):'기록은 이 기기에만 저장됩니다. 계정을 만들면 다른 기기에서도 이어서 할 수 있습니다.';
+  const lastSave=Math.max(ACC.lastPush||0,ACC.ckAt||0);$('accDesc').textContent=cloud?(lastSave?`마지막 저장 ${new Date(lastSave).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} · 다른 기기에서도 이어서 할 수 있습니다.`:'다른 기기에서도 이어서 할 수 있습니다.'):'기록은 이 기기에만 저장됩니다. 계정을 만들면 다른 기기에서도 이어서 할 수 있습니다.';
   $('accMain').textContent=cloud?'지금 저장':'계정 만들기';
   $('accMain').disabled=cloud?!cloudOK():!authReady();
   $('accOutRow').hidden=!cloud;
@@ -6111,7 +6137,7 @@ $('accOut').addEventListener('click',async()=>{
   if(S.phase!=='idle'){toast('출동이나 휴식 중에는 로그아웃할 수 없습니다.');return}
   const ok=await cloudPut();if(!ok){toast('클라우드에 저장하지 못해 로그아웃을 멈췄습니다.');return}
   try{await AUTH().signOut()}catch(e){}
-  window.__cgKicked=true;try{localStorage.removeItem(KEY)}catch(e){}lsDel(UNS_KEY);lsDel(ALT_KEY);lsDel(BASE_KEY);
+  window.__cgKicked=true;try{localStorage.removeItem(KEY)}catch(e){}lsDel(UNS_KEY);lsDel(ALT_KEY);lsDel(BASE_KEY);lsDel(FSAT_KEY);
   location.reload();
 });
 
@@ -6144,7 +6170,9 @@ async function accOnNet(){
   const lr=+S.cloudRev||0;
   if(sv){
     let data=null;try{data=JSON.parse(sv.json)}catch(e){}
-    if(data&&sameData(data,S)){
+    /* 진행이 같으면(화면 위치 같은 값만 다르면) 같은 기록으로 봅니다. 방금 불러온 그 기록을 다시 불러오지도 않습니다(새로고침 반복 방지) */
+    const svSig=sv.src+':'+sv.rev+':'+sv.at;let lastLoad=null;try{lastLoad=sessionStorage.getItem('cg-lastload')}catch(e){}
+    if(data&&(sameData(data,S)||fp(data)===fp(S)||lastLoad===svSig)){
       /* 내용이 같으면 묻지 않습니다. 번호만 맞추고, 임시 사본에서 온 것이면 정식 저장을 곧 합니다 */
       if(sv.rev>lr){S.cloudRev=sv.rev;save()}
       if(sv.src==='cp')lsSet(UNS_KEY,{base:sv.rev,at:Date.now()});else lsDel(UNS_KEY);
@@ -6159,10 +6187,10 @@ async function accOnNet(){
       if(ahead||mineLost){loadServer(sv);return}
     }
   }
-  ACC.synced=true;ACC.lastPush=Date.now();
+  ACC.synced=true;ACC.lastPush=+lsGet(FSAT_KEY)||0;if(Date.now()-ACC.lastPush>FS_GAP)ACC.lastPush=Date.now()-FS_GAP+FS_GAP/30;/* 오래 백업하지 않았으면 2분 뒤 첫 백업 */
   if(!lsGet(UNS_KEY)&&BOOT_BASE==null)setBase(S);
   if(!ex)cloudPut(true);
-  else if(lsGet(UNS_KEY)){ACC.dirty=true;ACC.dirtyAt=0;ACC.soon=true}
+  else if(lsGet(UNS_KEY)){ACC.dirty=true;ACC.dirtyAt=0}
   afterSync();
 }
 function afterSync(){
