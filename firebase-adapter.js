@@ -3,6 +3,7 @@
    이 파일은 같은 모양의 함수를 Firebase(Authentication + Firestore)로 만들어 넘겨준다.
    - db   : Firestore 문서 읽기·쓰기·실시간 구독, 짧은 잠금(acquire)
    - user : 로그인한 사람의 uid (로그인 전에는 null)
+   - world: 게이트 · 출동 · 가이딩 · 레이드 경로는 실시간 데이터베이스로 보냄(v35.63, 아래 '함께 쓰는 세계')
    - room : 지금 접속한 요원 목록(실시간 데이터베이스 presence · ghp. 바뀐 칸만 보냄. 쓸 수 없으면 Firestore presence 컬렉션) */
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut}
@@ -142,6 +143,77 @@ function boot(){
     presence:p=>{lastP=JSON.parse(JSON.stringify(p));return rtP.then(()=>{if(RT&&rtMode!=='off')return beatRT();watchGate(lastP.gate||null);return beat()})},
     onPeers:cb=>{peersCb=cb;if(rtMode!=='on'){poll();if(!pollT)pollT=setInterval(poll,120000)}rtListen();document.addEventListener('visibilitychange',()=>{if(!document.hidden&&rtMode!=='on')poll()});return()=>{}}
   };
+
+  /* ── v35.63 함께 쓰는 세계를 실시간 데이터베이스로 ──
+     게이트(gates) · 출동(sorties) · 게이트 안 가이딩(gguide) · 가이딩 요청(guidereq) · 레이드(world/raid · raidlog) · 봉인 기록(world/log) · 잠금(locks)은
+     모든 요원이 함께 보고 자주 바뀌어, Firestore에 두면 바뀔 때마다 접속자 모두에게 '읽기'가 생겼습니다(접속자 수의 제곱).
+     게임 코드는 그대로 db.doc('gates/…')를 부르고, 이 연결 파일이 그 경로만 실시간 데이터베이스로 보냅니다.
+     - update는 Firestore처럼 안쪽 맵을 합칩니다(contrib/<uid>처럼 바뀐 칸만 보냄 → 다른 요원은 수십 바이트만 받음).
+     - status로 거르는 목록(열린 게이트 · 진행 중 출동 · 열린 요청)은 서버 쪽 색인(.indexOn)으로 거른 것만 받습니다.
+     - 처음 켜진 새 버전 화면 하나가 Firestore에 있던 열린 게이트 · 레이드 · 기록을 한 번 옮겨 옵니다(meta/gmig).
+     - 실시간 데이터베이스 규칙이 아직 없으면(권한 거부) 예전처럼 Firestore를 씁니다. */
+  const WORLD=[/^gates(\/|$)/,/^sorties(\/|$)/,/^gguide(\/|$)/,/^guidereq(\/|$)/,/^world\/(raid|raidlog|log)$/,/^locks(\/|$)/];
+  const isWorld=p=>WORLD.some(r=>r.test(p));
+  const clean=v=>JSON.parse(JSON.stringify(v===undefined?null:v));
+  const rref=p=>p?RT.m.ref(RT.db,p):RT.m.ref(RT.db);
+  const tmo=(ms,v)=>new Promise(r=>setTimeout(()=>r(v),ms));
+  const authP=new Promise(r=>{const off=onAuthStateChanged(auth,u=>{r(u||auth.currentUser);try{off()}catch(e){}})});
+  const worldP=Promise.all([rtP,authP]).then(async([R,u])=>{
+    if(!R||!u)return false;
+    for(let i=0;i<3;i++){
+      try{const v=await Promise.race([R.m.get(R.m.ref(R.db,'meta/gmig')).then(()=>true),tmo(6000,'slow')]);if(v===true)return true}
+      catch(e){if(/permission/i.test(String(e&&(e.code||e.message)||e)))return false}
+    }
+    return false;
+  }).catch(()=>false);
+  async function migrate(){
+    const MR=rref('meta/gmig');let mine=false;
+    try{const r=await RT.m.runTransaction(MR,cur=>{const n=Date.now();if(cur&&(cur.done||n-(+cur.t||0)<60000))return;return {by:uid(),t:n,done:false}});mine=r.committed}catch(e){}
+    if(mine){
+      try{
+        const up={},ex=(await RT.m.get(rref('gates'))).val()||{};
+        const take=async(col,pre)=>{const q=await getDocs(query(collection(fs,col),where('status','==',col==='sorties'?'active':'open')));q.docs.forEach(d=>{if(!(pre==='gates/'&&ex[d.id]))up[pre+d.id]=clean(d.data())})};
+        await take('gates','gates/');await take('sorties','sorties/');await take('guidereq','guidereq/');
+        for(const k of ['raid','raidlog','log']){const d=await getDoc(doc(fs,'world',k));if(d.exists()&&!(await RT.m.get(rref('world/'+k))).exists())up['world/'+k]=clean(d.data())}
+        up['meta/gmig']={by:uid(),t:Date.now(),done:true};
+        await RT.m.update(rref(''),up);
+      }catch(e){console.warn('[클로즈 게이트] 게이트 옮기기 실패, 다음 화면이 다시 시도합니다.',e);try{await RT.m.set(MR,{t:0,done:false})}catch(_){}}
+      return;
+    }
+    /* 다른 화면이 옮기는 중이면 끝날 때까지(최대 20초) 기다립니다 */
+    await new Promise(res=>{let off=null;const t=setTimeout(()=>{if(off)off();res()},20000);
+      off=RT.m.onValue(MR,s=>{const v=s.val();if(v&&v.done){clearTimeout(t);setTimeout(()=>off&&off(),0);res()}},()=>{clearTimeout(t);res()})});
+  }
+  const migP=worldP.then(async on=>{if(on)await migrate();return on}).catch(()=>false);
+  const flat=(o,pre,out)=>{for(const k in o){const v=o[k];if(v===undefined)continue;const key=pre?pre+'/'+k:k;
+    if(v&&typeof v==='object'&&!Array.isArray(v)){if(Object.keys(v).length)flat(v,key,out)}else out[key]=v}return out};
+  const rwrap=(id,v)=>({id,exists:v!==null&&v!==undefined,data:()=>v,metadata:{fromCache:false}});
+  const rtDoc=p=>({
+    get:async()=>rwrap(p.split('/').pop(),(await RT.m.get(rref(p))).val()),
+    set:v=>RT.m.set(rref(p),clean(v)),
+    update:v=>{const f=flat(clean(v),'',{});return Object.keys(f).length?RT.m.update(rref(p),f):Promise.resolve()},
+    onSnapshot:(cb,err)=>RT.m.onValue(rref(p),s=>cb(rwrap(p.split('/').pop(),s.val())),err||(()=>{})),
+    acquire:async({holder,ttlMs}={})=>{try{const r=await RT.m.runTransaction(rref('locks/'+p.replace(/\//g,'__')),cur=>{const n=Date.now();if(cur&&cur.until>n&&cur.holder!==holder)return;return {holder,until:n+(ttlMs||6000)}});return {acquired:!!r.committed}}catch(e){return {acquired:false}}}
+  });
+  const lazy=attach=>{let off=null,dead=false;migP.then(on=>{if(!dead)off=attach(on)});return()=>{dead=true;if(off)try{off()}catch(e){}}};
+  const fsDocF=db.doc,fsColF=db.collection;
+  db.doc=p=>{if(!isWorld(p))return fsDocF(p);
+    const pick=async()=>(await migP)?rtDoc(p):fsDocF(p);
+    return {get:async()=>(await pick()).get(),set:async v=>(await pick()).set(v),update:async v=>(await pick()).update(v),
+      acquire:async o=>(await pick()).acquire(o),onSnapshot:(cb,err)=>lazy(on=>(on?rtDoc(p):fsDocF(p)).onSnapshot(cb,err))}};
+  db.collection=name=>{if(!isWorld(name))return fsColF(name);const w=[];const api={where:(f,op,v)=>{w.push([f,op,v]);return api},
+    onSnapshot:(cb,err)=>lazy(on=>{
+      if(!on){let c=fsColF(name);w.forEach(x=>{c=c.where(...x)});return c.onSnapshot(cb,err)}
+      const eq=w.find(x=>x[1]==='==');let q=rref(name);if(eq)q=RT.m.query(q,RT.m.orderByChild(eq[0]),RT.m.equalTo(eq[2]));
+      return RT.m.onValue(q,s=>{const v=s.val()||{};
+        const docs=Object.keys(v).filter(id=>v[id]&&w.every(([f,op,val])=>op!=='=='||v[id][f]===val)).map(id=>({id,data:()=>v[id]}));
+        cb({docs,metadata:{fromCache:false}})},err||(()=>{}))})};return api};
+  /* 닫힌 지 6시간 넘은 게이트와 그 잠금을 지웁니다(게이트 정리 담당 화면이 30분마다 부름). 저장 공간이 계속 늘지 않게 합니다 */
+  db.worldPrune=async()=>{if(!(await migP))return 0;
+    const s=await RT.m.get(RT.m.query(rref('gates'),RT.m.orderByChild('status'),RT.m.equalTo('closed')));const v=s.val()||{},lim=Date.now()-6*3600000,up={};
+    for(const id in v)if((+v[id].closedAt||0)<lim){up['gates/'+id]=null;up['locks/gates__'+id]=null}
+    if(Object.keys(up).length)await RT.m.update(rref(''),up);return Object.keys(up).length/2};
+  db.worldOn=()=>migP;
 
   /* ── 아이디 · 비밀번호 계정 (이메일 대신 아이디@closegate.game을 쓴다. 메일은 보내지 않는다) ── */
   window.closeGateAuth={

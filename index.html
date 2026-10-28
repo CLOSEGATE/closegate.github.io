@@ -1106,7 +1106,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.62</span>
+      <span class="title-ver" id="titleVer">v35.64</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -5739,6 +5739,8 @@ async function gateMaint(){
     if(NET.mode==='online'&&NET.db&&NET.canWrite!==false){
       /* v35.55 사용량 절약: 접속한 요원 중 한 명(uid가 가장 앞선 사람)만 게이트 정리를 맡습니다 */
       {const ids=[NET.uid,...NET.peers.map(p=>peerInfo(p).uid)].filter(Boolean).sort();if(ids[0]!==NET.uid){GL.busy=false;return}}
+      /* v35.63: 실시간 데이터베이스에 남은 오래된 닫힌 게이트를 30분마다 지웁니다 */
+      if(typeof NET.db.worldPrune==='function'&&t-(GL.pruneAt||0)>1800e3){GL.pruneAt=t;NET.db.worldPrune().catch(()=>{})}
       for(const g of NET.gates.slice().sort((a,b)=>(a.openedAt||0)-(b.openedAt||0))){
         if(g.status!=='open')continue;const ref=NET.db.doc('gates/'+g.id);
         if(!g.openedAt){await ref.update({openedAt:t}).catch(()=>{});continue}
@@ -5866,6 +5868,14 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}ca
 const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
 const BOOT_UNS=lsGet(UNS_KEY);
 const DEV=(()=>{try{let d=localStorage.getItem('cg-dev');if(!d){d=Math.random().toString(36).slice(2,10);localStorage.setItem('cg-dev',d)}return d}catch(e){return SID}})();
+/* v35.63 진행 지문: 두 기록이 '같은 진행'인지는 아래 칸만 보고 판단합니다.
+   화면 위치 · 탭을 숨긴 시각 · 대사를 했는지 같은 값은 켤 때마다 바뀌므로 빼서, 같은 진행을 다른 기록으로 묻지 않게 합니다.
+   cg-base: 마지막으로 클라우드와 맞춘 순간의 진행 지문. 지금 진행이 이것과 다를 때만 '이 기기에 올리지 못한 진행'이 있다고 봅니다. */
+const PROG=['role','name','look','grade','attrs','xp','cr','ap','items','equip','partner','bond','sessions','totalMin','closedByMe','promos','raidWins','raidMin','ach','title','decor','mast','mastOrb','mastV','attrEnh','perfect','maxTrain','sales','assists','regrades','phase','phaseStart','examRun','localMail','mailGot'];
+const fp=d=>{const o={};for(const k of PROG)if(d&&d[k]!==undefined&&d[k]!==null)o[k]=d[k];return canon(o)};
+const BASE_KEY='cg-base';
+const BOOT_BASE=(()=>{try{return localStorage.getItem(BASE_KEY)}catch(e){return null}})();
+const setBase=d=>{try{localStorage.setItem(BASE_KEY,fp(d))}catch(e){}};
 function unsMark(){try{if(!localStorage.getItem(UNS_KEY))lsSet(UNS_KEY,{base:+S.cloudRev||0,at:Date.now()})}catch(e){}}
 
 /* 저장 번호(rev): 올릴 때마다 1씩 늘립니다. 트랜잭션 안에서 클라우드 번호를 확인하므로, 두 기기가 동시에 저장해도
@@ -5874,7 +5884,7 @@ async function cloudPut(force){
   if(!force&&!ACC.synced)return false;
   if(!cloudOK()||ACC.pushing||(ACC.kicked&&!ACC.leaving)||ACC.choosing)return false;
   try{flushSave()}catch(e){}
-  const P=partsOf(),last=ACC.last||{},ch=Object.keys(P).filter(k=>force||P[k]!==last[k]);
+  const P=partsOf(),last=ACC.last||{},ch=Object.keys(P).filter(k=>force||P[k]!==last[k]),FP=fp(S);
   if(!ch.length){ACC.dirty=false;lsDel(UNS_KEY);return true}
   ACC.pushing=true;
   try{
@@ -5890,8 +5900,11 @@ async function cloudPut(force){
       if(all.includes('misc'))t.set('data/users/'+NET.uid+'/misc',{json:P.misc,rev,at});
       S.cloudRev=rev;
     });
-    if(conflict){if(ACC.leaving)return false;const ex=await cloudGet();if(ex&&typeof ex.json==='string')askChoice({json:ex.json,rev:+ex.rev||0,at:+ex.at||0,src:'fs'},'conflict');return false}
-    ACC.last=P;ACC.dirty=false;ACC.fails=0;ACC.lastPush=Date.now();lsDel(UNS_KEY);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAcc();return true}
+    if(conflict){if(ACC.leaving)return false;const ex=await cloudGet();if(ex&&typeof ex.json==='string'){
+      /* 다른 곳 기록과 진행이 같으면 묻지 않고 번호만 맞춘 뒤 다시 올립니다 */
+      let od=null;try{od=JSON.parse(ex.json)}catch(e){}
+      if(od&&fp(od)===fp(S)){S.cloudRev=+ex.rev||0;ACC.soon=true}else askChoice({json:ex.json,rev:+ex.rev||0,at:+ex.at||0,src:'fs'},'conflict')}return false}
+    ACC.last=P;ACC.dirty=false;ACC.fails=0;ACC.lastPush=Date.now();lsDel(UNS_KEY);try{localStorage.setItem(BASE_KEY,FP)}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAcc();return true}
   catch(e){ACC.fails=(ACC.fails||0)+1;ACC.lastPush=Date.now()-CLOUD_GAP+60000;return false}/* 실패하면 1분 뒤에 다시 올립니다. 기기 안 기록과 임시 사본은 그대로 남습니다 */finally{ACC.pushing=false}
 }
 function cloudDirty(){if(S.acct&&S.acct.mode==='cloud'){if(!ACC.dirty)ACC.dirtyAt=Date.now();ACC.dirty=true;unsMark()}}
@@ -5937,6 +5950,7 @@ const curJson=()=>{const o={};for(const k in S)if(!NOCMP.has(k))o[k]=S[k];return
 function loadServer(sv){
   const data=JSON.parse(sv.json);data.acct=S.acct||{mode:'cloud',since:Date.now(),id:AUTH().name()};data.savedAt=+sv.at||Date.now();data.cloudRev=+sv.rev||0;
   if(sv.src==='cp')lsSet(UNS_KEY,{base:+sv.rev||0,at:Date.now()});else lsDel(UNS_KEY);
+  setBase(data);
   window.__cgKicked=true;ACC.kicked=true;try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
   location.reload();
 }
@@ -6066,7 +6080,7 @@ $('accForm').addEventListener('submit',async e=>{
       const ex=await cloudGet();
       if(ex&&typeof ex.json==='string'){
         const data=JSON.parse(ex.json);data.acct={mode:'cloud',since:(data.acct&&data.acct.since)||Date.now(),id};data.savedAt=+ex.at||Date.now();data.cloudRev=+ex.rev||0;
-        window.__cgKicked=true;try{localStorage.setItem(KEY,JSON.stringify(data))}catch(err){}lsDel(UNS_KEY);lsDel(ALT_KEY);
+        window.__cgKicked=true;try{localStorage.setItem(KEY,JSON.stringify(data))}catch(err){}lsDel(UNS_KEY);lsDel(ALT_KEY);lsDel(BASE_KEY);
       }else{S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut(true)}
     }
     accMsg('접속 정보를 불러오는 중입니다.');
@@ -6097,7 +6111,7 @@ $('accOut').addEventListener('click',async()=>{
   if(S.phase!=='idle'){toast('출동이나 휴식 중에는 로그아웃할 수 없습니다.');return}
   const ok=await cloudPut();if(!ok){toast('클라우드에 저장하지 못해 로그아웃을 멈췄습니다.');return}
   try{await AUTH().signOut()}catch(e){}
-  window.__cgKicked=true;try{localStorage.removeItem(KEY)}catch(e){}lsDel(UNS_KEY);lsDel(ALT_KEY);
+  window.__cgKicked=true;try{localStorage.removeItem(KEY)}catch(e){}lsDel(UNS_KEY);lsDel(ALT_KEY);lsDel(BASE_KEY);
   location.reload();
 });
 
@@ -6138,11 +6152,15 @@ async function accOnNet(){
       const legacy=!sv.rev&&sv.at>BOOT_SAVED_AT+1000;
       const ahead=sv.rev>lr||(sv.src==='cp'&&sv.dev!==DEV)||legacy;
       const mineLost=sv.src==='cp'&&sv.dev===DEV&&sv.rev===lr&&sv.at>BOOT_SAVED_AT+1000;/* 이 기기 저장소가 비워진 경우 */
-      if(ahead&&BOOT_UNS&&S.role){askChoice(sv,'boot');return}
+      /* 이 기기에 진행이 더 있는지: 마지막으로 맞춘 진행 지문과 비교합니다(지문이 없던 예전 기기는 올리지 못한 변경 표시로 판단).
+         진행이 같으면 화면 위치 같은 값만 다른 것이므로 묻지 않고 서버 기록을 씁니다 */
+      const lfp=fp(S),progressed=BOOT_BASE!=null?lfp!==BOOT_BASE:!!BOOT_UNS;
+      if(ahead&&progressed&&S.role&&fp(data)!==lfp){askChoice(sv,'boot');return}
       if(ahead||mineLost){loadServer(sv);return}
     }
   }
   ACC.synced=true;ACC.lastPush=Date.now();
+  if(!lsGet(UNS_KEY)&&BOOT_BASE==null)setBase(S);
   if(!ex)cloudPut(true);
   else if(lsGet(UNS_KEY)){ACC.dirty=true;ACC.dirtyAt=0;ACC.soon=true}
   afterSync();
