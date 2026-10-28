@@ -1106,7 +1106,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.66</span>
+      <span class="title-ver" id="titleVer">v35.68</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -1512,14 +1512,15 @@ const SKIN=['#FCE3CC','#F7CFA8','#E8B48A','#C98E66','#9C6644','#6E4530'];
 const HAIRC=['#2B2238','#5A3A26','#A0663A','#E8C46A','#ECE8F2','#D2484A','#EE8DBA','#5577E0','#3FB894','#8E6CF0'];
 const EYEC=['#2B2238','#7A4A22','#2F5BEA','#21A574','#D2484A','#D49A1E','#8E6CF0'];
 const OUTC=['#2F5BEA','#2A3150','#F1F3F8','#D2484A','#21A574','#7F5CE0','#F2B233','#EE8DBA'];
-const FRONT_N=['일자 앞머리','가르마','옆으로 넘긴 앞머리','올백','뾰족한 머리','한쪽 눈 가린 앞머리','5:5 앞머리 (짧게)','5:5 앞머리 (길게)','시스루 앞머리','처피뱅','바보털','옆으로 내린 앞머리'];
-const BACK_N=['숏컷','단발','긴 생머리','포니테일','트윈테일','올림머리','반묶음','울프컷','귀 높이 반묶음','내려 묶은 장발','양쪽 번','양갈래 땋은 머리','웨이브 장발','히메컷','높은 포니테일','곱슬 단발','한쪽 땋은 머리','리본 반묶음','허리까지 웨이브','아주 긴 생머리','사이드 포니테일','낮은 양갈래','투블럭','리프컷','댄디컷','꽁지머리','덥수룩한 머리','울프 장발'];
+const FRONT_N=['일자 앞머리','가르마','옆으로 넘긴 앞머리','올백','뾰족한 머리','한쪽 눈 가린 앞머리','5:5 앞머리 (짧게)','5:5 앞머리 (길게)','시스루 앞머리','처피뱅','바보털','옆으로 내린 앞머리','흐트러진 앞머리','가운데 가르마 긴 앞머리'];
+const BACK_N=['숏컷','단발','긴 생머리','포니테일','트윈테일','올림머리','반묶음','울프컷','귀 높이 반묶음','내려 묶은 장발','양쪽 번','양갈래 땋은 머리','웨이브 장발','히메컷','높은 포니테일','곱슬 단발','한쪽 땋은 머리','리본 반묶음','허리까지 웨이브','아주 긴 생머리','사이드 포니테일','낮은 양갈래','투블럭','리프컷','댄디컷','꽁지머리','덥수룩한 머리','울프 장발','볼륨 숏컷','작은 똥머리 반묶음'];
 const EYES_N=['기본','반짝이는 눈','웃는 눈','감은 눈','졸린 눈','속눈썹 눈'];
 const OUTFIT_N=['센터 제복 재킷','롱 코트','후드 집업','정장 재킷','가이드 로브','전투 슈트','세일러 블라우스','셔츠와 니트 조끼'];
 const BOTTOM_N=['슬랙스','반바지','플리츠 스커트','롱스커트','와이드 팬츠'];
 const BOTC=['#2A3150','#3A3333','#5A7EC4','#C9B48F','#F1F3F8','#D2484A','#7F5CE0','#EE8DBA'];
 const PTC=['#FFC23D','#F2546B','#FF8FA3','#2F5BEA','#21A574','#FFFFFF','#2A3150','#8E6CF0'];
 const SHOEC=['#2B2238','#5A3A26','#F4F5F9','#D2484A','#2F5BEA','#C98E66'];
+const MOLE_N=['없음','왼쪽','오른쪽','양쪽'];/* v35.68 눈 아래 점(화면에서 보는 기준) */
 const ACC_N=['없음','안경','헤어핀','리본','안대','마스크','헤드셋','고양이 귀','바보털','목도리'];
 const CATS=[
   {k:'front',label:'앞머리',names:FRONT_N},
@@ -1535,11 +1536,12 @@ const CATS=[
   {k:'botC',label:'하의 색',colors:BOTC,names:['네이비','차콜','데님','베이지','화이트','레드','퍼플','핑크']},
   {k:'ptC',label:'포인트 색 (넥타이 · 장식 · 액세서리)',colors:PTC,names:['골드','레드','핑크','블루','그린','화이트','네이비','퍼플']},
   {k:'shoeC',label:'신발 색',colors:SHOEC,names:['블랙','브라운','화이트','레드','블루','카멜']},
-  {k:'acc',label:'액세서리',names:ACC_N}
+  {k:'acc',label:'액세서리',names:ACC_N},
+  {k:'mole',label:'눈 아래 점',names:MOLE_N}
 ];
 const LOOK_DEF={
-  sentinel:{v2:true,skin:'#F7CFA8',face:0,front:0,back:0,hairC:'#5A3A26',eyes:0,eyeC:'#7A4A22',eyeC2:'same',brow:1,mark:0,outfit:0,outC:'#2F5BEA',bottom:0,botC:'#2A3150',ptC:'#FFC23D',shoeC:'#2B2238',acc:0},
-  guide:{v2:true,skin:'#F7CFA8',face:0,front:0,back:2,hairC:'#E8C46A',eyes:2,eyeC:'#D49A1E',eyeC2:'same',brow:1,mark:0,outfit:6,outC:'#F1F3F8',bottom:2,botC:'#2A3150',ptC:'#F2546B',shoeC:'#5A3A26',acc:0}
+  sentinel:{v2:true,skin:'#F7CFA8',face:0,front:0,back:0,hairC:'#5A3A26',eyes:0,eyeC:'#7A4A22',eyeC2:'same',brow:1,mark:0,mole:0,outfit:0,outC:'#2F5BEA',bottom:0,botC:'#2A3150',ptC:'#FFC23D',shoeC:'#2B2238',acc:0},
+  guide:{v2:true,skin:'#F7CFA8',face:0,front:0,back:2,hairC:'#E8C46A',eyes:2,eyeC:'#D49A1E',eyeC2:'same',brow:1,mark:0,mole:0,outfit:6,outC:'#F1F3F8',bottom:2,botC:'#2A3150',ptC:'#F2546B',shoeC:'#5A3A26',acc:0}
 };
 function normLook(L,role){
   if(!L||typeof L!=='object')return {...LOOK_DEF[role||'sentinel']};
@@ -1552,7 +1554,7 @@ function normLook(L,role){
   o.skin=col(o.skin,SKIN,SKIN[1]);o.hairC=col(o.hairC,HAIRC,HAIRC[1]);o.eyeC=col(o.eyeC,EYEC,EYEC[0]);o.outC=col(o.outC,OUTC,OUTC[0]);
   o.botC=col(o.botC,BOTC,BOTC[0]);o.ptC=col(o.ptC,PTC,PTC[0]);o.shoeC=col(o.shoeC,SHOEC,SHOEC[0]);
   if(o.eyeC2!=='same'&&!isHex(o.eyeC2))o.eyeC2='same';
-  const lim={face:3,front:FRONT_N.length,back:BACK_N.length,eyes:EYES_N.length,brow:6,mark:7,outfit:OUTFIT_N.length,bottom:BOTTOM_N.length,acc:ACC_N.length};
+  const lim={face:3,front:FRONT_N.length,back:BACK_N.length,eyes:EYES_N.length,brow:6,mark:7,mole:MOLE_N.length,outfit:OUTFIT_N.length,bottom:BOTTOM_N.length,acc:ACC_N.length};
   for(const k in lim)o[k]=clampI(o[k],lim[k]);
   return o;
 }
@@ -1561,7 +1563,7 @@ function randomLook(role){
   CATS.forEach(c=>{
     if(c.k==='eyeC2'){L[c.k]=Math.random()<.12?pick(EYEC):'same';return}
     if(c.colors){L[c.k]=pick(c.colors);return}
-    L[c.k]=c.k==='mark'?(Math.random()<.6?0:Math.floor(Math.random()*c.names.length)):c.k==='acc'?(Math.random()<.5?0:Math.floor(Math.random()*c.names.length)):Math.floor(Math.random()*c.names.length);
+    L[c.k]=c.k==='mole'?(Math.random()<.8?0:1+Math.floor(Math.random()*3)):c.k==='mark'?(Math.random()<.6?0:Math.floor(Math.random()*c.names.length)):c.k==='acc'?(Math.random()<.5?0:Math.floor(Math.random()*c.names.length)):Math.floor(Math.random()*c.names.length);
   });
   L.brow=L.brow||1;
   if(role==='guide'&&Math.random()<.4)L.outfit=4;
@@ -2297,6 +2299,16 @@ const T_SIDE=[
   ["", "", "", "", "H..........h", "HH........hh", "HH........hh", "Hh........hh", ".H........h.", ".h........h."]
 ];
 /* 머리 위에 덧그리는 장식(리본 등): 뒷머리 번호별 */
+/* v35.67 새 헤어(참고 그림을 바탕으로 도트화). 앞머리 12 · 13번, 뒷머리 28 · 29번 */
+T_FRONT.push(
+  ['','','..HHLLLLHh..','.HLLLLLLLLh.','.HHHHHHHHHh.','.HhH.HhH.Hh.','.H........h.'],                                     // 흐트러진 앞머리: 윤기 띠 · 뾰족한 끝
+  ['','','..HLLHHLLh..','.HLLHhhHLLh.','.HHHh..hHHh.','.HHh....hHh.','.H........h.','.H........h.','.h........h.','.h........h.']); // 가운데 가르마 긴 앞머리: 이마가 보이고 양옆으로 얼굴을 감쌈
+T_BEHIND.push(
+  ['','...HHHHHHHh...','..HHHHHHHHHh..','.HHHHHHHHHHHh.','HHHHHHHHHHHHhh','HH..........hh','H............h','','','.h..........h.'], // 볼륨 숏컷(v35.68): 둥근 부피 · 귀 위에서 바깥으로 뻗친 옆머리 · 귀 보임 · 뒤로 짧은 뒷머리
+  ['','.hH...........','HHHh..........','HLHA..........','.Hh...........','.HHHHHHHHHHhh.','HHHHHHHHHHHhh.','HH..........hh','HH..........hh','HH..........hh','HH..........hh','.h..........h.']); // 작은 똥머리 반묶음: 왼쪽 위 작은 번 + 묶은 끈(포인트 색)
+T_SIDE.push(
+  ['','','','','HH........hh','Hh........hh','S..........s','s..........s'],  /* 귀: 옆머리 아래 얼굴 양옆에 피부색 두 칸 */
+  ['','','','','H..........h','HH........hh','HH........hh','HH........hh','HH........hh','HH........hh','Hh........hh','.h........h.']);
 const T_TOP={17:["", "..........R.R.", "..........RRR.", "...........R.."]};
 const T_OUT=[
   ['','','','','','','','','','','..ACTAATCA..','.SCCCAACCcS.','..CCDDDDcc..'],          // 제복
@@ -2318,7 +2330,7 @@ const T_BOTTOM=[
 const T_SHOE=['','','','','','','','','','','','','','','...BB..BB...'];
 const T_ACC=[
   [],
-  ['','','','','','','..g.gggg.g..','..g.g..g.g..','...g....g...'],
+  [], /* 안경: v35.67부터 작은 지도 대신 큰 도트 위에 1픽셀 선으로 그립니다(fineAcc) */
   ['','','','','........YY..'],
   ['','........R.R.','.........R..'],
   ['','','','','.....K......','......K.....','.......KKKK.','.......KKK..','........K...'],
@@ -2365,7 +2377,7 @@ function tinyPal(L){
 }
 function buildDoll(L,frame,dx){
   frame=frame||'a';
-  const key=[L.skin,L.front,L.back,L.hairC,L.eyes,L.eyeC,L.eyeC2,L.outfit,L.outC,L.bottom,L.botC,L.ptC,L.shoeC,L.acc,frame].join(',');
+  const key=[L.skin,L.front,L.back,L.hairC,L.eyes,L.eyeC,L.eyeC2,L.outfit,L.outC,L.bottom,L.botC,L.ptC,L.shoeC,L.acc,L.mole|0,frame].join(',');
   let c=dollCache.get(key);if(c)return c;
   const M=tinyMap(L,frame),pal=tinyPal(L),W1=TINY_W+2,H1=TINY_H+2;
   const P=new Array(W1*H1).fill(null);
@@ -2379,7 +2391,23 @@ function buildDoll(L,frame,dx){
   c=document.createElement('canvas');c.width=DW;c.height=DH;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
   if(frame[0]==='b'){g.drawImage(small,0,13,W1,5,0,26,DW,10);g.drawImage(small,0,0,W1,13,0,1,DW,26)}
   else g.drawImage(small,0,0,DW,DH);
+  fineAcc(g,L,frame[0]==='b'?1:0);
   dollCache.set(key,c);return c;
+}
+/* 작은 지도(2배로 키움)로는 너무 두꺼운 장식을 32×36 도트 위에 1픽셀로 그립니다.
+   안경: 둥근 모서리 렌즈 두 개 + 코받침 + 다리. 렌즈 안쪽은 비워 눈이 그대로 보이고, 위쪽 바깥 모서리에 빛 한 점 */
+function fineAcc(g,L,dy){
+  /* 눈 아래 점(1픽셀): 1 화면 왼쪽 · 2 화면 오른쪽 · 3 양쪽. 눈 바로 아래 바깥쪽, 좌우 대칭 */
+  const m=L.mole|0;if(m){g.fillStyle='#4A2A2A';if(m&1)g.fillRect(10,19+dy,1,1);if(m&2)g.fillRect(21,19+dy,1,1)}
+  if(L.acc!==1)return;
+  const F='#3A3F55',HL='#FFFFFF',p=(x,y,c)=>{g.fillStyle=c||F;g.fillRect(x,y+dy,1,1)};
+  for(const x0 of [8,18]){
+    for(let x=x0+1;x<=x0+4;x++){p(x,12);p(x,18)}
+    for(let y=13;y<=17;y++){p(x0,y);p(x0+5,y)}
+  }
+  for(let x=14;x<=17;x++)p(x,14);
+  p(7,14);p(6,14);p(24,14);p(25,14);
+  p(12,13,HL);p(22,13,HL);
 }
 const drawDoll=(L,x,fy,frame,dx)=>G.drawImage(buildDoll(L,frame,dx),Math.round(x-16),Math.round(fy-33));
 
