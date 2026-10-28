@@ -160,13 +160,15 @@ function boot(){
   const rref=p=>p?RT.m.ref(RT.db,p):RT.m.ref(RT.db);
   const tmo=(ms,v)=>new Promise(r=>setTimeout(()=>r(v),ms));
   const authP=new Promise(r=>{const off=onAuthStateChanged(auth,u=>{r(u||auth.currentUser);try{off()}catch(e){}})});
+  let gmigSeen=null;
   const worldP=Promise.all([rtP,authP]).then(async([R,u])=>{
     if(!R||!u)return false;
-    for(let i=0;i<3;i++){
-      try{const v=await Promise.race([R.m.get(R.m.ref(R.db,'meta/gmig')).then(()=>true),tmo(6000,'slow')]);if(v===true)return true}
-      catch(e){if(/permission/i.test(String(e&&(e.code||e.message)||e)))return false}
+    /* v35.66: 권한 거부(규칙 없음)일 때만 Firestore로 갑니다. 느리기만 한 경우에는 계속 기다립니다.
+       예전에는 느린 기기가 시간 초과로 Firestore로 넘어가, 다른 요원과 다른 게이트 목록을 보는 일이 생길 수 있었습니다 */
+    for(let i=0;;i++){
+      try{await R.m.get(R.m.ref(R.db,'meta/gmig')).then(s=>{gmigSeen=s.val()});return true}
+      catch(e){if(/permission/i.test(String(e&&(e.code||e.message)||e)))return false;await tmo(Math.min(10000,1000*(i+1)))}
     }
-    return false;
   }).catch(()=>false);
   async function migrate(){
     const MR=rref('meta/gmig');let mine=false;
@@ -186,7 +188,8 @@ function boot(){
     await new Promise(res=>{let off=null;const t=setTimeout(()=>{if(off)off();res()},20000);
       off=RT.m.onValue(MR,s=>{const v=s.val();if(v&&v.done){clearTimeout(t);setTimeout(()=>off&&off(),0);res()}},()=>{clearTimeout(t);res()})});
   }
-  const migP=worldP.then(async on=>{if(on)await migrate();return on}).catch(()=>false);
+  /* v35.66: 이미 옮기기가 끝났으면(확인할 때 읽은 값) 트랜잭션 없이 바로 씁니다. 접속이 왕복 두 번만큼 빨라집니다 */
+  const migP=worldP.then(async on=>{if(on&&!(gmigSeen&&gmigSeen.done))await migrate();return on}).catch(()=>false);
   const flat=(o,pre,out)=>{for(const k in o){const v=o[k];if(v===undefined)continue;const key=pre?pre+'/'+k:k;
     if(v&&typeof v==='object'&&!Array.isArray(v)){if(Object.keys(v).length)flat(v,key,out)}else out[key]=v}return out};
   const rwrap=(id,v)=>({id,exists:v!==null&&v!==undefined,data:()=>v,metadata:{fromCache:false}});

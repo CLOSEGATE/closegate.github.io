@@ -1106,7 +1106,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.65</span>
+      <span class="title-ver" id="titleVer">v35.66</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -2484,7 +2484,7 @@ function cleanGate(id,d){
 }
 /* 온라인 게이트의 봉인 진행에는 아직 끝나지 않은 출동(탭을 닫은 요원 포함)이 지금까지 쌓았을 몫을 더해 보여 줍니다 */
 const withProj=g=>{if(typeof projOf!=='function')return g;const p=projOf(g.id);return p.m>0?{...g,sum:g.sum+p.m,proj:p.m}:g};
-const allGates=()=>NET.mode==='online'?NET.gates.map(withProj):S.localGates.map(x=>cleanGate(x.id,x)).filter(Boolean);
+const allGates=()=>NET.mode==='online'?NET.gates.map(withProj):NET.mode==='connecting'?[]:S.localGates.map(x=>cleanGate(x.id,x)).filter(Boolean);
 /* 봉인 진행(진행 중 출동 몫 포함)이 다 찬 게이트는 공략 완료로 보고 지도에서 바로 감춥니다. 내가 지금 공략 중인 게이트만 남겨 둡니다 */
 const gateCleared=g=>!!g&&!g.train&&!g.raid&&!g.exam&&g.hp>0&&g.sum>=g.hp;
 const mapGates=()=>allGates().filter(g=>!gateCleared(g)||(S.phase==='focus'&&S.curGate&&S.curGate.id===g.id));
@@ -2512,6 +2512,8 @@ async function initNet(){
   if(!NET.uid)NET.uid=S.netId;
   if(db){
     NET.db=db;
+    /* v35.66: 게이트 목록이 오기 전에도 '연결 중'으로 두어, 서버 기능(친구 · 장터 등)이 바로 열리게 합니다 */
+    if(NET.uid&&NET.mode==='solo')NET.mode='connecting';
     try{
       db.collection('gates').where('status','==','open').onSnapshot(snap=>{
         NET.mode='online';
@@ -2519,7 +2521,7 @@ async function initNet(){
         if(!snap.metadata.fromCache){NET.gotFirst=true;ensureOnlineSlots()}
         if(S.selGate&&S.selGate!=='train'&&S.selGate!=='exam'&&!gateById(S.selGate)&&S.phase==='idle'){S.selGate=null;toast('고른 게이트는 방금 다른 요원들이 봉인했습니다.')}
         onWorldChange();
-      },()=>{NET.mode='solo';onWorldChange()});
+      },()=>{NET.mode='solo';try{ensureLocalGates()}catch(e){}onWorldChange()});
       db.doc('world/raid').onSnapshot(s=>{
         NET.raid=s.exists?cleanRaid(s.data()):null;
         if(!s.metadata.fromCache&&(!NET.raid||NET.raid.day!==raidTargetDay()))settleOnline();
@@ -3736,7 +3738,8 @@ function drawDecor2(){
 
 /* ── 함께하는 가이딩 (센티넬 ↔ 실제 가이드 플레이어) ── */
 const GUIDE={reqs:[],sub:null,mine:null,lastTap:0};
-const online=()=>NET.mode==='online'&&NET.db&&NET.uid;
+/* v35.66: 서버와 연결 중(connecting)일 때도 친구 · 장터 · 파티 · 채팅은 쓸 수 있습니다. 게이트 목록이 오기 전이라도 이 기능들은 따로 서버를 씁니다 */
+const online=()=>(NET.mode==='online'||NET.mode==='connecting')&&NET.db&&NET.uid;
 function openGuideRequest(){
   if(!online()||S.role!=='sentinel'||S.runaway<=0)return;
   const until=S.phaseEnd||now()+60e3;
@@ -6155,10 +6158,12 @@ async function accOnNet(){
   let sv=null,ex=null;
   try{
     try{await handoffClaim()}catch(e){}
+    /* v35.66: 백업(Firestore)과 주 저장(실시간 데이터베이스)을 동시에 읽습니다 */
+    const cpP=ckptGet().catch(()=>null);
     ex=await cloudGet();
     if(ex&&typeof ex.json==='string'){
       sv={json:ex.json,rev:+ex.rev||0,at:+ex.at||0,src:'fs'};
-      const cp=await ckptGet();
+      const cp=await cpP;
       /* 임시 사본은 같은 정식 저장 번호 위에서, 그보다 나중에 저장한 것만 씁니다 */
       if(cp&&cp.rev===sv.rev&&cp.at>sv.at)sv=cp;
     }
@@ -6266,7 +6271,7 @@ function renderCrew(){
     return `<li><canvas width="48" height="48" data-i="${i}"></canvas><span class="who"><b></b>${p.title?`<em>${esc(p.title)}</em>`:''}<span>${p.role==='guide'?'가이드':'센티넬'} · Lv.${p.lv} · ${st}</span></span><span class="rkb" style="background:${GCOL[p.gr]}">${GRADES[p.gr]}</span>${p.uid&&online()&&!isFriend(p.uid)?`<button type="button" class="sbtn" data-fadd="${esc(p.uid)}" data-fnick="${esc(p.nick||'')}" data-frole="${p.role}">친구 신청</button>`:''}</li>`}).join('');
   ul.querySelectorAll('li').forEach((li,i)=>{const p=ps[i];li.querySelector('b').textContent=p.nick||'이름 없는 요원';if(isGMuid(p.uid))li.querySelector('b').insertAdjacentHTML('afterbegin',gmTag(p.uid));const c=li.querySelector('canvas'),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(buildDoll(p.look,'a',0),4,0,24,24,0,0,48,48)});
   const np=$('netPill');np.classList.toggle('solo',NET.mode!=='online');
-  $('netText').textContent=NET.mode==='online'?(matchMedia('(max-width:760px)').matches?`접속 ${onl.length+1}명`:`온라인 · ${onl.length+1}명 접속`):'혼자';
+  $('netText').textContent=NET.mode==='online'?(matchMedia('(max-width:760px)').matches?`접속 ${onl.length+1}명`:`온라인 · ${onl.length+1}명 접속`):NET.mode==='connecting'?'연결 중':'혼자';
 }
 function renderLog(){
   const items=NET.mode==='online'?NET.log:(S.log||[]);
