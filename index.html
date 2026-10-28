@@ -836,6 +836,9 @@ body[data-theme="night"].refined{background:linear-gradient(180deg,#141A2E,#1015
 .noticebar.warn{background:var(--coral);color:#fff}
 .banscreen{position:fixed;inset:0;z-index:90;background:rgba(20,28,52,.85);display:grid;place-items:center;padding:16px}
 .banscreen .card{max-width:420px;text-align:center}
+.banscreen.choose .card{max-width:480px}
+.ctab{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}.ctab th,.ctab td{padding:6px 8px;border-bottom:1px solid rgba(127,127,127,.25);text-align:center}.ctab tbody th{text-align:left;font-weight:600;white-space:nowrap}.ctab td.diff{font-weight:700}.ctab td,.ctab th{word-break:keep-all}.ctab .newer{color:#2F5FE8;font-weight:700}
+.cbtns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.cbtns .btn{flex:1 1 160px}
 .gmsheet{max-width:min(860px,96vw);max-height:90dvh;overflow:auto}
 .gmtabs{display:flex!important;flex-wrap:wrap;gap:6px}
 .gmbody{display:grid;gap:10px}
@@ -1103,7 +1106,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.60</span>
+      <span class="title-ver" id="titleVer">v35.62</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -1471,6 +1474,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
     <section class="sgroup">
       <h3>계정</h3>
       <div class="srow"><div class="sl"><b id="accState">게스트</b><span id="accDesc">기록은 이 기기에만 저장됩니다.</span></div><button class="sbtn big" type="button" id="accMain">계정 만들기</button></div>
+      <div class="srow" id="accAltRow" hidden><div class="sl"><b>보관한 다른 기록</b><span id="accAltD"></span></div><button class="sbtn big" type="button" id="accAlt">비교하기</button></div>
       <div class="srow" id="accOutRow" hidden><div class="sl"><b>로그아웃</b><span>클라우드에 저장한 뒤 이 기기에서 로그아웃합니다. 기록은 계정에 남습니다.</span></div><button class="sbtn big" type="button" id="accOut">로그아웃</button></div>
     </section>
     <section class="sgroup danger">
@@ -2555,7 +2559,7 @@ function pushPresence(){
   if(!NET.room||!S.role)return;
   const pt=S.partner?{role:S.partner.role||'guide',look:S.partner.look,gr:clampI(S.partner.grade,8),attrs:(S.partner.attrs||[]).slice(0,3),nick:String(S.partner.name||'').slice(0,10)}:null;
   const p={uid:NET.uid||null,ptn:pt,title:S.title||null,role:S.role,nick:(S.name||'').slice(0,10),look:S.look,lv:myLevel(),gr:myGrade(),attrs:S.attrs||[],
-    pers:persIdx(S.pers),sp:spIdx(S.speech),wp:myWeapon(),wa:myWeaponAttr(),party:S.party||null,view:S.view||'home',phase:S.phase,gate:S.phase==='focus'&&S.curGate?S.curGate.id:null,hp:(()=>{try{const h=S.phase==='focus'&&S.curGate&&!S.curGate.train&&!S.curGate.report?hpNow():null;return h?[h.hp,h.max,h.down?1:0]:null}catch(e){return null}})()};
+    pers:persIdx(S.pers),sp:spIdx(S.speech),wp:myWeapon(),wa:myWeaponAttr(),party:S.party||null,phase:S.phase,gate:S.phase==='focus'&&S.curGate?S.curGate.id:null,hp:(()=>{try{const h=S.phase==='focus'&&S.curGate&&!S.curGate.train&&!S.curGate.report?hpNow():null;return h?[h.hp,h.max,h.down?1:0]:null}catch(e){return null}})()};
   try{NET.room.presence(p).catch(()=>{})}catch(e){}
 }
 function peerInfo(p){
@@ -2607,10 +2611,11 @@ async function pushLog(d,g,n,extra){
   }else{S.log=[item,...(S.log||[])].slice(0,8);renderLog()}
 }
 
-/* 게이트 공략 중에는 내 HP가 바뀌면 5초에 한 번까지 접속 정보에 실어 보내, 같은 게이트 요원 화면에 HP 막대를 보여 줍니다 */
+/* 게이트 공략 중에는 내 HP가 바뀌면 접속 정보에 실어 보내, 같은 게이트 요원 화면에 HP 막대를 보여 줍니다.
+   v35.62: HP는 같은 게이트 요원에게만 가므로(ghp) 간격을 1분에서 20초로 줄였습니다 */
 let hpSentKey='',hpSentAt=0;
 setInterval(()=>{try{if(S.phase!=='focus'||!S.curGate||S.curGate.train||S.curGate.report)return;const h=hpNow();if(!h)return;const k=h.hp+'/'+h.max+'/'+(h.down?1:0);
-  if(k!==hpSentKey&&now()-hpSentAt>60000){hpSentKey=k;hpSentAt=now();pushPresence()}}catch(e){}},1000);
+  if(k!==hpSentKey&&now()-hpSentAt>20000){hpSentKey=k;hpSentAt=now();pushPresence()}}catch(e){}},1000);
 /* ═════════ 그리기 기본 ═════════ */
 /* 화면 안 글자가 휴대폰에서도 깨지지 않도록 메인 캔버스는 6배 해상도로 그린다 */
 const MSC=6;const cv=$('cv');cv.width=W*MSC;cv.height=H*MSC;
@@ -3300,7 +3305,7 @@ function buyDecor(id){
   const d=DECOR.find(x=>x.id===id);if(!d||d.src||(S.decor||[]).includes(id))return;
   if((S.ap||0)<d.ap){toast(`각성 포인트가 ${d.ap-Math.floor(S.ap||0)} 부족합니다.`);return}
   S.ap=Math.round((S.ap-d.ap)*10)/10;S.decor=[...(S.decor||[]),id];(S.decorOn=S.decorOn||{})[id]=true;
-  toast(`${josa(d.n,'을','를')} 사서 방에 놓았습니다.`);beep(988,.08);checkAch();save();updateUI(true);
+  toast(`${josa(d.n,'을','를')} 사서 방에 놓았습니다.`);beep(988,.08);checkAch();save();cloudSoon();updateUI(true);
 }
 function toggleDecor(id){S.decorOn=S.decorOn||{};S.decorOn[id]=S.decorOn[id]===false;save();updateUI(true)}
 
@@ -3379,7 +3384,7 @@ function claimResults(items){
   if(wins&&!(S.decor||[]).includes('crystal')){S.decor=[...(S.decor||[]),'crystal'];(S.decorOn=S.decorOn||{}).crystal=true;gift.push('균열 결정')}
   if(S.raidWins>=3&&!(S.decor||[]).includes('plush')){S.decor=[...(S.decor||[]),'plush'];(S.decorOn=S.decorOn||{}).plush=true;gift.push('균열 수호자 인형')}
   toastLater(`${wins?'참여한 균열 레이드가 봉인됐습니다!':'균열 레이드 결과가 나왔습니다.'} 각성 포인트 +${Math.round(ap)}${gift.length?' · '+gift.join(', ')+' 획득':''} · 결과는 레이드 기록에서 볼 수 있습니다.`);
-  if(wins)fanfare();checkAch();save();try{updateUI(true)}catch(e){}
+  if(wins)fanfare();checkAch();save();cloudSoon();try{updateUI(true)}catch(e){}
 }
 /* 봉인 성공: 150 AP · 시간 종료: 기여 1분당 2 AP (최대 100) */
 const raidReward=(r,me)=>r.status==='closed'?150:Math.min(100,Math.round((r.contrib[me]||0)*2));
@@ -3560,7 +3565,7 @@ function enhanceGear(gid){
   if((g.enh||0)>=ENH_MAX){toast(`이미 최대 강화(+${ENH_MAX})다.`);return}
   const c=enhCost(g),have=stonesOf(g.attr).length;if(have<c){toast(`${ATTRS[g.attr].n} 각성석이 ${c-have}개 부족합니다.`);return}
   useStones(g.attr,c);g.enh=(g.enh||0)+1;
-  toast(`${g.name}의 ${ATTRS[g.attr].n} 속성을 +${g.enh}로 강화했습니다.`);beep(1047,.08);beep(1568,.14,'square',.04,.08);if(typeof burst==='function')burst(96,60,[ATTRS[g.attr].col,'#FFFFFF'],16,30,0);save();updateUI(true);
+  toast(`${g.name}의 ${ATTRS[g.attr].n} 속성을 +${g.enh}로 강화했습니다.`);beep(1047,.08);beep(1568,.14,'square',.04,.08);if(typeof burst==='function')burst(96,60,[ATTRS[g.attr].col,'#FFFFFF'],16,30,0);save();cloudSoon();updateUI(true);
 }
 /* ── 캐릭터 속성 강화 (+5까지) ──
    내 속성과 같은 각성석을 써서 한 번에 1단계씩 올립니다(최대 +5).
@@ -3577,7 +3582,7 @@ function enhanceChar(a){
   const c=charEnhCost(a),have=famStones(a).length;if(have<c){toast(`${ATTRS[a].n} 각성석이 ${c-have}개 부족합니다.`);return}
   useStones(a,c,true);S.attrEnh=S.attrEnh||{};S.attrEnh[a]=charEnh(a)+1;
   toast(`내 ${ATTRS[a].n} 속성이 +${S.attrEnh[a]}로 강화되었습니다.`);beep(1047,.08);beep(1568,.14,'square',.04,.08);if(S.attrEnh[a]>=CENH_MAX)try{fanfare()}catch(e){}
-  save();pushPresence();updateUI(true);
+  save();cloudSoon();pushPresence();updateUI(true);
 }
 /* v35.40: 예전 '구슬 채우기' 강화에서 채워 둔 구슬은, 쓴 각성석을 그대로 돌려줍니다 */
 function refundOldOrbs(){
@@ -3638,7 +3643,7 @@ function affMul(g){
   return {m:1,kind:'none',a,e};
 }
 function removeItem(id){S.items=S.items.filter(x=>x.id!==id);if(S.equip)for(const k in S.equip)if(S.equip[k]===id)delete S.equip[k]}
-function sellItem(id){const it=S.items.find(x=>x.id===id);if(!it)return;const p=sellPrice(it);removeItem(id);addCr(p);toast(`${josa(itemName(it),'을','를')} 팔아 ${p} 크레딧을 받았습니다.`);beep(1047,.06);save();updateUI(true)}
+function sellItem(id){const it=S.items.find(x=>x.id===id);if(!it)return;const p=sellPrice(it);removeItem(id);addCr(p);toast(`${josa(itemName(it),'을','를')} 팔아 ${p} 크레딧을 받았습니다.`);beep(1047,.06);save();cloudSoon();updateUI(true)}
 S.items.forEach(normGear);if(S.equip&&S.equip.charm){S.equip.acc=S.equip.charm;delete S.equip.charm}
 
 /* ── 보고서 작성 (센터 업무) ── */
@@ -3676,9 +3681,9 @@ function buyShop(id){
   if(id==='ap:xp'&&S.xpBoost){toast('이미 경험치 부스터가 준비되어 있습니다. 다음 출동에 적용됩니다.');return}
   if(s.ap){if((S.ap||0)<s.ap){toast(`각성 포인트가 ${s.ap-Math.floor(S.ap||0)} 부족합니다.`);return}S.ap=Math.round((S.ap-s.ap)*10)/10}
   else{if(CR()<s.cr){toast(`크레딧이 ${s.cr-CR()} 부족합니다.`);return}addCr(-s.cr)}
-  if(id==='ap:heal'){S.healUntil=0;toast('긴급 치료를 받았습니다. 바로 게이트에 출동할 수 있습니다.');beep(988,.08);save();updateUI(true);return}
-  if(id==='ap:xp'){S.xpBoost=1.5;toast('경험치 부스터를 준비했습니다. 다음 게이트 출동의 경험치가 1.5배가 됩니다.');beep(988,.08);save();updateUI(true);return}
-  if(id==='ap:supply'){const got=[0,1].map(()=>makePot(pick(['hp1','hp1','hp2','df1','at1'])));S.items.push(...got);toast(`보급 상자에서 ${josa(got.map(x=>POTS[x.p].n).join(', '),'이','가')} 나왔습니다.`);beep(988,.08);save();updateUI(true);return}
+  if(id==='ap:heal'){S.healUntil=0;toast('긴급 치료를 받았습니다. 바로 게이트에 출동할 수 있습니다.');beep(988,.08);save();cloudSoon();updateUI(true);return}
+  if(id==='ap:xp'){S.xpBoost=1.5;toast('경험치 부스터를 준비했습니다. 다음 게이트 출동의 경험치가 1.5배가 됩니다.');beep(988,.08);save();cloudSoon();updateUI(true);return}
+  if(id==='ap:supply'){const got=[0,1].map(()=>makePot(pick(['hp1','hp1','hp2','df1','at1'])));S.items.push(...got);toast(`보급 상자에서 ${josa(got.map(x=>POTS[x.p].n).join(', '),'이','가')} 나왔습니다.`);beep(988,.08);save();cloudSoon();updateUI(true);return}
   let it;
   if(id==='tk:role')it={id:'t'+Date.now().toString(36),kind:'ticket',t:'role'};
   else if(id==='tk:regrade')it={id:'t'+Date.now().toString(36),kind:'ticket',t:'regrade'};
@@ -3686,7 +3691,7 @@ function buyShop(id){
   else if(id==='stone')it={id:'i'+Date.now().toString(36),attr:pick(STONE_ATTRS)};
   else it=makeGear(id==='wbox'?'weapon':id==='abox'?'armor':id==='cbox'?'acc':pick(['weapon','armor','acc']),id==='pbox'?1:0);
   if(s.daily){const d=today();if(!S.dailyBuy||S.dailyBuy.d!==d)S.dailyBuy={d};S.dailyBuy[id]=1}
-  S.items.push(it);toast(`${josa(itemName(it),'을','를')} 샀습니다. 가방에서 확인할 수 있습니다.`);beep(988,.08);beep(1318,.1,'square',.04,.08);save();updateUI(true);
+  S.items.push(it);toast(`${josa(itemName(it),'을','를')} 샀습니다. 가방에서 확인할 수 있습니다.`);beep(988,.08);beep(1318,.1,'square',.04,.08);save();cloudSoon();updateUI(true);
 }
 /* 새 가구는 크레딧으로 산다 */
 const DECOR2=[
@@ -3836,12 +3841,12 @@ async function buyListing(id){
     if(!ok||!d||d.status!=='open'){toast('이미 팔린 물건입니다.');return}
     await ref.update({status:'sold',buyer:NET.uid,bnick:(S.name||'요원').slice(0,10),soldAt:now()});
     const it=cleanItem(d.item);addCr(-d.price);if(it)S.items.push(it);
-    toast(`${josa(it?itemName(it):'물건','을','를')} ${d.price} 크레딧에 샀습니다.`);beep(988,.08);save();updateUI(true);
+    toast(`${josa(it?itemName(it):'물건','을','를')} ${d.price} 크레딧에 샀습니다.`);beep(988,.08);save();cloudSoon();updateUI(true);
   }catch(e){toast('사지 못했습니다. 잠시 뒤에 다시 시도할 수 있습니다.')}
 }
 async function cancelListing(id){
   const L=MARKET.mine.find(x=>x.id===id)||MARKET.list.find(x=>x.id===id);if(!L||L.status!=='open'||L.seller!==NET.uid){toast('내가 올린 물건만 내릴 수 있습니다.');return}
-  try{await NET.db.doc('market/'+id).update({status:'cancel'});const it=cleanItem(L.item);if(it)S.items.push(it);toast('물건을 장터에서 내리고 가방으로 돌려받았습니다.');save();updateUI(true)}catch(e){}
+  try{await NET.db.doc('market/'+id).update({status:'cancel'});const it=cleanItem(L.item);if(it)S.items.push(it);toast('물건을 장터에서 내리고 가방으로 돌려받았습니다.');save();cloudSoon();updateUI(true)}catch(e){}
 }
 let claiming=false;
 async function claimSales(){
@@ -3849,7 +3854,7 @@ async function claimSales(){
   for(const L of MARKET.mine.filter(x=>x.status==='sold')){
     try{await NET.db.doc('market/'+L.id).update({status:'claimed'});addCr(L.price);S.sales=(S.sales||0)+1;toastLater(`${String(L.bnick||'요원')} 요원이 내 물건을 ${L.price} 크레딧에 샀습니다.`)}catch(e){}
   }
-  claiming=false;save();
+  claiming=false;save();cloudSoon();
 }
 
 /* ── 패널 그리기 ── */
@@ -4017,7 +4022,9 @@ async function partySortie(){
   try{await NET.db.doc('parties/'+S.party).update({gate:g.id,startAt:now()})}catch(e){}
   startFocus();
 }
-setInterval(()=>{if(S.party&&online()&&PARTY.data){NET.db.doc('parties/'+S.party).update({members:{[NET.uid]:{nick:(S.name||'요원').slice(0,10),role:S.role,t:now()}}}).catch(()=>{})}},60000);
+/* v35.61 사용량 절약: 파티 문서의 내 정보(이름 · 역할)가 바뀌었을 때만 고쳐 씁니다. 전에는 1분마다 써서, 쓸 때마다 파티원 모두에게 읽기가 생겼습니다 */
+setInterval(()=>{if(!(S.party&&online()&&PARTY.data))return;const me=(PARTY.data.members||{})[NET.uid],nick=(S.name||'요원').slice(0,10);
+  if(me&&me.nick===nick&&me.role===S.role)return;NET.db.doc('parties/'+S.party).update({members:{[NET.uid]:{nick,role:S.role,t:now()}}}).catch(()=>{})},60000);
 function renderParty(){
   const box=$('partyBox');if(!box)return;
   if(!online()){box.innerHTML='<p class="muted">파티는 서버에 연결되어 있을 때만 만들 수 있습니다.</p>';return}
@@ -4170,7 +4177,7 @@ async function claimMail(id){
   if(m.src==='me'){try{await NET.db.doc('mail/'+id).update({claimed:true})}catch(e){}}
   const its=mailItems(m);its.forEach(it=>S.items.push(it));const cr=Math.max(0,Math.min(1e6,Math.round(+m.cr||0))),ap=Math.max(0,Math.min(1e5,Math.round(+m.ap||0)));
   if(cr)addCr(cr);if(ap)S.ap=Math.round(((S.ap||0)+ap)*10)/10;
-  toast(`우편을 받았습니다.${its.length?` 아이템 ${its.length}개`:''}${cr?` · ${cr} 크레딧`:''}${ap?` · 각성 포인트 ${ap}`:''}`);beep(1047,.06);save();mailBadge();updateUI(true);
+  toast(`우편을 받았습니다.${its.length?` 아이템 ${its.length}개`:''}${cr?` · ${cr} 크레딧`:''}${ap?` · 각성 포인트 ${ap}`:''}`);beep(1047,.06);save();cloudSoon();mailBadge();updateUI(true);
 }
 function renderMail(){
   const L=mailList(),box=$('mailBox');
@@ -5810,19 +5817,39 @@ async function cloudGet(){
   return {json:JSON.stringify(all),at:d.at,rev:d.rev,v:2};
 }
 /* 한 계정은 한 화면에서만: 다른 브라우저 · 기기에서 접속하면 먼저 있던 화면은 연결이 끊기고 더는 저장하지 않습니다.
-   서로 다른 화면이 번갈아 저장하면서 기록(측정 결과 · 능력치)이 덮어써지는 일을 막습니다. */
+   서로 다른 화면이 번갈아 저장하면서 기록(측정 결과 · 능력치)이 덮어써지는 일을 막습니다.
+   v35.61 넘겨주기: 먼저 있던 화면은 끊기기 직전에 마지막 기록을 클라우드에 올리고 ack를 남깁니다.
+   새 화면은 다른 화면이 켜져 있으면(실시간 데이터베이스 sess/<uid>) 최대 8초 기다렸다가 기록을 불러옵니다. */
 const SID=Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const HAND={ack:null};
 let sessSub=null;
 async function claimSession(){
   const r=NET.db.doc('data/users/'+NET.uid+'/session');
   await r.set({sid:SID,t:Date.now()});
   try{if(sessSub)sessSub()}catch(e){}
-  sessSub=r.onSnapshot(sn=>{const d=sn.exists?sn.data():null;if(d&&d.sid&&d.sid!==SID)kickSession()},()=>{});
+  sessSub=r.onSnapshot(sn=>{const d=sn.exists?sn.data():null;if(!d)return;if(d.ack===SID)HAND.ack=SID;if(d.sid&&d.sid!==SID)kickSession(d.sid)},()=>{});
 }
-function kickSession(){
-  if(ACC.kicked)return;ACC.kicked=true;window.__cgKicked=true;ACC.dirty=false;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function handoffClaim(){
+  const rt=NET.db.rt&&NET.db.rt.get?NET.db.rt:null;
+  const prev=rt?await rt.get('sess/'+NET.uid,2500):undefined;
+  await claimSession();
+  if(rt)rt.hold('sess/'+NET.uid,{sid:SID,t:Date.now(),dev:DEV});
+  if(!prev||!prev.sid||prev.sid===SID)return;
+  /* 같은 브라우저(새로고침 · 다른 탭)는 기록을 함께 쓰므로 잠깐만 기다립니다 */
+  const same=prev.dev===DEV;
+  if(!same)accMsg('다른 기기에서 하던 기록을 넘겨받는 중입니다. 잠시만 기다려 주세요.');
+  for(let i=0;i<(same?8:40)&&HAND.ack!==SID;i++)await sleep(200);
+}
+async function kickSession(by){
+  if(ACC.kicked||ACC.leaving)return;ACC.leaving=true;
+  /* 끊기기 전에 마지막 기록을 올리고(최대 6초), 새 화면에 다 올렸다고 알려 줍니다 */
+  try{if(ACC.synced&&!ACC.choosing){for(let i=0;i<50&&ACC.pushing;i++)await sleep(100);await Promise.race([cloudPut(),sleep(6000)])}}catch(e){}
+  try{await NET.db.doc('data/users/'+NET.uid+'/session').update({ack:by})}catch(e){}
+  try{if(NET.db.rt&&NET.db.rt.release)NET.db.rt.release('sess/'+NET.uid)}catch(e){}
+  ACC.leaving=false;ACC.kicked=true;window.__cgKicked=true;ACC.dirty=false;
   const el=document.createElement('div');el.className='banscreen';el.setAttribute('role','alertdialog');
-  el.innerHTML='<div class="card"><h2>다른 곳에서 접속했습니다</h2><p class="muted">같은 계정으로 다른 브라우저나 기기에서 접속해, 이 화면의 연결을 끊었습니다. 기록이 서로 덮어써지지 않도록 이 화면에서는 더 이상 저장하지 않습니다.</p><button class="btn" type="button">이 화면에서 다시 접속</button></div>';
+  el.innerHTML='<div class="card"><h2>다른 곳에서 접속했습니다</h2><p class="muted">같은 계정으로 다른 브라우저나 기기에서 접속해, 이 화면의 연결을 끊었습니다. 이 화면의 마지막 기록은 클라우드에 올려 두었고, 기록이 서로 덮어써지지 않도록 이 화면에서는 더 이상 저장하지 않습니다.</p><button class="btn" type="button">이 화면에서 다시 접속</button></div>';
   el.querySelector('button').addEventListener('click',()=>location.reload());document.body.appendChild(el);
 }
 /* 중요한 순간(측정 결과 등)에는 기다렸다가 바로 클라우드에 올립니다 */
@@ -5831,19 +5858,24 @@ async function cloudCommit(){
   for(let i=0;i<50&&ACC.pushing;i++)await new Promise(r=>setTimeout(r,100));
   return await cloudPut();
 }
+/* v35.61 '아직 클라우드에 올리지 못한 변경'이 이 기기에 있는지 표시해 둡니다(올리면 지웁니다).
+   다음에 열었을 때 서버 기록이 더 새로운데 이 표시가 남아 있으면, 덮어쓰지 않고 어느 기록을 쓸지 묻습니다. */
+const UNS_KEY='cg-unsync',ALT_KEY='cg-alt';
+const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
+const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
+const BOOT_UNS=lsGet(UNS_KEY);
+const DEV=(()=>{try{let d=localStorage.getItem('cg-dev');if(!d){d=Math.random().toString(36).slice(2,10);localStorage.setItem('cg-dev',d)}return d}catch(e){return SID}})();
+function unsMark(){try{if(!localStorage.getItem(UNS_KEY))lsSet(UNS_KEY,{base:+S.cloudRev||0,at:Date.now()})}catch(e){}}
+
 /* 저장 번호(rev): 올릴 때마다 1씩 늘립니다. 트랜잭션 안에서 클라우드 번호를 확인하므로, 두 기기가 동시에 저장해도
-   더 새 기록을 덮어쓰지 못합니다. 번호가 더 크면 덮어쓰지 않고 그 기록을 받아 옵니다. */
-function adoptNewer(ex){
-  const data=JSON.parse(ex.json);data.acct=S.acct;data.savedAt=+ex.at||Date.now();data.cloudRev=+ex.rev||0;
-  try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}window.__cgKicked=true;ACC.kicked=true;
-  toastLater('다른 곳에서 저장한 더 새 기록이 있어 그 기록을 불러옵니다.');setTimeout(()=>location.reload(),800);
-}
+   더 새 기록을 덮어쓰지 못합니다. 번호가 더 크면 덮어쓰지 않고 어느 기록을 쓸지 묻습니다. */
 async function cloudPut(force){
   if(!force&&!ACC.synced)return false;
-  if(!cloudOK()||ACC.pushing||ACC.kicked)return false;
+  if(!cloudOK()||ACC.pushing||(ACC.kicked&&!ACC.leaving)||ACC.choosing)return false;
   try{flushSave()}catch(e){}
   const P=partsOf(),last=ACC.last||{},ch=Object.keys(P).filter(k=>force||P[k]!==last[k]);
-  if(!ch.length){ACC.dirty=false;return true}
+  if(!ch.length){ACC.dirty=false;lsDel(UNS_KEY);return true}
   ACC.pushing=true;
   try{
     let conflict=false;const at=Date.now();
@@ -5858,16 +5890,98 @@ async function cloudPut(force){
       if(all.includes('misc'))t.set('data/users/'+NET.uid+'/misc',{json:P.misc,rev,at});
       S.cloudRev=rev;
     });
-    if(conflict){const ex=await cloudGet();if(ex&&typeof ex.json==='string')adoptNewer(ex);return false}
-    ACC.last=P;ACC.dirty=false;ACC.fails=0;ACC.lastPush=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAcc();return true}
-  catch(e){ACC.lastPush=Date.now();ACC.fails=(ACC.fails||0)+1;return false}/* 실패하면 바로 다시 시도하지 않고 다음 주기(30초~1분)에 다시 올립니다. 기기 안 기록은 그대로 남습니다 */finally{ACC.pushing=false}
+    if(conflict){if(ACC.leaving)return false;const ex=await cloudGet();if(ex&&typeof ex.json==='string')askChoice({json:ex.json,rev:+ex.rev||0,at:+ex.at||0,src:'fs'},'conflict');return false}
+    ACC.last=P;ACC.dirty=false;ACC.fails=0;ACC.lastPush=Date.now();lsDel(UNS_KEY);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderAcc();return true}
+  catch(e){ACC.fails=(ACC.fails||0)+1;ACC.lastPush=Date.now()-CLOUD_GAP+60000;return false}/* 실패하면 1분 뒤에 다시 올립니다. 기기 안 기록과 임시 사본은 그대로 남습니다 */finally{ACC.pushing=false}
 }
-function cloudDirty(){if(S.acct&&S.acct.mode==='cloud'){if(!ACC.dirty)ACC.dirtyAt=Date.now();ACC.dirty=true}}
-/* v35.55 사용량 절약: 바뀐 내용은 30초에 한 번(출동 · 휴식 중에는 1분에 한 번) 모아서 올립니다.
-   기기 안에는 그때그때 저장되고, 탭을 닫거나 다른 앱으로 넘어가면 바로 올립니다. 출동이 끝나는 등 중요한 순간에는 ACC.soon으로 바로 올립니다 */
-setInterval(()=>{if(!ACC.dirty||!S.acct||S.acct.mode!=='cloud')return;const gap=ACC.soon?3000:(S.phase==='idle'?30000:60000);if(Date.now()-ACC.lastPush>gap&&Date.now()-(ACC.dirtyAt||0)>1500){ACC.soon=false;cloudPut()}},1000);
-addEventListener('pagehide',()=>{if(ACC.dirty)cloudPut()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&ACC.dirty)cloudPut()});
+function cloudDirty(){if(S.acct&&S.acct.mode==='cloud'){if(!ACC.dirty)ACC.dirtyAt=Date.now();ACC.dirty=true;unsMark()}}
+/* 거래 · 우편 받기 · 강화처럼 잃으면 되돌릴 수 없는 일은 몇 초 안에 바로 올립니다 */
+function cloudSoon(){ACC.soon=true}
+
+/* v35.61 사용량 절약: 클라우드(Firestore) 정식 저장은 바뀐 내용이 있을 때 5분에 한 번만 합니다. 바뀐 게 없으면 쓰지 않습니다.
+   그사이에는 30초마다 실시간 데이터베이스(ckpt/<uid>)에 임시 사본을 올립니다. 실시간 데이터베이스는 쓰는 횟수에 요금이 붙지 않습니다.
+   기기 안에는 지금처럼 그때그때 저장합니다. 출동 종료 · 거래 · 강화 등 중요한 순간(ACC.soon)과 탭을 닫을 때는 바로 올립니다. */
+const CLOUD_GAP=300000,CKPT_GAP=30000;
+const CK={last:'',at:0,ok:true};
+function ckptPut(){
+  if(!ACC.synced||ACC.kicked||ACC.choosing||!cloudOK()||!(NET.db.rt&&NET.db.rt.put))return false;
+  try{flushSave()}catch(e){}
+  const P=partsOf(),L=ACC.last||{};
+  if(P.core===L.core&&P.bag===L.bag&&P.misc===L.misc)return true;/* 클라우드와 같으면 임시 사본이 필요 없습니다 */
+  const sig=P.core+'\u0001'+P.bag+'\u0001'+P.misc;if(sig===CK.last)return CK.ok;
+  CK.last=sig;CK.at=Date.now();
+  NET.db.rt.put('ckpt/'+NET.uid,{rev:+S.cloudRev||0,at:Date.now(),dev:DEV,core:P.core,bag:P.bag,misc:P.misc}).then(()=>{CK.ok=true},()=>{CK.ok=false;CK.last=''});
+  return CK.ok;
+}
+setInterval(()=>{if(!ACC.dirty||!S.acct||S.acct.mode!=='cloud')return;const gap=ACC.soon?3000:CLOUD_GAP;if(Date.now()-ACC.lastPush>gap&&Date.now()-(ACC.dirtyAt||0)>1500){ACC.soon=false;cloudPut()}},1000);
+setInterval(()=>{if(ACC.dirty&&Date.now()-CK.at>=CKPT_GAP)ckptPut()},5000);
+addEventListener('pagehide',()=>{ckptPut();if(ACC.dirty)cloudPut();
+  /* 이 화면이 닫히면 '켜져 있는 화면' 표시를 바로 지워, 새로고침한 화면이 기다리지 않게 합니다 */
+  if(cloudOK()&&!ACC.kicked&&!ACC.leaving&&NET.db.rt&&NET.db.rt.put)NET.db.rt.put('sess/'+NET.uid,null).catch(()=>{})});
+/* 탭을 숨기면 임시 사본만 바로 올립니다. 임시 사본을 쓸 수 없는 경우(규칙 미설정 등)에만 정식 저장을 합니다 */
+document.addEventListener('visibilitychange',()=>{if(!document.hidden||!ACC.dirty)return;if(!ckptPut())cloudPut()});
+
+/* ── v35.61 엇갈린 기록 고르기 ──
+   서버 기록과 이 기기 기록이 서로 다르게 바뀐 경우(예: 폰이 꺼진 뒤 PC에서 하다가 폰을 다시 켬) 자동으로 덮어쓰지 않고 고르게 합니다.
+   고르지 않은 기록은 이 기기에 24시간 보관하고, 설정 › 계정에서 다시 비교해 되돌릴 수 있습니다. */
+const canon=v=>Array.isArray(v)?'['+v.map(canon).join(',')+']':v&&typeof v==='object'?'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canon(v[k])).join(',')+'}':JSON.stringify(v);
+const NOCMP=new Set(['savedAt','cloudRev','acct']);
+function sameData(a,b){const f=o=>{const x={};for(const k in o)if(!NOCMP.has(k)&&o[k]!==undefined)x[k]=o[k];return canon(x)};try{return f(a)===f(b)}catch(e){return false}}
+function sumOf(d){let lv=1;try{lv=levelOf(d.xp).lv}catch(e){}
+  return {name:String(d.name||'요원').slice(0,10),lv,gr:GRADES[d.grade??0]||'-',ap:Math.floor(+d.ap||0),cr:Math.floor(+d.cr||0),items:Array.isArray(d.items)?d.items.length:0}}
+const whenTxt=(t,sec)=>t?new Date(t).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',...(sec?{second:'2-digit'}:{})}):'알 수 없음';
+function keepAlt(json,at,label){lsSet(ALT_KEY,{json,at:+at||0,label,until:Date.now()+86400000,uid:NET.uid})}
+function altGet(){const a=lsGet(ALT_KEY);if(!a||a.uid!==NET.uid||!(+a.until>Date.now())||typeof a.json!=='string'){if(a)lsDel(ALT_KEY);return null}return a}
+const curJson=()=>{const o={};for(const k in S)if(!NOCMP.has(k))o[k]=S[k];return JSON.stringify(o)};
+/* 서버 기록 data를 이 기기 기록으로 삼고 새로고침합니다. 임시 사본에서 온 기록은 정식 저장이 아직이므로 표시를 남깁니다 */
+function loadServer(sv){
+  const data=JSON.parse(sv.json);data.acct=S.acct||{mode:'cloud',since:Date.now(),id:AUTH().name()};data.savedAt=+sv.at||Date.now();data.cloudRev=+sv.rev||0;
+  if(sv.src==='cp')lsSet(UNS_KEY,{base:+sv.rev||0,at:Date.now()});else lsDel(UNS_KEY);
+  window.__cgKicked=true;ACC.kicked=true;try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
+  location.reload();
+}
+/* mode: 'boot'(접속할 때) · 'conflict'(하는 중에 다른 곳 저장 발견) · 'alt'(보관한 기록과 비교) */
+function askChoice(sv,mode){
+  if(ACC.choosing)return;ACC.choosing=true;
+  let other;try{other=JSON.parse(sv.json)}catch(e){ACC.choosing=false;return}
+  const A=sumOf(S),B=sumOf(other),aAt=+S.savedAt||0,bAt=+sv.at||0;
+  const bLabel=mode==='alt'?(sv.label||'보관한 기록'):'서버 기록',aLabel=mode==='alt'?'지금 기록':'이 기기 기록';
+  const row=(k,a,b)=>`<tr><th>${k}</th><td${a!==b?' class="diff"':''}>${a}</td><td${a!==b?' class="diff"':''}>${b}</td></tr>`;
+  const el=document.createElement('div');el.className='banscreen choose';el.setAttribute('role','alertdialog');el.setAttribute('aria-labelledby','chooseT');
+  el.innerHTML=`<div class="card"><h2 id="chooseT">${mode==='alt'?'보관한 기록과 비교':'어느 기록으로 이어서 할까요?'}</h2>
+    <p class="muted">${mode==='alt'?'고른 기록으로 이어서 하고, 다른 하나는 이 기기에 24시간 더 보관합니다.':'이 기기에 아직 클라우드에 올리지 못한 진행이 있는데, 그사이 다른 곳에서 저장한 기록이 있습니다. 고르지 않은 기록은 이 기기에 24시간 보관하며, 설정 › 계정에서 되돌릴 수 있습니다.'}</p>
+    <table class="ctab"><thead><tr><th></th><th>${aLabel}</th><th>${bLabel}</th></tr></thead><tbody>
+    ${row('저장 시각',whenTxt(aAt,1)+(aAt>bAt?'<br><small class="newer">더 최근</small>':''),whenTxt(bAt,1)+(bAt>aAt?'<br><small class="newer">더 최근</small>':''))}${row('요원',A.name,B.name)}${row('레벨',`Lv.${A.lv}`,`Lv.${B.lv}`)}${row('등급',A.gr,B.gr)}${row('각성 포인트',A.ap,B.ap)}${row('크레딧',A.cr,B.cr)}${row('가방',`${A.items}개`,`${B.items}개`)}
+    </tbody></table><div class="cbtns"><button class="btn ghost" type="button" data-k="a">${aLabel+roJosa(aLabel)} 계속</button><button class="btn" type="button" data-k="b">${bLabel+roJosa(bLabel)} 계속</button></div></div>`;
+  el.addEventListener('click',async e=>{const k=e.target&&e.target.dataset&&e.target.dataset.k;if(!k)return;el.querySelectorAll('button').forEach(b=>b.disabled=true);
+    if(mode==='alt'){
+      if(k==='a'){el.remove();ACC.choosing=false;return}
+      keepAlt(curJson(),S.savedAt,'바꾸기 전 기록');
+      /* 보관한 기록을 지금 기록으로 삼아 클라우드에 올립니다 */
+      const data=other;data.acct=S.acct;data.cloudRev=+S.cloudRev||0;data.savedAt=Date.now();
+      ACC.choosing=false;window.__cgKicked=true;ACC.kicked=true;try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
+      lsSet(UNS_KEY,{base:data.cloudRev,at:Date.now()});location.reload();return}
+    if(k==='b'){keepAlt(curJson(),S.savedAt,'이 기기 기록');ACC.choosing=false;loadServer(sv);return}
+    /* 이 기기 기록으로 계속: 서버 기록은 보관하고, 이 기기 기록을 서버 번호 위에 올립니다 */
+    keepAlt(sv.json,sv.at,'서버 기록');S.cloudRev=Math.max(+S.cloudRev||0,+sv.rev||0);ACC.choosing=false;ACC.kicked=false;
+    if(mode==='boot')ACC.synced=true;
+    const ok=await cloudPut(true);el.remove();
+    toast(ok?'이 기기 기록으로 이어서 합니다. 서버 기록은 24시간 보관합니다.':'이 기기 기록으로 이어서 합니다. 클라우드 저장은 잠시 뒤에 다시 시도합니다.');
+    if(!ok){ACC.dirty=true;ACC.soon=true}
+    if(mode==='boot')afterSync();
+  });
+  document.body.appendChild(el);el.querySelector('[data-k="b"]').focus();
+}
+async function ckptGet(){
+  if(!(NET.db.rt&&NET.db.rt.get))return null;
+  const cp=await NET.db.rt.get('ckpt/'+NET.uid,4000);
+  if(!cp||typeof cp.core!=='string'||!(+cp.at))return null;
+  try{return {json:JSON.stringify({...JSON.parse(cp.core),...JSON.parse(cp.bag||'{}'),...JSON.parse(cp.misc||'{}')}),rev:+cp.rev||0,at:+cp.at,dev:cp.dev,src:'cp'}}catch(e){return null}
+}
+function renderAlt(){const r=$('accAltRow');if(!r)return;const a=cloudOK()?altGet():null;r.hidden=!a;
+  if(a)$('accAltD').textContent=`${a.label} · ${whenTxt(a.at)} 저장 · ${Math.max(1,Math.ceil((a.until-Date.now())/3600000))}시간 뒤 지웁니다.`}
+if($('accAlt'))$('accAlt').addEventListener('click',()=>{const a=altGet();if(!a){renderAlt();return}
+  if(S.phase!=='idle'){toast('출동이나 휴식 중에는 기록을 바꿀 수 없습니다.');return}$('settings').hidden=true;askChoice({json:a.json,at:a.at,label:a.label},'alt')});
 
 function accMsg(t,warn){const n=$('accNote');n.textContent=t;n.classList.toggle('warn',!!warn)}
 function syncAccScreen(){
@@ -5952,7 +6066,7 @@ $('accForm').addEventListener('submit',async e=>{
       const ex=await cloudGet();
       if(ex&&typeof ex.json==='string'){
         const data=JSON.parse(ex.json);data.acct={mode:'cloud',since:(data.acct&&data.acct.since)||Date.now(),id};data.savedAt=+ex.at||Date.now();data.cloudRev=+ex.rev||0;
-        window.__cgKicked=true;try{localStorage.setItem(KEY,JSON.stringify(data))}catch(err){}
+        window.__cgKicked=true;try{localStorage.setItem(KEY,JSON.stringify(data))}catch(err){}lsDel(UNS_KEY);lsDel(ALT_KEY);
       }else{S.acct={mode:'cloud',since:Date.now(),id};save();await cloudPut(true)}
     }
     accMsg('접속 정보를 불러오는 중입니다.');
@@ -5973,6 +6087,7 @@ function renderAcc(){
   $('accMain').textContent=cloud?'지금 저장':'계정 만들기';
   $('accMain').disabled=cloud?!cloudOK():!authReady();
   $('accOutRow').hidden=!cloud;
+  renderAlt();
 }
 $('accMain').addEventListener('click',async()=>{
   if(S.acct&&S.acct.mode==='cloud'){const ok=await cloudPut();toast(ok?'클라우드에 저장했습니다.':'저장하지 못했습니다. 잠시 뒤에 다시 시도할 수 있습니다.');return}
@@ -5982,11 +6097,13 @@ $('accOut').addEventListener('click',async()=>{
   if(S.phase!=='idle'){toast('출동이나 휴식 중에는 로그아웃할 수 없습니다.');return}
   const ok=await cloudPut();if(!ok){toast('클라우드에 저장하지 못해 로그아웃을 멈췄습니다.');return}
   try{await AUTH().signOut()}catch(e){}
-  window.__cgKicked=true;try{localStorage.removeItem(KEY)}catch(e){}
+  window.__cgKicked=true;try{localStorage.removeItem(KEY)}catch(e){}lsDel(UNS_KEY);lsDel(ALT_KEY);
   location.reload();
 });
 
-/* 서버 연결이 끝나면: 계정 화면을 갱신하고, 다른 기기에서 더 최근에 저장한 기록이 있으면 불러온다 */
+/* 서버 연결이 끝나면: 계정 화면을 갱신하고, 다른 기기에서 더 최근에 저장한 기록이 있으면 불러온다.
+   v35.61: 정식 저장(Firestore)과 임시 사본(실시간 데이터베이스) 가운데 더 새 기록을 서버 기록으로 봅니다.
+   이 기기에도 올리지 못한 변경이 있으면 덮어쓰지 않고 어느 기록을 쓸지 묻습니다. */
 async function accOnNet(){
   ACC.netDone=true;
   renderAcc();
@@ -5995,21 +6112,43 @@ async function accOnNet(){
     if(S.acct&&S.acct.mode==='cloud'&&authReady())toastLater('로그인이 풀렸습니다. 다시 로그인해야 합니다.');
     showAccount();return;
   }
+  let sv=null,ex=null;
   try{
-    try{await claimSession()}catch(e){}
-    const ex=await cloudGet();
-    /* 클라우드 기록이 이 화면의 기록보다 새로우면 언제나 클라우드 기록을 씁니다(출동 중이어도) */
-    if(ex&&typeof ex.json==='string'&&((+ex.rev||0)>(+S.cloudRev||0)||(!(+ex.rev)&&(+ex.at||0)>BOOT_SAVED_AT+1000))){
-      const data=JSON.parse(ex.json);data.acct=S.acct||{mode:'cloud',since:Date.now(),id:AUTH().name()};data.savedAt=+ex.at;data.cloudRev=+ex.rev||0;
-      window.__cgKicked=true;try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
-      location.reload();return;
+    try{await handoffClaim()}catch(e){}
+    ex=await cloudGet();
+    if(ex&&typeof ex.json==='string'){
+      sv={json:ex.json,rev:+ex.rev||0,at:+ex.at||0,src:'fs'};
+      const cp=await ckptGet();
+      /* 임시 사본은 같은 정식 저장 번호 위에서, 그보다 나중에 저장한 것만 씁니다 */
+      if(cp&&cp.rev===sv.rev&&cp.at>sv.at)sv=cp;
     }
-    if(!S.acct||S.acct.mode!=='cloud'){S.acct={mode:'cloud',since:Date.now(),id:AUTH().name()};save()}
-    ACC.synced=true;if(!ex)cloudPut(true);
   }catch(e){
     /* 클라우드 기록을 확인하지 못하면 게임에 들어가지 않고 잠시 뒤 다시 확인합니다 */
     accMsg('클라우드 기록을 확인하지 못했습니다. 잠시 뒤에 다시 확인합니다.',true);showAccount();setTimeout(accOnNet,5000);return;
   }
+  if(!S.acct||S.acct.mode!=='cloud'){S.acct={mode:'cloud',since:Date.now(),id:AUTH().name()};save()}
+  const lr=+S.cloudRev||0;
+  if(sv){
+    let data=null;try{data=JSON.parse(sv.json)}catch(e){}
+    if(data&&sameData(data,S)){
+      /* 내용이 같으면 묻지 않습니다. 번호만 맞추고, 임시 사본에서 온 것이면 정식 저장을 곧 합니다 */
+      if(sv.rev>lr){S.cloudRev=sv.rev;save()}
+      if(sv.src==='cp')lsSet(UNS_KEY,{base:sv.rev,at:Date.now()});else lsDel(UNS_KEY);
+    }else if(data){
+      const legacy=!sv.rev&&sv.at>BOOT_SAVED_AT+1000;
+      const ahead=sv.rev>lr||(sv.src==='cp'&&sv.dev!==DEV)||legacy;
+      const mineLost=sv.src==='cp'&&sv.dev===DEV&&sv.rev===lr&&sv.at>BOOT_SAVED_AT+1000;/* 이 기기 저장소가 비워진 경우 */
+      if(ahead&&BOOT_UNS&&S.role){askChoice(sv,'boot');return}
+      if(ahead||mineLost){loadServer(sv);return}
+    }
+  }
+  ACC.synced=true;ACC.lastPush=Date.now();
+  if(!ex)cloudPut(true);
+  else if(lsGet(UNS_KEY)){ACC.dirty=true;ACC.dirtyAt=0;ACC.soon=true}
+  afterSync();
+}
+function afterSync(){
+  renderAlt();
   try{syncCont()}catch(e){}
   if(!$('account').hidden&&!stayTitle)enterGame();
 }
