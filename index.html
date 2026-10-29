@@ -1106,7 +1106,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
         <p class="logo-ko">클로즈 게이트</p>
         <p class="title-tag">집중하는 시간만큼, 게이트는 닫힌다</p>
       </div>
-      <span class="title-ver" id="titleVer">v35.68</span>
+      <span class="title-ver" id="titleVer">v35.69</span>
     </div>
     <p class="title-desc">센티넬과 가이드가 되어 접속한 모든 요원과 함께 게이트를 닫는 집중 협력 게임입니다. 계정을 만들면 기록이 클라우드에 저장되어 다른 기기에서도 이어서 할 수 있습니다.</p>
     <div class="acc-cards">
@@ -3581,20 +3581,25 @@ const stonesOf=a=>S.items.filter(x=>!x.kind&&x.attr===a);
 const famStones=a=>S.items.filter(x=>!x.kind&&stoneKey(x.attr)===a);
 const anointCost=g=>1+(g.tier||0)+Math.floor((g.lv||1)/25);
 const enhCost=g=>{const k=(g.enh||0)+1;return Math.max(1,Math.round((1+k*k*.3)*(1+(g.tier||0)*.3)*(1+(g.lv||1)/100)))};
+/* v35.69 가이드는 장비에도 각성석을 계열로 묶어 씁니다: 물리계(신체 강화 · 강철 피부 · 초가속)는 모두 육체 공명,
+   정신계(예지 · 염동력 · 환각)는 모두 정신 공명 각성석으로 셉니다. 자연계는 지금처럼 같은 속성끼리만. 센티넬은 바뀌지 않습니다 */
+const famMode=()=>S.role==='guide';
+const gearKey=a=>famMode()?stoneKey(a):a;
+const gearStones=a=>famMode()?famStones(stoneKey(a)):stonesOf(a);
 function useStones(a,n,fam){let left=n;S.items=S.items.filter(x=>{if(left>0&&!x.kind&&(fam?stoneKey(x.attr):x.attr)===a){left--;return false}return true})}
 function anointGear(gid,a){
   const g=S.items.find(x=>x.id===gid&&x.kind==='gear');a=+a;if(!g||!ATTRS[a])return;
-  if(g.attr===a){toast('이미 그 속성입니다.');return}
-  const c=anointCost(g),have=stonesOf(a).length;if(have<c){toast(`${ATTRS[a].n} 각성석이 ${c-have}개 부족합니다.`);return}
-  useStones(a,c);const lost=g.enh||0;g.attr=a;g.enh=0;
+  if(g.attr===a||(g.attr!=null&&gearKey(g.attr)===gearKey(a))){toast('이미 그 속성입니다.');return}
+  const c=anointCost(g),have=gearStones(a).length;a=gearKey(a);if(have<c){toast(`${ATTRS[a].n} 각성석이 ${c-have}개 부족합니다.`);return}
+  useStones(a,c,famMode());const lost=g.enh||0;g.attr=a;g.enh=0;
   toast(`${ATTRS[a].n} 각성석 ${c}개를 써서 ${josa(g.name,'이','가')} ${ATTRS[a].n} 속성이 되었습니다.${lost?` 속성 강화 +${lost}는 사라졌습니다.`:''}`);beep(988,.08);beep(1318,.12,'square',.04,.08);save();pushPresence();updateUI(true);
 }
 function enhanceGear(gid){
   const g=S.items.find(x=>x.id===gid&&x.kind==='gear');if(!g)return;
   if(g.attr==null){toast('속성이 없는 장비는 먼저 각성석으로 속성을 정해야 합니다.');return}
   if((g.enh||0)>=ENH_MAX){toast(`이미 최대 강화(+${ENH_MAX})다.`);return}
-  const c=enhCost(g),have=stonesOf(g.attr).length;if(have<c){toast(`${ATTRS[g.attr].n} 각성석이 ${c-have}개 부족합니다.`);return}
-  useStones(g.attr,c);g.enh=(g.enh||0)+1;
+  const c=enhCost(g),have=gearStones(g.attr).length,ka=gearKey(g.attr);if(have<c){toast(`${ATTRS[ka].n} 각성석이 ${c-have}개 부족합니다.`);return}
+  useStones(ka,c,famMode());g.enh=(g.enh||0)+1;
   toast(`${g.name}의 ${ATTRS[g.attr].n} 속성을 +${g.enh}로 강화했습니다.`);beep(1047,.08);beep(1568,.14,'square',.04,.08);if(typeof burst==='function')burst(96,60,[ATTRS[g.attr].col,'#FFFFFF'],16,30,0);save();cloudSoon();updateUI(true);
 }
 /* ── 캐릭터 속성 강화 (+5까지) ──
@@ -6311,19 +6316,23 @@ function renderBag(){
   const seenStone={};
   ul.innerHTML=[...S.items].sort((a,b)=>(isBetter(b)?1:0)-(isBetter(a)?1:0)).map(it=>{
     if(itemKind(it)==='gear'){normGear(it);const on=(S.equip||{})[it.slot]===it.id;
-      const cnt={};S.items.forEach(x=>{if(!x.kind)cnt[x.attr]=(cnt[x.attr]||0)+1});
-      const ac=anointCost(it),opts=Object.keys(cnt).map(Number).filter(a=>a!==it.attr).map(a=>`<option value="${a}" ${cnt[a]<ac?'disabled':''}>${ATTRS[a].n}으로 (보유 ${cnt[a]} / 필요 ${ac})</option>`).join('');
-      const ec=it.attr!=null&&(it.enh||0)<ENH_MAX?enhCost(it):0,eh=it.attr!=null?(cnt[it.attr]||0):0;
-      const enhBtn=it.attr==null?'':(it.enh||0)>=ENH_MAX?`<span class="enh max">속성 강화 +${ENH_MAX} 완료</span>`:`<button type="button" class="sbtn eq enhb" data-enh="${it.id}" ${eh<ec?'disabled':''}>속성 강화 +${(it.enh||0)+1} · ${ATTRS[it.attr].n} 각성석 ${eh}/${ec}</button>`;
+      /* v35.69 가이드는 물리계 · 정신계 각성석을 육체 공명 · 정신 공명으로 묶어 셉니다(gearKey) */
+      const cnt={};S.items.forEach(x=>{if(!x.kind){const k=gearKey(x.attr);cnt[k]=(cnt[k]||0)+1}});
+      const ac=anointCost(it),opts=Object.keys(cnt).map(Number).filter(a=>it.attr==null||a!==gearKey(it.attr)).map(a=>`<option value="${a}" ${cnt[a]<ac?'disabled':''}>${ATTRS[a].n+roJosa(ATTRS[a].n)} (보유 ${cnt[a]} / 필요 ${ac})</option>`).join('');
+      const ec=it.attr!=null&&(it.enh||0)<ENH_MAX?enhCost(it):0,eh=it.attr!=null?(cnt[gearKey(it.attr)]||0):0;
+      const enhBtn=it.attr==null?'':(it.enh||0)>=ENH_MAX?`<span class="enh max">속성 강화 +${ENH_MAX} 완료</span>`:`<button type="button" class="sbtn eq enhb" data-enh="${it.id}" ${eh<ec?'disabled':''}>속성 강화 +${(it.enh||0)+1} · ${ATTRS[gearKey(it.attr)].n} 각성석 ${eh}/${ec}</button>`;
       return `<li class="${isBetter(it)?'isbetter':''}"><span class="bt">${itemIcon(it)}${isBetter(it)?'<span class="better">▲ 더 좋음</span>':''}<span class="gear-t" style="background:${GEAR_C[it.tier]}">${GEAR_T[it.tier]}</span><b>${it.name}${it.enh?` <em class="plus">+${it.enh}</em>`:''} <small>Lv.${it.lv}</small></b>${it.attr!=null?`<span class="atag${fits(it)?' hit':''}"><i style="background:${ATTRS[it.attr].col}"></i>${ATTRS[it.attr].n}</span>`:''}</span><span class="muted">${itemDesc(it)}</span><span class="acts"><button type="button" class="sbtn eq" data-eq="${it.id}" ${!on&&it.lv>myLevel()?'disabled':''}>${on?'해제하기':it.lv>myLevel()?`Lv.${it.lv} 필요`:'장착하기'}</button>${on?'':`<button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button>`}${enhBtn}${opts?`<select class="anoint" data-g="${it.id}"><option value="">속성 바꾸기 (각성석 ${ac}개${it.enh?', 강화 초기화':''})</option>${opts}</select>`:''}</span></li>`}
     if(it.kind==='ticket'){return `<li><span class="bt">${itemIcon(it)}<b>${itemName(it)}</b></span><span class="muted">${itemDesc(it)}</span><span class="acts"><button type="button" class="sbtn eq" ${it.t==='regrade'?'data-regrade':'data-roletk'}="${it.id}">사용하기</button><button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}
     if(isPot(it)){if(seenStone['p'+it.p])return '';seenStone['p'+it.p]=1;const P=POTS[it.p],n=potCount(it.p);
       const can=P.k==='hp'?inBattle():true;
       return `<li><span class="bt">${itemIcon(it)}<b>${P.n} <small>×${n}</small></b></span><span class="muted">${itemDesc(it)}${(P.k==='def'||P.k==='atk')&&!inBattle()?' 지금 마시면 다음 출동에 적용됩니다.':''}${P.k==='hp'?' 게이트 공략 중 HP가 30% 아래로 내려가면 자동으로 씁니다.':''}</span><span class="acts"><button type="button" class="sbtn eq" data-pot="${it.p}" ${can?'':'disabled'}>${P.k==='hp'&&!inBattle()?'공략 중에 사용':'사용하기'}</button><button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}
-    if(seenStone[it.attr])return '';seenStone[it.attr]=1;const n=S.items.filter(x=>!x.kind&&x.attr===it.attr).length;
-    const a=ATTRS[it.attr],my=stoneKey(it.attr),has=mine.includes(my),nAll=famStones(my).length;
+    /* v35.69 가이드는 같은 계열 각성석을 한 줄로 묶어 보여 줍니다(예: 육체 공명 각성석 ×6 · 신체 강화 3 · 강철 피부 2 · 초가속 1) */
+    const gk=gearKey(it.attr);if(seenStone[gk])return '';seenStone[gk]=1;
+    const fam=famMode()&&gk!==it.attr,n=fam?famStones(gk).length:S.items.filter(x=>!x.kind&&x.attr===it.attr).length;
+    const a=ATTRS[gk],my=stoneKey(it.attr),has=mine.includes(my),nAll=famStones(my).length;
+    const parts=fam?(()=>{const c={};famStones(gk).forEach(x=>c[x.attr]=(c[x.attr]||0)+1);return Object.keys(c).map(k=>`${ATTRS[k].n} ${c[k]}`).join(' · ')})():'';
     const rep=mine.map((m,i)=>`<button type="button" class="sbtn" data-id="${it.id}" data-slot="${i}" ${has?'disabled':''}>${ATTRS[m].n} 대신</button>`).join('');
-    return `<li><span class="bt">${itemIcon(it)}<span class="atag">${attrDot(it.attr)}${a.n}</span><b>${a.n} 각성석 <small>×${n}</small></b></span><span class="muted">${has?(my!==it.attr?`내 ${ATTRS[my].n} 속성의 각성석으로 쓰입니다. 캐릭터 속성 강화 +${charEnh(my)}/${CENH_MAX}`:`내 속성입니다. 캐릭터 속성 강화 +${charEnh(my)}/${CENH_MAX}`):S.role==='guide'&&my!==it.attr?`쓰면 가이드 속성 ${ATTRS[my].n}으로 얻습니다.`:'속성을 추가하거나 기존 속성과 바꿀 수 있습니다.'}</span><span class="acts">${has?(charEnh(my)>=CENH_MAX?'<span class="enh max">캐릭터 속성 강화 완료</span>':`${enhOrbs(my)}<button type="button" class="sbtn eq enhb" data-cenh="${my}" ${nAll<charEnhCost(my)?'disabled':''}>+${charEnh(my)+1} 강화 · 각성석 ${nAll}/${charEnhCost(my)}</button>`):''}${has?'':`<button type="button" class="sbtn" data-id="${it.id}" ${mine.length>=MAX_ATTR?'disabled':''}>추가하기 (${mine.length}/${MAX_ATTR})</button>${rep}`}<button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}).join('');
+    return `<li><span class="bt">${itemIcon(fam?{...it,attr:gk}:it)}<span class="atag">${attrDot(gk)}${a.n}</span><b>${a.n} 각성석 <small>×${n}</small></b></span><span class="muted">${fam?`<span class="famparts">(${parts})</span><br>`:''}${has?(my!==it.attr?`내 ${ATTRS[my].n} 속성의 각성석으로 쓰입니다. 캐릭터 속성 강화 +${charEnh(my)}/${CENH_MAX}`:`내 속성입니다. 캐릭터 속성 강화 +${charEnh(my)}/${CENH_MAX}`):S.role==='guide'&&my!==it.attr?`쓰면 가이드 속성 ${ATTRS[my].n}으로 얻습니다.`:'속성을 추가하거나 기존 속성과 바꿀 수 있습니다.'}</span><span class="acts">${has?(charEnh(my)>=CENH_MAX?'<span class="enh max">캐릭터 속성 강화 완료</span>':`${enhOrbs(my)}<button type="button" class="sbtn eq enhb" data-cenh="${my}" ${nAll<charEnhCost(my)?'disabled':''}>+${charEnh(my)+1} 강화 · 각성석 ${nAll}/${charEnhCost(my)}</button>`):''}${has?'':`<button type="button" class="sbtn" data-id="${it.id}" ${mine.length>=MAX_ATTR?'disabled':''}>추가하기 (${mine.length}/${MAX_ATTR})</button>${rep}`}<button type="button" class="sbtn eq" data-tomarket="${it.id}">장터에 올리기</button></span></li>`}).join('');
 }
 $('bagList').addEventListener('click',e=>{const b=e.target.closest('.sbtn');if(!b||b.disabled||b.classList.contains('eq'))return;useItem(b.dataset.id,b.dataset.slot==null?null:+b.dataset.slot)});
 function renderExam(){
